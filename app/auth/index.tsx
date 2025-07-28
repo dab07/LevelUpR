@@ -1,10 +1,10 @@
 import React, { useState } from 'react';
-import { 
-  View, 
-  Text, 
-  StyleSheet, 
-  TextInput, 
-  TouchableOpacity, 
+import {
+  View,
+  Text,
+  StyleSheet,
+  TextInput,
+  TouchableOpacity,
   Alert,
   KeyboardAvoidingView,
   Platform,
@@ -36,15 +36,23 @@ export default function AuthScreen() {
       if (isSignUp) {
         await signUpWithEmail(email, password, username);
         Alert.alert(
-          'Success!', 
-          'Account created successfully! You can now sign in.',
-          [{ text: 'OK', onPress: () => setIsSignUp(false) }]
+            'Success!',
+            'Account created successfully!',
+            [{ text: 'OK', onPress: () => {
+                setIsSignUp(false);
+                setEmail('');
+                setPassword('');
+                setUsername('');
+              }}]
         );
       } else {
-        await signInWithEmail(email, password);
-        router.replace('/(tabs)');
+        const { user } = await signInWithEmail(email, password);
+        if (user) {
+          router.replace('/(tabs)');
+        }
       }
     } catch (error: any) {
+      console.error('Auth error:', error);
       Alert.alert('Error', error.message || 'Authentication failed');
     } finally {
       setLoading(false);
@@ -52,92 +60,92 @@ export default function AuthScreen() {
   };
 
   return (
-    <SafeAreaView style={styles.container}>
-      <LinearGradient
-        colors={['#8B5CF6', '#3B82F6']}
-        style={styles.background}
-      >
-        <KeyboardAvoidingView 
-          behavior={Platform.OS === 'ios' ? 'padding' : 'height'}
-          style={styles.keyboardView}
+      <SafeAreaView style={styles.container}>
+        <LinearGradient
+            colors={['#8B5CF6', '#3B82F6']}
+            style={styles.background}
         >
-          <ScrollView contentContainerStyle={styles.scrollContent}>
-            <View style={styles.header}>
-              <View style={styles.logoContainer}>
-                <Zap size={48} color="#FFFFFF" />
+          <KeyboardAvoidingView
+              behavior={Platform.OS === 'ios' ? 'padding' : 'height'}
+              style={styles.keyboardView}
+          >
+            <ScrollView contentContainerStyle={styles.scrollContent}>
+              <View style={styles.header}>
+                <View style={styles.logoContainer}>
+                  <Zap size={48} color="#FFFFFF" />
+                </View>
+                <Text style={styles.title}>LevelUpR</Text>
+                <Text style={styles.subtitle}>
+                  Gamify your tasks, challenge your friends
+                </Text>
               </View>
-              <Text style={styles.title}>LevelUpR</Text>
-              <Text style={styles.subtitle}>
-                Gamify your tasks, challenge your friends
-              </Text>
-            </View>
 
-            <View style={styles.formContainer}>
-              <View style={styles.form}>
-                {isSignUp && (
+              <View style={styles.formContainer}>
+                <View style={styles.form}>
+                  {isSignUp && (
+                      <View style={styles.inputContainer}>
+                        <User size={20} color="#8B5CF6" style={styles.inputIcon} />
+                        <TextInput
+                            style={styles.input}
+                            placeholder="Username"
+                            value={username}
+                            onChangeText={setUsername}
+                            autoCapitalize="none"
+                            placeholderTextColor="#9CA3AF"
+                        />
+                      </View>
+                  )}
+
                   <View style={styles.inputContainer}>
-                    <User size={20} color="#8B5CF6" style={styles.inputIcon} />
+                    <Mail size={20} color="#8B5CF6" style={styles.inputIcon} />
                     <TextInput
-                      style={styles.input}
-                      placeholder="Username"
-                      value={username}
-                      onChangeText={setUsername}
-                      autoCapitalize="none"
-                      placeholderTextColor="#9CA3AF"
+                        style={styles.input}
+                        placeholder="Email"
+                        value={email}
+                        onChangeText={setEmail}
+                        keyboardType="email-address"
+                        autoCapitalize="none"
+                        placeholderTextColor="#9CA3AF"
                     />
                   </View>
-                )}
 
-                <View style={styles.inputContainer}>
-                  <Mail size={20} color="#8B5CF6" style={styles.inputIcon} />
-                  <TextInput
-                    style={styles.input}
-                    placeholder="Email"
-                    value={email}
-                    onChangeText={setEmail}
-                    keyboardType="email-address"
-                    autoCapitalize="none"
-                    placeholderTextColor="#9CA3AF"
+                  <View style={styles.inputContainer}>
+                    <Lock size={20} color="#8B5CF6" style={styles.inputIcon} />
+                    <TextInput
+                        style={styles.input}
+                        placeholder="Password"
+                        value={password}
+                        onChangeText={setPassword}
+                        secureTextEntry
+                        placeholderTextColor="#9CA3AF"
+                    />
+                  </View>
+
+                  <GradientButton
+                      title={loading ? 'Loading...' : (isSignUp ? 'Sign Up' : 'Sign In')}
+                      onPress={handleAuth}
+                      disabled={loading}
+                      size="large"
+                      style={styles.authButton}
                   />
+
+                  <TouchableOpacity
+                      onPress={() => setIsSignUp(!isSignUp)}
+                      style={styles.switchButton}
+                  >
+                    <Text style={styles.switchText}>
+                      {isSignUp
+                          ? 'Already have an account? Sign In'
+                          : "Don't have an account? Sign Up"
+                      }
+                    </Text>
+                  </TouchableOpacity>
                 </View>
-
-                <View style={styles.inputContainer}>
-                  <Lock size={20} color="#8B5CF6" style={styles.inputIcon} />
-                  <TextInput
-                    style={styles.input}
-                    placeholder="Password"
-                    value={password}
-                    onChangeText={setPassword}
-                    secureTextEntry
-                    placeholderTextColor="#9CA3AF"
-                  />
-                </View>
-
-                <GradientButton
-                  title={loading ? 'Loading...' : (isSignUp ? 'Sign Up' : 'Sign In')}
-                  onPress={handleAuth}
-                  disabled={loading}
-                  size="large"
-                  style={styles.authButton}
-                />
-
-                <TouchableOpacity
-                  onPress={() => setIsSignUp(!isSignUp)}
-                  style={styles.switchButton}
-                >
-                  <Text style={styles.switchText}>
-                    {isSignUp 
-                      ? 'Already have an account? Sign In' 
-                      : "Don't have an account? Sign Up"
-                    }
-                  </Text>
-                </TouchableOpacity>
               </View>
-            </View>
-          </ScrollView>
-        </KeyboardAvoidingView>
-      </LinearGradient>
-    </SafeAreaView>
+            </ScrollView>
+          </KeyboardAvoidingView>
+        </LinearGradient>
+      </SafeAreaView>
   );
 }
 

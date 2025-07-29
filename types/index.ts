@@ -117,3 +117,39 @@ export interface AdminTicket {
   createdAt: string;
   updatedAt: string;
 }
+
+export interface StepData {
+  steps: number;
+  goal: number;
+  lastUpdated: string;
+}
+
+export interface MeditationSession {
+  id: string;
+  userId: string;
+  duration: number; // in minutes
+  completedAt: string;
+  isCompleted: boolean;
+}
+
+export interface GroupMember {
+  id: string;
+  groupId: string;
+  userId: string;
+  username: string;
+  displayName: string;
+  role: 'admin' | 'member';
+  joinedAt: string;
+}
+
+export interface GroupChallenge {
+  id: string;
+  groupId: string;
+  creatorId: string;
+  title: string;
+  description: string;
+  deadline: string;
+  minimumBet: number;
+  status: 'active' | 'voting' | 'completed';
+  createdAt: string;
+}

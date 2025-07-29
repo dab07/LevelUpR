@@ -32,7 +32,7 @@ CREATE TABLE IF NOT EXISTS audit_logs (
   id uuid PRIMARY KEY DEFAULT gen_random_uuid(),
   admin_id uuid NOT NULL REFERENCES users(id),
   action text NOT NULL,
-  target_type text NOT NULL, -- 'user', 'challenge', 'group', etc.
+  target_type text NOT NULL, -- 'user', 'challenge', 'groups', etc.
   target_id uuid NOT NULL,
   details jsonb,
   created_at timestamptz DEFAULT now()
@@ -188,20 +188,20 @@ DECLARE
 BEGIN
   SELECT role INTO user_role
   FROM admin_roles
-  WHERE admin_roles.user_id = is_admin.user_id 
+  WHERE admin_roles.user_id = is_admin.user_id
     AND is_active = true
-  ORDER BY 
+  ORDER BY
     CASE role
       WHEN 'super_admin' THEN 1
       WHEN 'admin' THEN 2
       WHEN 'moderator' THEN 3
     END
   LIMIT 1;
-  
+
   IF user_role IS NULL THEN
     RETURN false;
   END IF;
-  
+
   RETURN CASE required_role
     WHEN 'super_admin' THEN user_role = 'super_admin'
     WHEN 'admin' THEN user_role IN ('super_admin', 'admin')
@@ -239,10 +239,10 @@ BEGIN
   IF NOT is_admin(admin_id, 'moderator') THEN
     RAISE EXCEPTION 'Insufficient permissions';
   END IF;
-  
+
   -- Update user status (you might want to add a suspended_until column to users table)
   -- For now, we'll just log the action
-  
+
   -- Log the action
   PERFORM log_admin_action(
     admin_id,
@@ -271,10 +271,10 @@ BEGIN
   IF NOT is_admin(admin_id, 'admin') THEN
     RAISE EXCEPTION 'Insufficient permissions';
   END IF;
-  
+
   -- You might want to add a banned column to users table
   -- For now, we'll just log the action
-  
+
   -- Log the action
   PERFORM log_admin_action(
     admin_id,
@@ -299,7 +299,7 @@ BEGIN
   SELECT jsonb_build_object(
     'total_users', (SELECT COUNT(*) FROM users),
     'active_users_today', (
-      SELECT COUNT(*) FROM users 
+      SELECT COUNT(*) FROM users
       WHERE DATE(last_login_date) = CURRENT_DATE
     ),
     'total_tasks_completed', (SELECT SUM(total_tasks_completed) FROM users),
@@ -310,45 +310,45 @@ BEGIN
     'pending_tickets', (SELECT COUNT(*) FROM admin_tickets WHERE status = 'open'),
     'pending_reports', (SELECT COUNT(*) FROM user_reports WHERE status = 'pending')
   ) INTO stats;
-  
+
   RETURN stats;
 END;
 $$ LANGUAGE plpgsql SECURITY DEFINER;
 
 -- Create a view for admin dashboard
 CREATE OR REPLACE VIEW admin_dashboard_stats AS
-SELECT 
+SELECT
   'users' as metric,
   COUNT(*)::text as value,
   'Total registered users' as description
 FROM users
 UNION ALL
-SELECT 
+SELECT
   'active_today' as metric,
   COUNT(*)::text as value,
   'Users active today' as description
-FROM users 
+FROM users
 WHERE DATE(last_login_date) = CURRENT_DATE
 UNION ALL
-SELECT 
+SELECT
   'challenges_active' as metric,
   COUNT(*)::text as value,
   'Active challenges' as description
-FROM challenges 
+FROM challenges
 WHERE status = 'active'
 UNION ALL
-SELECT 
+SELECT
   'tickets_pending' as metric,
   COUNT(*)::text as value,
   'Pending support tickets' as description
-FROM admin_tickets 
+FROM admin_tickets
 WHERE status = 'open'
 UNION ALL
-SELECT 
+SELECT
   'reports_pending' as metric,
   COUNT(*)::text as value,
   'Pending user reports' as description
-FROM user_reports 
+FROM user_reports
 WHERE status = 'pending';
 
 -- Grant access to admin view

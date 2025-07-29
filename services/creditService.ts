@@ -4,25 +4,25 @@ import { CreditTransaction } from '@/types';
 class CreditService {
   async getUserCredits(userId: string): Promise<number> {
     const { data, error } = await supabase
-      .from('users')
-      .select('credits')
-      .eq('id', userId)
-      .single();
-    
+        .from('users')
+        .select('credits')
+        .eq('id', userId)
+        .single();
+
     if (error) throw error;
     return data.credits;
   }
 
   async addCredits(userId: string, amount: number, type: CreditTransaction['type'], description: string, relatedId?: string): Promise<void> {
     const { error: transactionError } = await supabase
-      .from('credit_transactions')
-      .insert({
-        user_id: userId,
-        amount,
-        type,
-        description,
-        related_id: relatedId,
-      });
+        .from('credit_transactions')
+        .insert({
+          user_id: userId,
+          amount,
+          type,
+          description,
+          related_id: relatedId,
+        });
 
     if (transactionError) throw transactionError;
 
@@ -36,7 +36,7 @@ class CreditService {
 
   async deductCredits(userId: string, amount: number, type: CreditTransaction['type'], description: string, relatedId?: string): Promise<boolean> {
     const currentCredits = await this.getUserCredits(userId);
-    
+
     if (currentCredits < amount) {
       return false; // Insufficient credits
     }
@@ -47,10 +47,10 @@ class CreditService {
 
   async processDailyLogin(userId: string): Promise<boolean> {
     const { data: user, error } = await supabase
-      .from('users')
-      .select('last_login_date, daily_login_streak')
-      .eq('id', userId)
-      .single();
+        .from('users')
+        .select('last_login_date, daily_login_streak')
+        .eq('id', userId)
+        .single();
 
     if (error) throw error;
 
@@ -65,12 +65,12 @@ class CreditService {
     const newStreak = isConsecutive ? user.daily_login_streak + 1 : 1;
 
     await supabase
-      .from('users')
-      .update({
-        last_login_date: new Date().toISOString(),
-        daily_login_streak: newStreak,
-      })
-      .eq('id', userId);
+        .from('users')
+        .update({
+          last_login_date: new Date().toISOString(),
+          daily_login_streak: newStreak,
+        })
+        .eq('id', userId);
 
     await this.addCredits(userId, 1, 'reward', 'Daily login reward');
     return true;
@@ -78,11 +78,11 @@ class CreditService {
 
   async getTransactionHistory(userId: string, limit = 50): Promise<CreditTransaction[]> {
     const { data, error } = await supabase
-      .from('credit_transactions')
-      .select('*')
-      .eq('user_id', userId)
-      .order('created_at', { ascending: false })
-      .limit(limit);
+        .from('credit_transactions')
+        .select('*')
+        .eq('user_id', userId)
+        .order('created_at', { ascending: false })
+        .limit(limit);
 
     if (error) throw error;
     return data;

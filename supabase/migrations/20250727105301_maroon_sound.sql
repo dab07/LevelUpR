@@ -12,7 +12,7 @@
     - Policies for challenge participation and voting
 
   3. Features
-    - Friend group and global challenges
+    - Friend groups and global challenges
     - Betting mechanics with credit pools
     - Proof verification and voting system
     - Admin dispute resolution
@@ -207,14 +207,14 @@ RETURNS void AS $$
 BEGIN
   IF bet_type = 'yes' THEN
     UPDATE challenges
-    SET 
+    SET
       total_yes_bets = total_yes_bets + bet_amount,
       total_credits_pool = total_credits_pool + bet_amount,
       updated_at = now()
     WHERE id = challenge_id;
   ELSE
     UPDATE challenges
-    SET 
+    SET
       total_no_bets = total_no_bets + bet_amount,
       total_credits_pool = total_credits_pool + bet_amount,
       updated_at = now()
@@ -237,19 +237,19 @@ BEGIN
     WHERE status = 'voting' AND voting_ends_at < now()
   LOOP
     -- Count votes
-    SELECT 
+    SELECT
       COUNT(*) FILTER (WHERE vote = 'yes'),
       COUNT(*) FILTER (WHERE vote = 'no')
     INTO yes_votes, no_votes
     FROM completion_votes
     WHERE challenge_id = challenge_record.id;
-    
+
     -- Determine completion
     is_completed := yes_votes > no_votes;
-    
+
     -- Update challenge
     UPDATE challenges
-    SET 
+    SET
       status = 'completed',
       is_completed = is_completed,
       completion_votes = jsonb_build_object('yes', yes_votes, 'no', no_votes),

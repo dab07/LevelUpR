@@ -13,7 +13,7 @@
 
   3. Features
     - Friend request system
-    - Private group creation and management
+    - Private groups creation and management
     - Real-time messaging
 */
 
@@ -111,7 +111,7 @@ CREATE POLICY "Group admins can update groups"
   TO authenticated
   USING (
     id IN (
-      SELECT group_id FROM group_members 
+      SELECT group_id FROM group_members
       WHERE user_id = auth.uid() AND role IN ('admin', 'moderator')
     )
   );
@@ -133,7 +133,7 @@ CREATE POLICY "Group admins can manage members"
   TO authenticated
   USING (
     group_id IN (
-      SELECT group_id FROM group_members 
+      SELECT group_id FROM group_members
       WHERE user_id = auth.uid() AND role IN ('admin', 'moderator')
     )
   );
@@ -184,18 +184,18 @@ CREATE INDEX IF NOT EXISTS idx_messages_group ON messages(group_id);
 CREATE INDEX IF NOT EXISTS idx_messages_sender ON messages(sender_id);
 CREATE INDEX IF NOT EXISTS idx_messages_created_at ON messages(created_at);
 
--- Function to update group member count
+-- Function to update groups member count
 CREATE OR REPLACE FUNCTION update_group_member_count()
 RETURNS trigger AS $$
 BEGIN
   IF TG_OP = 'INSERT' THEN
-    UPDATE groups 
+    UPDATE groups
     SET member_count = member_count + 1,
         updated_at = now()
     WHERE id = NEW.group_id;
     RETURN NEW;
   ELSIF TG_OP = 'DELETE' THEN
-    UPDATE groups 
+    UPDATE groups
     SET member_count = member_count - 1,
         updated_at = now()
     WHERE id = OLD.group_id;
@@ -210,7 +210,7 @@ CREATE TRIGGER update_group_member_count_trigger
   AFTER INSERT OR DELETE ON group_members
   FOR EACH ROW EXECUTE FUNCTION update_group_member_count();
 
--- Function to auto-add creator to group
+-- Function to auto-add creator to groups
 CREATE OR REPLACE FUNCTION add_creator_to_group()
 RETURNS trigger AS $$
 BEGIN

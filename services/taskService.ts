@@ -7,13 +7,13 @@ class TaskService {
     // Check if user already has 5 tasks for today
     const todayStart = new Date();
     todayStart.setHours(0, 0, 0, 0);
-    
+
     const { data: existingTasks, error: countError } = await supabase
-      .from('tasks')
-      .select('id')
-      .eq('user_id', userId)
-      .gte('created_at', todayStart.toISOString())
-      .eq('is_daily', true);
+        .from('tasks')
+        .select('id')
+        .eq('user_id', userId)
+        .gte('created_at', todayStart.toISOString())
+        .eq('is_daily', true);
 
     if (countError) throw countError;
 
@@ -22,18 +22,18 @@ class TaskService {
     }
 
     const { data, error } = await supabase
-      .from('tasks')
-      .insert({
-        user_id: userId,
-        title: taskData.title,
-        description: taskData.description,
-        is_daily: taskData.isDaily,
-        credit_reward: taskData.creditReward,
-        due_date: taskData.dueDate,
-        category: taskData.category,
-      })
-      .select()
-      .single();
+        .from('tasks')
+        .insert({
+          user_id: userId,
+          title: taskData.title,
+          description: taskData.description,
+          is_daily: taskData.isDaily,
+          credit_reward: taskData.creditReward,
+          due_date: taskData.dueDate,
+          category: taskData.category,
+        })
+        .select()
+        .single();
 
     if (error) throw error;
     return data;
@@ -41,11 +41,11 @@ class TaskService {
 
   async completeTask(taskId: string, userId: string): Promise<void> {
     const { data: task, error: fetchError } = await supabase
-      .from('tasks')
-      .select('*')
-      .eq('id', taskId)
-      .eq('user_id', userId)
-      .single();
+        .from('tasks')
+        .select('*')
+        .eq('id', taskId)
+        .eq('user_id', userId)
+        .single();
 
     if (fetchError) throw fetchError;
 
@@ -54,22 +54,22 @@ class TaskService {
     }
 
     const { error: updateError } = await supabase
-      .from('tasks')
-      .update({
-        is_completed: true,
-        completed_at: new Date().toISOString(),
-      })
-      .eq('id', taskId);
+        .from('tasks')
+        .update({
+          is_completed: true,
+          completed_at: new Date().toISOString(),
+        })
+        .eq('id', taskId);
 
     if (updateError) throw updateError;
 
     // Award credits
     await creditService.addCredits(
-      userId,
-      task.credit_reward,
-      'reward',
-      `Task completion: ${task.title}`,
-      taskId
+        userId,
+        task.credit_reward,
+        'reward',
+        `Task completion: ${task.title}`,
+        taskId
     );
 
     // Update user XP and stats
@@ -83,13 +83,13 @@ class TaskService {
     todayEnd.setHours(23, 59, 59, 999);
 
     const { data, error } = await supabase
-      .from('tasks')
-      .select('*')
-      .eq('user_id', userId)
-      .eq('is_daily', true)
-      .gte('created_at', todayStart.toISOString())
-      .lte('created_at', todayEnd.toISOString())
-      .order('created_at', { ascending: true });
+        .from('tasks')
+        .select('*')
+        .eq('user_id', userId)
+        .eq('is_daily', true)
+        .gte('created_at', todayStart.toISOString())
+        .lte('created_at', todayEnd.toISOString())
+        .order('created_at', { ascending: true });
 
     if (error) throw error;
     return data || [];

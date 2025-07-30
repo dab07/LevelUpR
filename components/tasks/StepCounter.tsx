@@ -1,30 +1,25 @@
 import React, { useState } from 'react';
 import { View, Text, StyleSheet, TouchableOpacity, Modal, TextInput, Alert } from 'react-native';
 import { LinearGradient } from 'expo-linear-gradient';
-import { Settings, Plus, Minus } from 'lucide-react-native';
+import { Settings, Activity, AlertCircle } from 'lucide-react-native';
 import { StepData } from '@/types';
 
 interface StepCounterProps {
     stepData: StepData;
-    onUpdateSteps: (steps: number) => void;
     onUpdateGoal: (goal: number) => void;
+    pedometerError?: string | null;
 }
 
-export default function StepCounter({ stepData, onUpdateSteps, onUpdateGoal }: StepCounterProps) {
+export default function StepCounter({ stepData, onUpdateGoal, pedometerError }: StepCounterProps) {
     const [showSettings, setShowSettings] = useState(false);
     const [tempGoal, setTempGoal] = useState(stepData.goal.toString());
 
     const progressPercentage = Math.min(100, (stepData.steps / stepData.goal) * 100);
 
-    const handleStepChange = (increment: number) => {
-        const newSteps = Math.max(0, stepData.steps + increment);
-        onUpdateSteps(newSteps);
-    };
-
     const handleGoalSave = () => {
         const newGoal = parseInt(tempGoal);
-        if (isNaN(newGoal) || newGoal < 1000) {
-            Alert.alert('Invalid Goal', 'Goal must be at least 1000 steps');
+        if (isNaN(newGoal) || newGoal < 6000) {
+            Alert.alert('Invalid Goal', 'Goal must be at least 6000 steps');
             return;
         }
         onUpdateGoal(newGoal);
@@ -34,10 +29,20 @@ export default function StepCounter({ stepData, onUpdateSteps, onUpdateGoal }: S
     return (
         <>
             <View style={styles.container}>
+                {pedometerError && (
+                    <View style={styles.errorContainer}>
+                        <AlertCircle size={16} color="#EF4444" />
+                        <Text style={styles.errorText}>{pedometerError}</Text>
+                    </View>
+                )}
+
                 <View style={styles.header}>
-                    <Text style={styles.stepCount}>
-                        {stepData.steps.toLocaleString()}/{stepData.goal.toLocaleString()} steps
-                    </Text>
+                    <View style={styles.titleContainer}>
+                        <Activity size={20} color="#8B5CF6" />
+                        <Text style={styles.stepCount}>
+                            {stepData.steps.toLocaleString()}/{stepData.goal.toLocaleString()} steps
+                        </Text>
+                    </View>
                     <TouchableOpacity
                         onPress={() => setShowSettings(true)}
                         style={styles.settingsButton}
@@ -58,30 +63,22 @@ export default function StepCounter({ stepData, onUpdateSteps, onUpdateGoal }: S
                     </Text>
                 </View>
 
-                <View style={styles.controls}>
-                    <TouchableOpacity
-                        onPress={() => handleStepChange(-100)}
-                        style={styles.controlButton}
-                    >
-                        <Minus size={20} color="#8B5CF6" />
-                        <Text style={styles.controlText}>100</Text>
-                    </TouchableOpacity>
-
-                    <TouchableOpacity
-                        onPress={() => handleStepChange(100)}
-                        style={styles.controlButton}
-                    >
-                        <Plus size={20} color="#8B5CF6" />
-                        <Text style={styles.controlText}>100</Text>
-                    </TouchableOpacity>
-
-                    <TouchableOpacity
-                        onPress={() => handleStepChange(500)}
-                        style={styles.controlButton}
-                    >
-                        <Plus size={20} color="#8B5CF6" />
-                        <Text style={styles.controlText}>500</Text>
-                    </TouchableOpacity>
+                <View style={styles.infoContainer}>
+                    <View style={styles.infoItem}>
+                        <Text style={styles.infoLabel}>Automatic Tracking</Text>
+                        <Text style={styles.infoValue}>
+                            {pedometerError ? 'Unavailable' : 'Active'}
+                        </Text>
+                    </View>
+                    <View style={styles.infoItem}>
+                        <Text style={styles.infoLabel}>Last Updated</Text>
+                        <Text style={styles.infoValue}>
+                            {new Date(stepData.lastUpdated).toLocaleTimeString([], {
+                                hour: '2-digit',
+                                minute: '2-digit'
+                            })}
+                        </Text>
+                    </View>
                 </View>
             </View>
 
@@ -97,6 +94,7 @@ export default function StepCounter({ stepData, onUpdateSteps, onUpdateGoal }: S
 
                         <View style={styles.inputContainer}>
                             <Text style={styles.inputLabel}>Daily Step Goal</Text>
+                            <Text style={styles.inputHint}>Minimum: 6,000 steps</Text>
                             <TextInput
                                 style={styles.input}
                                 value={tempGoal}
@@ -132,16 +130,37 @@ const styles = StyleSheet.create({
     container: {
         marginTop: 12,
     },
+    errorContainer: {
+        flexDirection: 'row',
+        alignItems: 'center',
+        backgroundColor: 'rgba(239, 68, 68, 0.1)',
+        paddingHorizontal: 12,
+        paddingVertical: 8,
+        borderRadius: 8,
+        marginBottom: 12,
+    },
+    errorText: {
+        fontSize: 12,
+        color: '#EF4444',
+        marginLeft: 6,
+        flex: 1,
+    },
     header: {
         flexDirection: 'row',
         justifyContent: 'space-between',
         alignItems: 'center',
         marginBottom: 12,
     },
+    titleContainer: {
+        flexDirection: 'row',
+        alignItems: 'center',
+        flex: 1,
+    },
     stepCount: {
         fontSize: 16,
         fontWeight: '600',
         color: '#111827',
+        marginLeft: 8,
     },
     settingsButton: {
         padding: 4,
@@ -170,25 +189,23 @@ const styles = StyleSheet.create({
         minWidth: 40,
         textAlign: 'right',
     },
-    controls: {
+    infoContainer: {
         flexDirection: 'row',
-        justifyContent: 'space-around',
+        justifyContent: 'space-between',
+        marginTop: 8,
     },
-    controlButton: {
-        flexDirection: 'row',
+    infoItem: {
         alignItems: 'center',
-        backgroundColor: 'rgba(139, 92, 246, 0.1)',
-        paddingHorizontal: 12,
-        paddingVertical: 8,
-        borderRadius: 12,
-        borderWidth: 1,
-        borderColor: '#8B5CF6',
     },
-    controlText: {
+    infoLabel: {
         fontSize: 12,
-        fontWeight: '600',
-        color: '#8B5CF6',
-        marginLeft: 4,
+        color: '#6B7280',
+        marginBottom: 2,
+    },
+    infoValue: {
+        fontSize: 12,
+        fontWeight: '500',
+        color: '#111827',
     },
     modalOverlay: {
         flex: 1,
@@ -218,6 +235,11 @@ const styles = StyleSheet.create({
         fontSize: 14,
         fontWeight: '600',
         color: '#374151',
+        marginBottom: 8,
+    },
+    inputHint: {
+        fontSize: 12,
+        color: '#6B7280',
         marginBottom: 8,
     },
     input: {

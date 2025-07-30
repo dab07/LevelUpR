@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useRef } from 'react';
 import { View, Text, StyleSheet, ScrollView, RefreshControl, Alert, TouchableOpacity } from 'react-native';
 import { LinearGradient } from 'expo-linear-gradient';
 import { SafeAreaView } from 'react-native-safe-area-context';
@@ -29,13 +29,20 @@ export default function HomeScreen() {
   const [user, setUser] = useState<any>(null);
   const [dailyLoginCompleted, setDailyLoginCompleted] = useState(false);
   const [meditationCompleted, setMeditationCompleted] = useState(false);
+  const [pedometerError, setPedometerError] = useState<string | null>(null);
   const [showCreateGroup, setShowCreateGroup] = useState(false);
   const [showGroupChat, setShowGroupChat] = useState(false);
   const [userGroups, setUserGroups] = useState<Group[]>([]);
   const [selectedGroup, setSelectedGroup] = useState<Group | null>(null);
+  const pedometerInitialized = useRef(false);
 
   useEffect(() => {
     initialize();
+
+    // Cleanup pedometer on unmount
+    return () => {
+      stepService.stopPedometerTracking();
+    };
   }, []);
 
   const initialize = async () => {
@@ -46,13 +53,44 @@ export default function HomeScreen() {
       setUser(user);
       await loadUserData(user.id);
       await processDailyLogin(user.id);
-      await loadStepData();
+      await initializePedometer();
       await checkMeditationStatus();
       await loadUserGroups(user.id);
     } catch (error) {
       console.error('Initialization error:', error);
     } finally {
       setLoading(false);
+    }
+  };
+
+  const initializePedometer = async () => {
+    if (pedometerInitialized.current) return;
+
+    try {
+      // Load initial step data
+      const initialStepData = await stepService.getStepData();
+      setStepData(initialStepData);
+
+      // Start pedometer tracking
+      const success = await stepService.startPedometerTracking((newStepData) => {
+        setStepData(newStepData);
+
+        // Check if goal was just reached
+        if (stepService.isGoalReached(newStepData) && !stepService.isGoalReached(stepData)) {
+          handleStepGoalComplete();
+        }
+      });
+
+      if (!success) {
+        setPedometerError('Step tracking unavailable. Please enable motion permissions in settings.');
+      } else {
+        setPedometerError(null);
+      }
+
+      pedometerInitialized.current = true;
+    } catch (error) {
+      console.error('Error initializing pedometer:', error);
+      setPedometerError('Failed to initialize step tracking.');
     }
   };
 
@@ -69,15 +107,6 @@ export default function HomeScreen() {
       setStreak(userProfile?.daily_login_streak || 0);
     } catch (error) {
       console.error('Error loading user data:', error);
-    }
-  };
-
-  const loadStepData = async () => {
-    try {
-      const data = await stepService.getStepData();
-      setStepData(data);
-    } catch (error) {
-      console.error('Error loading step data:', error);
     }
   };
 
@@ -180,20 +209,6 @@ export default function HomeScreen() {
     }
   };
 
-  const handleUpdateSteps = async (steps: number) => {
-    try {
-      const newStepData = await stepService.updateSteps(steps);
-      setStepData(newStepData);
-
-      // Check if goal was just reached
-      if (stepService.isGoalReached(newStepData) && !stepService.isGoalReached(stepData)) {
-        handleStepGoalComplete();
-      }
-    } catch (error) {
-      console.error('Error updating steps:', error);
-    }
-  };
-
   const handleUpdateStepGoal = async (goal: number) => {
     try {
       const newStepData = await stepService.updateGoal(goal);
@@ -251,7 +266,6 @@ export default function HomeScreen() {
     setRefreshing(true);
     await Promise.all([
       loadUserData(user.id),
-      loadStepData(),
       checkMeditationStatus(),
       loadUserGroups(user.id),
     ]);
@@ -334,8 +348,8 @@ export default function HomeScreen() {
             >
               <StepCounter
                   stepData={stepData}
-                  onUpdateSteps={handleUpdateSteps}
                   onUpdateGoal={handleUpdateStepGoal}
+                  pedometerError={pedometerError}
               />
             </MainTaskCard>
 

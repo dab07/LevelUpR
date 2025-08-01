@@ -32,18 +32,9 @@ export default function TabLayout() {
         }}
       />
       <Tabs.Screen
-        name="challenges"
-        options={{
-          title: 'Challenges',
-          tabBarIcon: ({ size, color }) => (
-            <Trophy size={size} color={color} />
-          ),
-        }}
-      />
-      <Tabs.Screen
         name="social"
         options={{
-          title: 'Social',
+          title: 'Group',
           tabBarIcon: ({ size, color }) => (
             <Users size={size} color={color} />
           ),

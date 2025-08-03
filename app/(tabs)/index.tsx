@@ -2,22 +2,19 @@ import React, { useState, useEffect, useRef } from 'react';
 import { View, Text, StyleSheet, ScrollView, RefreshControl, Alert, TouchableOpacity } from 'react-native';
 import { LinearGradient } from 'expo-linear-gradient';
 import { SafeAreaView } from 'react-native-safe-area-context';
-import { Plus, Calendar, Zap, Users } from 'lucide-react-native';
+import { Plus, Calendar, Zap } from 'lucide-react-native';
 
 import CreditDisplay from '@/components/ui/CreditDisplay';
 import GradientButton from '@/components/ui/GradientButton';
 import MainTaskCard from '@/components/tasks/MainTaskCard';
 import StepCounter from '@/components/tasks/StepCounter';
 import MeditationTimer from '@/components/tasks/MeditationTimer';
-import CreateGroupModal from '@/components/groups/CreateGroupModal';
-import GroupChatModal from '@/components/groups/GroupChatModal';
 import { taskService } from '@/services/taskService';
 import { creditService } from '@/services/creditService';
 import { stepService } from '@/services/stepService';
 import { meditationService } from '@/services/meditationService';
-import { groupService } from '@/services/groupService';
 import { supabase } from '@/lib/supabase';
-import { Task, StepData, Group } from '@/types';
+import { Task, StepData } from '@/types';
 
 export default function HomeScreen() {
   const [tasks, setTasks] = useState<Task[]>([]);
@@ -30,10 +27,6 @@ export default function HomeScreen() {
   const [dailyLoginCompleted, setDailyLoginCompleted] = useState(false);
   const [meditationCompleted, setMeditationCompleted] = useState(false);
   const [pedometerError, setPedometerError] = useState<string | null>(null);
-  const [showCreateGroup, setShowCreateGroup] = useState(false);
-  const [showGroupChat, setShowGroupChat] = useState(false);
-  const [userGroups, setUserGroups] = useState<Group[]>([]);
-  const [selectedGroup, setSelectedGroup] = useState<Group | null>(null);
   const pedometerInitialized = useRef(false);
 
   useEffect(() => {
@@ -55,7 +48,6 @@ export default function HomeScreen() {
       await processDailyLogin(user.id);
       await initializePedometer();
       await checkMeditationStatus();
-      await loadUserGroups(user.id);
     } catch (error) {
       console.error('Initialization error:', error);
     } finally {
@@ -119,15 +111,6 @@ export default function HomeScreen() {
     }
   };
 
-  const loadUserGroups = async (userId: string) => {
-    try {
-      const groups = await groupService.getUserGroups(userId);
-      setUserGroups(groups);
-    } catch (error) {
-      console.error('Error loading user groups:', error);
-    }
-  };
-
   const getUserProfile = async (userId: string) => {
     const { data, error } = await supabase
         .from('users')
@@ -161,6 +144,8 @@ export default function HomeScreen() {
   const handleDailyLoginClaim = async () => {
     if (!user || dailyLoginCompleted) return;
 
+    console.log('Claiming daily login for user:', user.id);
+
     try {
       await creditService.addCredits(user.id, 1, 'reward', 'Daily login reward');
       setDailyLoginCompleted(true);
@@ -169,6 +154,7 @@ export default function HomeScreen() {
       const newCredits = await creditService.getUserCredits(user.id);
       setCredits(newCredits);
 
+      console.log('Daily login claimed successfully, new credits:', newCredits);
       Alert.alert('🎉 Daily Login!', 'You earned 1 credit for logging in today!');
     } catch (error) {
       console.error('Error claiming daily login:', error);
@@ -176,26 +162,36 @@ export default function HomeScreen() {
     }
   };
 
-  const handleStepGoalComplete = async () => {
-    if (!user || stepService.isGoalReached(stepData)) return;
+    const handleStepGoalComplete = async () => {
+        if (!user) return;
 
-    try {
-      await creditService.addCredits(user.id, 1, 'reward', 'Step goal completion');
+        // Check if goal is already reached to prevent double claiming
+        const goalAlreadyReached = stepService.isGoalReached(stepData);
+        if (!goalAlreadyReached) {
+            console.log("Goal is achieved yet, run to get faster result");
+            return;
+        }
 
-      // Refresh credits
-      const newCredits = await creditService.getUserCredits(user.id);
-      setCredits(newCredits);
+        console.log('Claiming step goal completion for user:', user.id);
+        try {
+          await creditService.addCredits(user.id, 1, 'reward', 'Step goal completion');
 
-      Alert.alert('🚶‍♀️ Step Goal Reached!', 'You earned 1 credit for reaching your step goal!');
-    } catch (error) {
-      console.error('Error claiming step reward:', error);
-      Alert.alert('Error', 'Failed to claim step reward. Please try again.');
-    }
-  };
+          // Refresh credits
+          const newCredits = await creditService.getUserCredits(user.id);
+          setCredits(newCredits);
+
+          console.log('Step goal claimed successfully, new credits:', newCredits);
+          Alert.alert('🚶‍♀️ Step Goal Reached!', 'You earned 1 credit for reaching your step goal!');
+        } catch (error) {
+          console.error('Error claiming step reward:', error);
+          Alert.alert('Error', 'Failed to claim step reward. Please try again.');
+        }
+    };
 
   const handleMeditationComplete = async () => {
     if (!user || meditationCompleted) return;
 
+    console.log('Claiming meditation completion for user:', user.id);
     try {
       await creditService.addCredits(user.id, 1, 'reward', 'Meditation completion');
       setMeditationCompleted(true);
@@ -237,6 +233,8 @@ export default function HomeScreen() {
       const newCredits = await creditService.getUserCredits(user.id);
       setCredits(newCredits);
 
+      console.log('Meditation claimed successfully, new credits:', newCredits);
+      Alert.alert('🧘‍♀️ Meditation Complete!', 'You earned 1 credit for completing your meditation!');
       Alert.alert('🎉 Task Completed!', 'You earned 1 credit!');
     } catch (error) {
       console.error('Error completing task:', error);
@@ -249,17 +247,6 @@ export default function HomeScreen() {
     console.log('Navigate to create task');
   };
 
-  const handleGroupCreated = () => {
-    if (user) {
-      loadUserGroups(user.id);
-    }
-  };
-
-  const handleOpenGroupChat = (group: Group) => {
-    setSelectedGroup(group);
-    setShowGroupChat(true);
-  };
-
   const onRefresh = async () => {
     if (!user) return;
 
@@ -267,7 +254,6 @@ export default function HomeScreen() {
     await Promise.all([
       loadUserData(user.id),
       checkMeditationStatus(),
-      loadUserGroups(user.id),
     ]);
     setRefreshing(false);
   };
@@ -292,15 +278,7 @@ export default function HomeScreen() {
               <Text style={styles.greeting}>Good morning! 👋</Text>
               <Text style={styles.subtitle}>Ready to level up today?</Text>
             </View>
-            <View style={styles.headerRight}>
-              <TouchableOpacity
-                  onPress={() => setShowCreateGroup(true)}
-                  style={styles.createGroupButton}
-              >
-                <Users size={24} color="#FFFFFF" />
-              </TouchableOpacity>
-              <CreditDisplay credits={credits} size="large" />
-            </View>
+            <CreditDisplay credits={credits} size="large" />
           </View>
 
           <View style={styles.statsContainer}>
@@ -387,27 +365,6 @@ export default function HomeScreen() {
             )}
           </View>
 
-          {userGroups.length > 0 && (
-              <View style={styles.section}>
-                <Text style={styles.sectionTitle}>Your Groups</Text>
-                {userGroups.map(group => (
-                    <TouchableOpacity
-                        key={group.id}
-                        onPress={() => handleOpenGroupChat(group)}
-                        style={styles.groupCard}
-                    >
-                      <View style={styles.groupInfo}>
-                        <Text style={styles.groupName}>{group.name}</Text>
-                        <Text style={styles.groupMembers}>
-                          {group.memberCount} member{group.memberCount !== 1 ? 's' : ''}
-                        </Text>
-                      </View>
-                      <Users size={20} color="#8B5CF6" />
-                    </TouchableOpacity>
-                ))}
-              </View>
-          )}
-
           {completedMainTasks === 3 && (
               <View style={styles.congratsCard}>
                 <LinearGradient
@@ -422,18 +379,6 @@ export default function HomeScreen() {
               </View>
           )}
         </ScrollView>
-
-        <CreateGroupModal
-            visible={showCreateGroup}
-            onClose={() => setShowCreateGroup(false)}
-            onGroupCreated={handleGroupCreated}
-        />
-
-        <GroupChatModal
-            visible={showGroupChat}
-            onClose={() => setShowGroupChat(false)}
-            group={selectedGroup}
-        />
       </SafeAreaView>
   );
 }
@@ -454,19 +399,6 @@ const styles = StyleSheet.create({
     justifyContent: 'space-between',
     alignItems: 'flex-start',
     marginBottom: 24,
-  },
-  headerRight: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    gap: 12,
-  },
-  createGroupButton: {
-    width: 44,
-    height: 44,
-    borderRadius: 22,
-    backgroundColor: 'rgba(255, 255, 255, 0.2)',
-    justifyContent: 'center',
-    alignItems: 'center',
   },
   greeting: {
     fontSize: 24,
@@ -557,33 +489,6 @@ const styles = StyleSheet.create({
     textAlign: 'center',
     fontStyle: 'italic',
     paddingVertical: 32,
-  },
-  groupCard: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    justifyContent: 'space-between',
-    backgroundColor: '#FFFFFF',
-    padding: 16,
-    borderRadius: 12,
-    marginVertical: 4,
-    shadowColor: '#000',
-    shadowOffset: { width: 0, height: 1 },
-    shadowOpacity: 0.05,
-    shadowRadius: 2,
-    elevation: 1,
-  },
-  groupInfo: {
-    flex: 1,
-  },
-  groupName: {
-    fontSize: 16,
-    fontWeight: '600',
-    color: '#111827',
-    marginBottom: 2,
-  },
-  groupMembers: {
-    fontSize: 14,
-    color: '#6B7280',
   },
   congratsCard: {
     margin: 20,

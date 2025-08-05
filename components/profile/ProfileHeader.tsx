@@ -2,12 +2,13 @@ import React, { useState } from 'react';
 import { View, Text, StyleSheet, TouchableOpacity, Image, Alert } from 'react-native';
 import { LinearGradient } from 'expo-linear-gradient';
 import { Camera, CreditCard as Edit3, Star, Trophy } from 'lucide-react-native';
-import { UserProfile, profileService } from '@/services/profileService';
+import { profileService } from '@/services/profileService';
 import CreditDisplay from '@/components/ui/CreditDisplay';
+import {User} from '@/types'
 
 interface ProfileHeaderProps {
-    profile: UserProfile;
-    onProfileUpdate: (updatedProfile: UserProfile) => void;
+    profile: User;
+    onProfileUpdate: (updatedProfile: User) => void;
 }
 
 export default function ProfileHeader({ profile, onProfileUpdate }: ProfileHeaderProps) {

@@ -1,29 +1,32 @@
-import React, { useState, useEffect } from 'react';
-import {
-  View,
-  Text,
-  StyleSheet,
-  ScrollView,
-  TouchableOpacity,
-  RefreshControl,
-  Alert,
-} from 'react-native';
+import React, { useState, useEffect, useRef } from 'react';
+import { View, Text, StyleSheet, ScrollView, RefreshControl, Alert, TouchableOpacity, ActivityIndicator } from 'react-native';
 import { LinearGradient } from 'expo-linear-gradient';
 import { SafeAreaView } from 'react-native-safe-area-context';
-import { Users, Plus, MessageCircle, Trophy, UserPlus } from 'lucide-react-native';
+import { Plus, Users, MessageCircle, Trophy, Target, TrendingUp } from 'lucide-react-native';
 
+import GradientButton from '@/components/ui/GradientButton';
 import CreateGroupModal from '@/components/groups/CreateGroupModal';
 import GroupChatModal from '@/components/groups/GroupChatModal';
-import GradientButton from '@/components/ui/GradientButton';
+import CreateChallengeModal from '@/components/challenges/CreateChallengeModal';
+import ChallengeCard from '@/components/challenges/ChallengeCard';
 import { groupService } from '@/services/groupService';
+import { challengeService } from '@/services/challengeService';
 import { supabase } from '@/lib/supabase';
-import { Group } from '@/types';
+import { Group, Challenge, Bet } from '@/types';
 
 export default function SocialScreen() {
+  // Group management state
   const [userGroups, setUserGroups] = useState<Group[]>([]);
   const [showCreateGroup, setShowCreateGroup] = useState(false);
   const [showGroupChat, setShowGroupChat] = useState(false);
   const [selectedGroup, setSelectedGroup] = useState<Group | null>(null);
+
+  // Challenge management state
+  const [showCreateChallenge, setShowCreateChallenge] = useState(false);
+  const [groupChallenges, setGroupChallenges] = useState<{ [groupId: string]: Challenge[] }>({});
+  const [userBets, setUserBets] = useState<{ [challengeId: string]: Bet }>({});
+
+  // UI state
   const [loading, setLoading] = useState(true);
   const [refreshing, setRefreshing] = useState(false);
   const [user, setUser] = useState<any>(null);
@@ -40,7 +43,7 @@ export default function SocialScreen() {
       setUser(user);
       await loadUserGroups(user.id);
     } catch (error) {
-      console.error('Error initializing social screen:', error);
+      console.error('Initialization error:', error);
     } finally {
       setLoading(false);
     }
@@ -50,16 +53,42 @@ export default function SocialScreen() {
     try {
       const groups = await groupService.getUserGroups(userId);
       setUserGroups(groups);
+
+      // Load challenges for each group
+      await loadGroupChallenges(groups);
     } catch (error) {
       console.error('Error loading user groups:', error);
-      Alert.alert('Error', 'Failed to load groups. Please try again.');
     }
   };
 
-  const handleGroupCreated = () => {
-    if (user) {
-      loadUserGroups(user.id);
+  const loadGroupChallenges = async (groups: Group[]) => {
+    try {
+      const challengesData: { [groupId: string]: Challenge[] } = {};
+      const betsData: { [challengeId: string]: Bet } = {};
+
+      for (const group of groups) {
+        const challenges = await challengeService.getGroupChallenges(group.id);
+        challengesData[group.id] = challenges;
+
+        // Load user bets for each challenge
+        for (const challenge of challenges) {
+          const userBet = await challengeService.getUserBet(challenge.id);
+          if (userBet) {
+            betsData[challenge.id] = userBet;
+          }
+        }
+      }
+
+      setGroupChallenges(challengesData);
+      setUserBets(betsData);
+    } catch (error) {
+      console.error('Error loading group challenges:', error);
     }
+  };
+
+  const handleGroupCreated = async () => {
+    if (!user) return;
+    await loadUserGroups(user.id);
   };
 
   const handleOpenGroupChat = (group: Group) => {
@@ -68,20 +97,23 @@ export default function SocialScreen() {
   };
 
   const handleCreateChallenge = (group: Group) => {
-    Alert.alert(
-        'Create Challenge',
-        `Create a new challenge for ${group.name}?`,
-        [
-          { text: 'Cancel', style: 'cancel' },
-          {
-            text: 'Create',
-            onPress: () => {
-              // TODO: Implement challenge creation
-              Alert.alert('Coming Soon', 'Challenge creation feature will be available soon!');
-            },
-          },
-        ]
-    );
+    setSelectedGroup(group);
+    setShowCreateChallenge(true);
+  };
+
+  const handleChallengeCreated = async () => {
+    if (!user) return;
+    await loadUserGroups(user.id);
+  };
+
+  const handleBetPlaced = async () => {
+    if (!user) return;
+    await loadUserGroups(user.id);
+  };
+
+  const handleVoteSubmitted = async () => {
+    if (!user) return;
+    await loadUserGroups(user.id);
   };
 
   const onRefresh = async () => {
@@ -92,70 +124,24 @@ export default function SocialScreen() {
     setRefreshing(false);
   };
 
-  const renderGroupCard = (group: Group) => (
-      <View key={group.id} style={styles.groupCard}>
-        <View style={styles.groupHeader}>
-          <View style={styles.groupInfo}>
-            <Text style={styles.groupName}>{group.name}</Text>
-            <Text style={styles.groupMembers}>
-              {group.memberCount} member{group.memberCount !== 1 ? 's' : ''}
-            </Text>
-            {group.description && (
-                <Text style={styles.groupDescription} numberOfLines={2}>
-                  {group.description}
-                </Text>
-            )}
-          </View>
-          <View style={styles.groupIcon}>
-            <Users size={24} color="#8B5CF6" />
-          </View>
-        </View>
+  const getTotalMembers = () => {
+    return userGroups.reduce((total, group) => total + group.memberCount, 0);
+  };
 
-        <View style={styles.groupActions}>
-          <TouchableOpacity
-              onPress={() => handleOpenGroupChat(group)}
-              style={styles.actionButton}
-          >
-            <MessageCircle size={16} color="#8B5CF6" />
-            <Text style={styles.actionButtonText}>Chat</Text>
-          </TouchableOpacity>
+  const getTotalActiveChallenges = () => {
+    return Object.values(groupChallenges).flat().filter(c => c.status === 'active').length;
+  };
 
-          <TouchableOpacity
-              onPress={() => handleCreateChallenge(group)}
-              style={styles.actionButton}
-          >
-            <Trophy size={16} color="#10B981" />
-            <Text style={[styles.actionButtonText, { color: '#10B981' }]}>
-              Add Challenge
-            </Text>
-          </TouchableOpacity>
-        </View>
-      </View>
-  );
-
-  const renderEmptyState = () => (
-      <View style={styles.emptyState}>
-        <View style={styles.emptyIconContainer}>
-          <Users size={64} color="#D1D5DB" />
-        </View>
-        <Text style={styles.emptyTitle}>No Groups Yet</Text>
-        <Text style={styles.emptySubtitle}>
-          Create your first group to start connecting with friends and sharing challenges!
-        </Text>
-        <GradientButton
-            title="Create Your First Group"
-            onPress={() => setShowCreateGroup(true)}
-            size="large"
-            style={styles.emptyActionButton}
-        />
-      </View>
-  );
+  const isUserCreator = (challenge: Challenge) => {
+    return user && challenge.creatorId === user.id;
+  };
 
   if (loading) {
     return (
         <SafeAreaView style={styles.container}>
           <View style={styles.loadingContainer}>
-            <Text style={styles.loadingText}>Loading your groups...</Text>
+            <ActivityIndicator size="large" color="#8B5CF6" />
+            <Text style={styles.loadingText}>Loading social features...</Text>
           </View>
         </SafeAreaView>
     );
@@ -169,16 +155,14 @@ export default function SocialScreen() {
         >
           <View style={styles.headerContent}>
             <View>
-              <Text style={styles.headerTitle}>Social</Text>
-              <Text style={styles.headerSubtitle}>
-                Connect with friends and share challenges
-              </Text>
+              <Text style={styles.greeting}>Social Hub 👥</Text>
+              <Text style={styles.subtitle}>Connect, challenge, and compete!</Text>
             </View>
             <TouchableOpacity
                 onPress={() => setShowCreateGroup(true)}
-                style={styles.createGroupButton}
+                style={styles.createButton}
             >
-              <Plus size={24} color="#FFFFFF" />
+              <Plus size={20} color="#FFFFFF" />
             </TouchableOpacity>
           </View>
 
@@ -190,17 +174,15 @@ export default function SocialScreen() {
             </View>
 
             <View style={styles.statCard}>
-              <UserPlus size={20} color="#10B981" />
-              <Text style={styles.statNumber}>
-                {userGroups.reduce((total, group) => total + group.memberCount, 0)}
-              </Text>
-              <Text style={styles.statLabel}>Total Members</Text>
+              <MessageCircle size={20} color="#8B5CF6" />
+              <Text style={styles.statNumber}>{getTotalMembers()}</Text>
+              <Text style={styles.statLabel}>Members</Text>
             </View>
 
             <View style={styles.statCard}>
-              <Trophy size={20} color="#F59E0B" />
-              <Text style={styles.statNumber}>0</Text>
-              <Text style={styles.statLabel}>Active Challenges</Text>
+              <Trophy size={20} color="#8B5CF6" />
+              <Text style={styles.statNumber}>{getTotalActiveChallenges()}</Text>
+              <Text style={styles.statLabel}>Challenges</Text>
             </View>
           </View>
         </LinearGradient>
@@ -210,62 +192,108 @@ export default function SocialScreen() {
             refreshControl={
               <RefreshControl refreshing={refreshing} onRefresh={onRefresh} />
             }
-            showsVerticalScrollIndicator={false}
         >
           {userGroups.length === 0 ? (
-              renderEmptyState()
+              <View style={styles.emptyState}>
+                <Users size={64} color="#D1D5DB" />
+                <Text style={styles.emptyTitle}>No Groups Yet</Text>
+                <Text style={styles.emptyText}>
+                  Create your first group to start challenging friends and earning credits together!
+                </Text>
+
+                <GradientButton
+                    title="Create Your First Group"
+                    onPress={() => setShowCreateGroup(true)}
+                    size="large"
+                    style={styles.createFirstGroupButton}
+                />
+
+                <View style={styles.featuresContainer}>
+                  <Text style={styles.featuresTitle}>What you can do:</Text>
+                  <View style={styles.featureItem}>
+                    <Target size={16} color="#8B5CF6" />
+                    <Text style={styles.featureText}>Create betting challenges</Text>
+                  </View>
+                  <View style={styles.featureItem}>
+                    <MessageCircle size={16} color="#8B5CF6" />
+                    <Text style={styles.featureText}>Chat with group members</Text>
+                  </View>
+                  <View style={styles.featureItem}>
+                    <TrendingUp size={16} color="#8B5CF6" />
+                    <Text style={styles.featureText}>Earn credits from winning bets</Text>
+                  </View>
+                </View>
+              </View>
           ) : (
               <View style={styles.groupsList}>
-                <View style={styles.sectionHeader}>
-                  <Text style={styles.sectionTitle}>Your Groups</Text>
-                  <TouchableOpacity
-                      onPress={() => setShowCreateGroup(true)}
-                      style={styles.addButton}
-                  >
-                    <Plus size={20} color="#8B5CF6" />
-                    <Text style={styles.addButtonText}>New Group</Text>
-                  </TouchableOpacity>
-                </View>
+                <Text style={styles.sectionTitle}>Your Groups</Text>
 
-                {userGroups.map(renderGroupCard)}
+                {userGroups.map((group) => (
+                    <View key={group.id} style={styles.groupCard}>
+                      <View style={styles.groupHeader}>
+                        <View style={styles.groupInfo}>
+                          <Text style={styles.groupName}>{group.name}</Text>
+                          <Text style={styles.groupMembers}>
+                            {group.memberCount} member{group.memberCount !== 1 ? 's' : ''}
+                          </Text>
+                          {group.description && (
+                              <Text style={styles.groupDescription} numberOfLines={2}>
+                                {group.description}
+                              </Text>
+                          )}
+                        </View>
+                      </View>
+
+                      <View style={styles.groupActions}>
+                        <TouchableOpacity
+                            onPress={() => handleOpenGroupChat(group)}
+                            style={styles.actionButton}
+                        >
+                          <MessageCircle size={16} color="#8B5CF6" />
+                          <Text style={styles.actionButtonText}>Chat</Text>
+                        </TouchableOpacity>
+
+                        <TouchableOpacity
+                            onPress={() => handleCreateChallenge(group)}
+                            style={styles.actionButton}
+                        >
+                          <Trophy size={16} color="#10B981" />
+                          <Text style={styles.actionButtonText}>Add Challenge</Text>
+                        </TouchableOpacity>
+                      </View>
+
+                      {/* Display group challenges */}
+                      {groupChallenges[group.id] && groupChallenges[group.id].length > 0 && (
+                          <View style={styles.challengesSection}>
+                            <Text style={styles.challengesTitle}>Active Challenges</Text>
+                            {groupChallenges[group.id]
+                                .filter(challenge => challenge.status !== 'completed')
+                                .slice(0, 2) // Show only first 2 challenges
+                                .map((challenge) => (
+                                    <ChallengeCard
+                                        key={challenge.id}
+                                        challenge={challenge}
+                                        userBet={userBets[challenge.id]}
+                                        onBetPlaced={handleBetPlaced}
+                                        onVoteSubmitted={handleVoteSubmitted}
+                                        isCreator={isUserCreator(challenge)}
+                                    />
+                                ))}
+
+                            {groupChallenges[group.id].filter(c => c.status !== 'completed').length > 2 && (
+                                <Text style={styles.moreChallenges}>
+                                  +{groupChallenges[group.id].filter(c => c.status !== 'completed').length - 2} more challenges
+                                </Text>
+                            )}
+                          </View>
+                      )}
+                    </View>
+                ))}
               </View>
           )}
-
-          <View style={styles.featuresSection}>
-            <Text style={styles.sectionTitle}>Group Features</Text>
-
-            <View style={styles.featureCard}>
-              <MessageCircle size={24} color="#8B5CF6" />
-              <View style={styles.featureContent}>
-                <Text style={styles.featureTitle}>Real-time Chat</Text>
-                <Text style={styles.featureDescription}>
-                  Chat with your group members in real-time, share updates and motivate each other
-                </Text>
-              </View>
-            </View>
-
-            <View style={styles.featureCard}>
-              <Trophy size={24} color="#10B981" />
-              <View style={styles.featureContent}>
-                <Text style={styles.featureTitle}>Group Challenges</Text>
-                <Text style={styles.featureDescription}>
-                  Any group member can create challenges for the group to participate in
-                </Text>
-              </View>
-            </View>
-
-            <View style={styles.featureCard}>
-              <Users size={24} color="#F59E0B" />
-              <View style={styles.featureContent}>
-                <Text style={styles.featureTitle}>Friend Invitations</Text>
-                <Text style={styles.featureDescription}>
-                  Easily invite friends by searching their username and build your community
-                </Text>
-              </View>
-            </View>
-          </View>
         </ScrollView>
 
+        {/* Modals */}
         <CreateGroupModal
             visible={showCreateGroup}
             onClose={() => setShowCreateGroup(false)}
@@ -277,6 +305,15 @@ export default function SocialScreen() {
             onClose={() => setShowGroupChat(false)}
             group={selectedGroup}
         />
+
+        {selectedGroup && (
+            <CreateChallengeModal
+                visible={showCreateChallenge}
+                onClose={() => setShowCreateChallenge(false)}
+                group={selectedGroup}
+                onChallengeCreated={handleChallengeCreated}
+            />
+        )}
       </SafeAreaView>
   );
 }
@@ -294,6 +331,7 @@ const styles = StyleSheet.create({
   loadingText: {
     fontSize: 16,
     color: '#6B7280',
+    marginTop: 12,
   },
   header: {
     paddingHorizontal: 20,
@@ -307,17 +345,17 @@ const styles = StyleSheet.create({
     alignItems: 'flex-start',
     marginBottom: 24,
   },
-  headerTitle: {
-    fontSize: 28,
+  greeting: {
+    fontSize: 24,
     fontWeight: '700',
     color: '#FFFFFF',
     marginBottom: 4,
   },
-  headerSubtitle: {
+  subtitle: {
     fontSize: 16,
     color: '#E5E7EB',
   },
-  createGroupButton: {
+  createButton: {
     width: 44,
     height: 44,
     borderRadius: 22,
@@ -353,71 +391,61 @@ const styles = StyleSheet.create({
     marginTop: -12,
   },
   emptyState: {
-    flex: 1,
     alignItems: 'center',
-    justifyContent: 'center',
-    paddingHorizontal: 40,
-    paddingVertical: 80,
-  },
-  emptyIconContainer: {
-    width: 120,
-    height: 120,
-    borderRadius: 60,
-    backgroundColor: '#F3F4F6',
-    justifyContent: 'center',
-    alignItems: 'center',
-    marginBottom: 24,
+    paddingVertical: 60,
+    paddingHorizontal: 20,
   },
   emptyTitle: {
     fontSize: 24,
     fontWeight: '700',
     color: '#111827',
-    marginBottom: 12,
-    textAlign: 'center',
+    marginTop: 16,
+    marginBottom: 8,
   },
-  emptySubtitle: {
+  emptyText: {
     fontSize: 16,
     color: '#6B7280',
     textAlign: 'center',
     lineHeight: 24,
     marginBottom: 32,
   },
-  emptyActionButton: {
-    paddingHorizontal: 32,
+  createFirstGroupButton: {
+    marginBottom: 32,
+  },
+  featuresContainer: {
+    alignItems: 'flex-start',
+    width: '100%',
+  },
+  featuresTitle: {
+    fontSize: 18,
+    fontWeight: '600',
+    color: '#111827',
+    marginBottom: 16,
+  },
+  featureItem: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    marginBottom: 12,
+  },
+  featureText: {
+    fontSize: 16,
+    color: '#6B7280',
+    marginLeft: 12,
   },
   groupsList: {
     padding: 20,
-  },
-  sectionHeader: {
-    flexDirection: 'row',
-    justifyContent: 'space-between',
-    alignItems: 'center',
-    marginBottom: 16,
   },
   sectionTitle: {
     fontSize: 20,
     fontWeight: '700',
     color: '#111827',
-  },
-  addButton: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    backgroundColor: 'rgba(139, 92, 246, 0.1)',
-    paddingHorizontal: 12,
-    paddingVertical: 6,
-    borderRadius: 16,
-    gap: 4,
-  },
-  addButtonText: {
-    fontSize: 14,
-    fontWeight: '600',
-    color: '#8B5CF6',
+    marginBottom: 16,
   },
   groupCard: {
     backgroundColor: '#FFFFFF',
     borderRadius: 16,
     padding: 16,
-    marginBottom: 12,
+    marginBottom: 16,
     shadowColor: '#000',
     shadowOffset: { width: 0, height: 2 },
     shadowOpacity: 0.1,
@@ -425,14 +453,10 @@ const styles = StyleSheet.create({
     elevation: 2,
   },
   groupHeader: {
-    flexDirection: 'row',
-    justifyContent: 'space-between',
-    alignItems: 'flex-start',
     marginBottom: 16,
   },
   groupInfo: {
     flex: 1,
-    marginRight: 12,
   },
   groupName: {
     fontSize: 18,
@@ -442,72 +466,54 @@ const styles = StyleSheet.create({
   },
   groupMembers: {
     fontSize: 14,
-    color: '#6B7280',
+    color: '#8B5CF6',
+    fontWeight: '500',
     marginBottom: 8,
   },
   groupDescription: {
     fontSize: 14,
-    color: '#9CA3AF',
+    color: '#6B7280',
     lineHeight: 20,
-  },
-  groupIcon: {
-    width: 48,
-    height: 48,
-    borderRadius: 24,
-    backgroundColor: 'rgba(139, 92, 246, 0.1)',
-    justifyContent: 'center',
-    alignItems: 'center',
   },
   groupActions: {
     flexDirection: 'row',
     gap: 12,
+    marginBottom: 16,
   },
   actionButton: {
     flex: 1,
     flexDirection: 'row',
     alignItems: 'center',
     justifyContent: 'center',
-    backgroundColor: '#F9FAFB',
+    backgroundColor: 'rgba(139, 92, 246, 0.1)',
     paddingVertical: 10,
-    paddingHorizontal: 16,
     borderRadius: 8,
-    gap: 6,
+    borderWidth: 1,
+    borderColor: 'rgba(139, 92, 246, 0.2)',
   },
   actionButtonText: {
     fontSize: 14,
-    fontWeight: '600',
+    fontWeight: '500',
     color: '#8B5CF6',
+    marginLeft: 6,
   },
-  featuresSection: {
-    padding: 20,
-    paddingTop: 0,
+  challengesSection: {
+    borderTopWidth: 1,
+    borderTopColor: '#E5E7EB',
+    paddingTop: 16,
   },
-  featureCard: {
-    flexDirection: 'row',
-    alignItems: 'flex-start',
-    backgroundColor: '#FFFFFF',
-    padding: 16,
-    borderRadius: 12,
-    marginBottom: 12,
-    shadowColor: '#000',
-    shadowOffset: { width: 0, height: 1 },
-    shadowOpacity: 0.05,
-    shadowRadius: 2,
-    elevation: 1,
-  },
-  featureContent: {
-    flex: 1,
-    marginLeft: 16,
-  },
-  featureTitle: {
+  challengesTitle: {
     fontSize: 16,
     fontWeight: '600',
     color: '#111827',
-    marginBottom: 4,
+    marginBottom: 12,
   },
-  featureDescription: {
+  moreChallenges: {
     fontSize: 14,
-    color: '#6B7280',
-    lineHeight: 20,
+    color: '#8B5CF6',
+    fontWeight: '500',
+    textAlign: 'center',
+    marginTop: 8,
+    fontStyle: 'italic',
   },
 });

@@ -28,7 +28,7 @@ export default function GroupChatModal({ visible, onClose, group }: GroupChatMod
     const [loading, setLoading] = useState(false);
 
     const scrollViewRef = useRef<ScrollView>(null);
-    const subscriptionRef = useRef<any>(null);
+    const subscriptionRef = useRef<{ unsubscribe: () => void } | null>(null);
 
     useEffect(() => {
         if (visible && group) {
@@ -37,8 +37,9 @@ export default function GroupChatModal({ visible, onClose, group }: GroupChatMod
         }
 
         return () => {
-            if (subscriptionRef.current) {
+            if (subscriptionRef.current && typeof subscriptionRef.current.unsubscribe === 'function') {
                 subscriptionRef.current.unsubscribe();
+                subscriptionRef.current = null;
             }
         };
     }, [visible, group]);
@@ -55,22 +56,28 @@ export default function GroupChatModal({ visible, onClose, group }: GroupChatMod
             setMessages(groupMessages);
             setMembers(groupMembers);
         } catch (error) {
-            console.error('Error loading groups data:', error);
+            console.error('Error loading group data:', error);
         }
     };
 
     const setupMessageSubscription = () => {
         if (!group) return;
 
-        subscriptionRef.current = groupService.subscribeToGroupMessages(
-            group.id,
-            (newMessage: Message) => {
-                setMessages(prev => [...prev, newMessage]);
-                setTimeout(() => {
-                    scrollViewRef.current?.scrollToEnd({ animated: true });
-                }, 100);
-            }
-        );
+        try {
+            const subscription = groupService.subscribeToGroupMessages(
+                group.id,
+                (newMessage: Message) => {
+                    setMessages(prev => [...prev, newMessage]);
+                    setTimeout(() => {
+                        scrollViewRef.current?.scrollToEnd({ animated: true });
+                    }, 100);
+                }
+            );
+
+            subscriptionRef.current = subscription;
+        } catch (error) {
+            console.error('Error setting up message subscription:', error);
+        }
     };
 
     const handleSendMessage = async () => {

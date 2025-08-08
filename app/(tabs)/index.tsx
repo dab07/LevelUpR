@@ -1,5 +1,5 @@
 import React, { useState, useEffect, useRef } from 'react';
-import { View, Text, StyleSheet, ScrollView, RefreshControl, Alert, TouchableOpacity } from 'react-native';
+import { View, Text, StyleSheet, ScrollView, RefreshControl, Alert } from 'react-native';
 import { LinearGradient } from 'expo-linear-gradient';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { Plus, Calendar, Zap } from 'lucide-react-native';
@@ -7,6 +7,8 @@ import { Plus, Calendar, Zap } from 'lucide-react-native';
 import CreditDisplay from '@/components/ui/CreditDisplay';
 import GradientButton from '@/components/ui/GradientButton';
 import MainTaskCard from '@/components/tasks/MainTaskCard';
+import TaskCard from '@/components/tasks/TaskCard';
+import CreateTaskModal from '@/components/tasks/CreateTaskModal';
 import StepCounter from '@/components/tasks/StepCounter';
 import MeditationTimer from '@/components/tasks/MeditationTimer';
 import { taskService } from '@/services/taskService';
@@ -26,6 +28,7 @@ export default function HomeScreen() {
   const [user, setUser] = useState<any>(null);
   const [dailyLoginCompleted, setDailyLoginCompleted] = useState(false);
   const [meditationCompleted, setMeditationCompleted] = useState(false);
+  const [showCreateTask, setShowCreateTask] = useState(false);
   const [pedometerError, setPedometerError] = useState<string | null>(null);
   const pedometerInitialized = useRef(false);
 
@@ -45,7 +48,7 @@ export default function HomeScreen() {
 
       setUser(user);
       await loadUserData(user.id);
-      await processDailyLogin(user.id);
+      // await processDailyLogin(user.id);
       await initializePedometer();
       await checkMeditationStatus();
     } catch (error) {
@@ -113,33 +116,33 @@ export default function HomeScreen() {
 
   const getUserProfile = async (userId: string) => {
     const { data, error } = await supabase
-        .from('users')
-        .select('daily_login_streak')
-        .eq('id', userId)
-        .single();
+      .from('users')
+      .select('daily_login_streak')
+      .eq('id', userId)
+      .single();
 
     if (error) throw error;
     return data;
   };
 
-  const processDailyLogin = async (userId: string) => {
-    try {
-      const rewardGiven = await creditService.processDailyLogin(userId);
-      setDailyLoginCompleted(!rewardGiven); // If reward was given, login wasn't completed before
-      if (rewardGiven) {
-        Alert.alert(
-            '🎉 Daily Reward!',
-            'You received 1 credit for logging in today!',
-            [{ text: 'Awesome!', style: 'default' }]
-        );
-        // Refresh credits after reward
-        const newCredits = await creditService.getUserCredits(userId);
-        setCredits(newCredits);
-      }
-    } catch (error) {
-      console.error('Error processing daily login:', error);
-    }
-  };
+  // const processDailyLogin = async (userId: string) => {
+  //   try {
+  //     const rewardGiven = await creditService.processDailyLogin(userId);
+  //     setDailyLoginCompleted(!rewardGiven); // If reward was given, login wasn't completed before
+  //     if (rewardGiven) {
+  //       Alert.alert(
+  //           '🎉 Daily Reward!',
+  //           'You received 1 credit for logging in today!',
+  //           [{ text: 'Awesome!', style: 'default' }]
+  //       );
+  //       // Refresh credits after reward
+  //       const newCredits = await creditService.getUserCredits(userId);
+  //       setCredits(newCredits);
+  //     }
+  //   } catch (error) {
+  //     console.error('Error processing daily login:', error);
+  //   }
+  // };
 
   const handleDailyLoginClaim = async () => {
     if (!user || dailyLoginCompleted) return;
@@ -162,31 +165,31 @@ export default function HomeScreen() {
     }
   };
 
-    const handleStepGoalComplete = async () => {
-        if (!user) return;
+  const handleStepGoalComplete = async () => {
+    if (!user) return;
 
-        // Check if goal is already reached to prevent double claiming
-        const goalAlreadyReached = stepService.isGoalReached(stepData);
-        if (!goalAlreadyReached) {
-            console.log("Goal is achieved yet, run to get faster result");
-            return;
-        }
+    // Only allow claiming if goal is actually reached
+    const goalReached = stepService.isGoalReached(stepData);
+    if (!goalReached) {
+      Alert.alert('Goal Not Reached', 'You need to complete your step goal before claiming the reward.');
+      return;
+    }
 
-        console.log('Claiming step goal completion for user:', user.id);
-        try {
-          await creditService.addCredits(user.id, 1, 'reward', 'Step goal completion');
+    console.log('Claiming step goal completion for user:', user.id);
+    try {
+      await creditService.addCredits(user.id, 1, 'reward', 'Step goal completion');
 
-          // Refresh credits
-          const newCredits = await creditService.getUserCredits(user.id);
-          setCredits(newCredits);
+      // Refresh credits
+      const newCredits = await creditService.getUserCredits(user.id);
+      setCredits(newCredits);
 
-          console.log('Step goal claimed successfully, new credits:', newCredits);
-          Alert.alert('🚶‍♀️ Step Goal Reached!', 'You earned 1 credit for reaching your step goal!');
-        } catch (error) {
-          console.error('Error claiming step reward:', error);
-          Alert.alert('Error', 'Failed to claim step reward. Please try again.');
-        }
-    };
+      console.log('Step goal claimed successfully, new credits:', newCredits);
+      Alert.alert('🚶‍♀️ Step Goal Reached!', 'You earned 1 credit for reaching your step goal!');
+    } catch (error) {
+      console.error('Error claiming step reward:', error);
+      Alert.alert('Error', 'Failed to claim step reward. Please try again.');
+    }
+  };
 
   const handleMeditationComplete = async () => {
     if (!user || meditationCompleted) return;
@@ -222,11 +225,11 @@ export default function HomeScreen() {
 
       // Update local state
       setTasks(prev =>
-          prev.map(task =>
-              task.id === taskId
-                  ? { ...task, isCompleted: true, completedAt: new Date().toISOString() }
-                  : task
-          )
+        prev.map(task =>
+          task.id === taskId
+            ? { ...task, isCompleted: true, completedAt: new Date().toISOString() }
+            : task
+        )
       );
 
       // Refresh credits
@@ -243,8 +246,19 @@ export default function HomeScreen() {
   };
 
   const handleCreateTask = () => {
-    // Navigate to task creation screen
-    console.log('Navigate to create task');
+    setShowCreateTask(true);
+  };
+
+  const handleTaskCreated = async () => {
+    if (!user) return;
+
+    // Reload tasks after creation
+    try {
+      const todaysTasks = await taskService.getTodaysTasks(user.id);
+      setTasks(todaysTasks);
+    } catch (error) {
+      console.error('Error reloading tasks:', error);
+    }
   };
 
   const onRefresh = async () => {
@@ -268,118 +282,136 @@ export default function HomeScreen() {
   const totalExtraTasks = tasks.length;
 
   return (
-      <SafeAreaView style={styles.container}>
-        <LinearGradient
-            colors={['#8B5CF6', '#3B82F6']}
-            style={styles.header}
-        >
-          <View style={styles.headerContent}>
-            <View>
-              <Text style={styles.greeting}>Good morning! 👋</Text>
-              <Text style={styles.subtitle}>Ready to level up today?</Text>
-            </View>
-            <CreditDisplay credits={credits} size="large" />
+    <SafeAreaView style={styles.container}>
+      <LinearGradient
+        colors={['#8B5CF6', '#3B82F6']}
+        style={styles.header}
+      >
+        <View style={styles.headerContent}>
+          <View>
+            <Text style={styles.greeting}>Good morning! 👋</Text>
+            <Text style={styles.subtitle}>Ready to level up today?</Text>
+          </View>
+          <CreditDisplay credits={credits} size="large" />
+        </View>
+
+        <View style={styles.statsContainer}>
+          <View style={styles.statCard}>
+            <Calendar size={20} color="#8B5CF6" />
+            <Text style={styles.statNumber}>{streak}</Text>
+            <Text style={styles.statLabel}>Day Streak</Text>
           </View>
 
-          <View style={styles.statsContainer}>
-            <View style={styles.statCard}>
-              <Calendar size={20} color="#8B5CF6" />
-              <Text style={styles.statNumber}>{streak}</Text>
-              <Text style={styles.statLabel}>Day Streak</Text>
-            </View>
-
-            <View style={styles.statCard}>
-              <Zap size={20} color="#8B5CF6" />
-              <Text style={styles.statNumber}>{completedMainTasks}/3</Text>
-              <Text style={styles.statLabel}>Main Tasks</Text>
-            </View>
-
-            <View style={styles.statCard}>
-              <Plus size={20} color="#10B981" />
-              <Text style={styles.statNumber}>{completedExtraTasks}/{totalExtraTasks}</Text>
-              <Text style={styles.statLabel}>Extra Tasks</Text>
-            </View>
+          <View style={styles.statCard}>
+            <Zap size={20} color="#8B5CF6" />
+            <Text style={styles.statNumber}>{completedMainTasks}/3</Text>
+            <Text style={styles.statLabel}>Main Tasks</Text>
           </View>
-        </LinearGradient>
 
-        <ScrollView
-            style={styles.content}
-            refreshControl={
-              <RefreshControl refreshing={refreshing} onRefresh={onRefresh} />
-            }
-        >
-          <View style={styles.section}>
-            <Text style={styles.sectionTitle}>Main Tasks</Text>
+          <View style={styles.statCard}>
+            <Plus size={20} color="#10B981" />
+            <Text style={styles.statNumber}>{completedExtraTasks}/{totalExtraTasks}</Text>
+            <Text style={styles.statLabel}>Extra Tasks</Text>
+          </View>
+        </View>
+      </LinearGradient>
 
-            <MainTaskCard
-                title="Daily Login"
-                description="Check in to earn your daily credit"
-                isCompleted={dailyLoginCompleted}
-                onClaim={handleDailyLoginClaim}
+      <ScrollView
+        style={styles.content}
+        refreshControl={
+          <RefreshControl refreshing={refreshing} onRefresh={onRefresh} />
+        }
+      >
+        <View style={styles.section}>
+          <Text style={styles.sectionTitle}>Main Tasks</Text>
+
+          <MainTaskCard
+            title="Daily Login"
+            description="Check in to earn your daily credit"
+            isCompleted={dailyLoginCompleted}
+            onClaim={handleDailyLoginClaim}
+          />
+
+          <MainTaskCard
+            title="Step Counter"
+            description={`Walk ${stepData.goal.toLocaleString()} steps today`}
+            isCompleted={stepService.isGoalReached(stepData)}
+            onClaim={handleStepGoalComplete}
+          >
+            <StepCounter
+              stepData={stepData}
+              onUpdateGoal={handleUpdateStepGoal}
+              pedometerError={pedometerError}
             />
+          </MainTaskCard>
 
-            <MainTaskCard
-                title="Step Counter"
-                description={`Walk ${stepData.goal.toLocaleString()} steps today`}
-                isCompleted={stepService.isGoalReached(stepData)}
-                onClaim={handleStepGoalComplete}
-            >
-              <StepCounter
-                  stepData={stepData}
-                  onUpdateGoal={handleUpdateStepGoal}
-                  pedometerError={pedometerError}
-              />
-            </MainTaskCard>
+          <MainTaskCard
+            title="Meditation Timer"
+            description="Take time to meditate and relax"
+            isCompleted={meditationCompleted}
+            onClaim={() => { }} // Handled by timer component
+          >
+            <MeditationTimer onComplete={handleMeditationComplete} />
+          </MainTaskCard>
+        </View>
 
-            <MainTaskCard
-                title="Meditation Timer"
-                description="Take time to meditate and relax"
-                isCompleted={meditationCompleted}
-                onClaim={() => {}} // Handled by timer component
-            >
-              <MeditationTimer onComplete={handleMeditationComplete} />
-            </MainTaskCard>
+        <View style={styles.section}>
+          <View style={styles.sectionHeader}>
+            <Text style={styles.sectionTitle}>Extra Tasks</Text>
+            <GradientButton
+              title="Add Task"
+              onPress={handleCreateTask}
+              size="small"
+              style={styles.addButton}
+              disabled={totalExtraTasks >= 5}
+            />
           </View>
 
-          <View style={styles.section}>
-            <View style={styles.sectionHeader}>
-              <Text style={styles.sectionTitle}>Extra Tasks</Text>
-              <GradientButton
-                  title="Add Task"
-                  onPress={handleCreateTask}
-                  size="small"
-                  style={styles.addButton}
-              />
+          <Text style={styles.taskLimitText}>
+            {totalExtraTasks}/5 tasks created today
+          </Text>
+
+          {totalExtraTasks === 0 ? (
+            <View style={styles.emptyState}>
+              <Plus size={48} color="#D1D5DB" />
+              <Text style={styles.emptyText}>No tasks yet</Text>
+              <Text style={styles.emptySubtext}>Create your first extra task!</Text>
             </View>
-
-            <Text style={styles.taskLimitText}>Only 2 tasks can be created</Text>
-
-            {totalExtraTasks === 0 ? (
-                <View style={styles.emptyState}>
-                  <Plus size={48} color="#D1D5DB" />
-                  <Text style={styles.emptyText}>No tasks yet</Text>
-                  <Text style={styles.emptySubtext}>Create your first extra task!</Text>
-                </View>
-            ) : (
-                <Text style={styles.comingSoon}>Extra tasks coming soon...</Text>
-            )}
-          </View>
-
-          {completedMainTasks === 3 && (
-              <View style={styles.congratsCard}>
-                <LinearGradient
-                    colors={['#10B981', '#059669']}
-                    style={styles.congratsGradient}
-                >
-                  <Text style={styles.congratsTitle}>🎉 Main Tasks Complete!</Text>
-                  <Text style={styles.congratsText}>
-                    You've completed all your main tasks for today. Great job!
-                  </Text>
-                </LinearGradient>
-              </View>
+          ) : (
+            <View style={styles.tasksList}>
+              {tasks.map((task) => (
+                <TaskCard
+                  key={task.id}
+                  task={task}
+                  onComplete={handleCompleteTask}
+                />
+              ))}
+            </View>
           )}
-        </ScrollView>
-      </SafeAreaView>
+        </View>
+
+        {completedMainTasks === 3 && (
+          <View style={styles.congratsCard}>
+            <LinearGradient
+              colors={['#10B981', '#059669']}
+              style={styles.congratsGradient}
+            >
+              <Text style={styles.congratsTitle}>🎉 Main Tasks Complete!</Text>
+              <Text style={styles.congratsText}>
+                You've completed all your main tasks for today. Great job!
+              </Text>
+            </LinearGradient>
+          </View>
+        )}
+      </ScrollView>
+
+      <CreateTaskModal
+        visible={showCreateTask}
+        onClose={() => setShowCreateTask(false)}
+        onTaskCreated={handleTaskCreated}
+        userId={user?.id || ''}
+      />
+    </SafeAreaView>
   );
 }
 
@@ -483,12 +515,8 @@ const styles = StyleSheet.create({
     marginTop: 8,
     textAlign: 'center',
   },
-  comingSoon: {
-    fontSize: 16,
-    color: '#9CA3AF',
-    textAlign: 'center',
-    fontStyle: 'italic',
-    paddingVertical: 32,
+  tasksList: {
+    gap: 8,
   },
   congratsCard: {
     margin: 20,

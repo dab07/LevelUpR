@@ -3,106 +3,109 @@ import { Task } from '@/types';
 import { creditService } from './creditService';
 
 class TaskService {
-  async createTask(userId: string, taskData: Omit<Task, 'id' | 'userId' | 'isCompleted' | 'completedAt' | 'createdAt' | 'updatedAt'>): Promise<Task> {
-    // Check if user already has 5 tasks for today
-    const todayStart = new Date();
-    todayStart.setHours(0, 0, 0, 0);
+    async createTask(userId: string, taskData: Omit<Task, 'id' | 'userId' | 'isCompleted' | 'completedAt' | 'createdAt' | 'updatedAt'>): Promise<Task> {
+        // Check if user already has 5 tasks for today
+        const todayStart = new Date();
+        todayStart.setHours(0, 0, 0, 0);
+        const todayEnd = new Date();
+        todayEnd.setHours(23, 59, 59, 999);
 
-    const { data: existingTasks, error: countError } = await supabase
-        .from('tasks')
-        .select('id')
-        .eq('user_id', userId)
-        .gte('created_at', todayStart.toISOString())
-        .eq('is_daily', true);
+        const { data: existingTasks, error: countError } = await supabase
+            .from('tasks')
+            .select('id')
+            .eq('user_id', userId)
+            .gte('created_at', todayStart.toISOString())
+            .lte('created_at', todayEnd.toISOString())
+            .eq('is_daily', true);
 
-    if (countError) throw countError;
+        if (countError) throw countError;
 
-    if (existingTasks && existingTasks.length >= 5) {
-      throw new Error('Maximum of 5 daily tasks allowed');
+        if (existingTasks && existingTasks.length >= 5) {
+            throw new Error('Maximum of 5 daily tasks allowed');
+        }
+
+        const { data, error } = await supabase
+            .from('tasks')
+            .insert({
+                user_id: userId,
+                title: taskData.title,
+                description: taskData.description,
+                is_daily: taskData.isDaily,
+                credit_reward: taskData.creditReward,
+                due_date: taskData.dueDate,
+                category: taskData.category,
+            })
+            .select()
+            .single();
+
+        if (error) throw error;
+        return data;
     }
 
-    const { data, error } = await supabase
-        .from('tasks')
-        .insert({
-          user_id: userId,
-          title: taskData.title,
-          description: taskData.description,
-          is_daily: taskData.isDaily,
-          credit_reward: taskData.creditReward,
-          due_date: taskData.dueDate,
-          category: taskData.category,
-        })
-        .select()
-        .single();
+    async completeTask(taskId: string, userId: string): Promise<void> {
+        const { data: task, error: fetchError } = await supabase
+            .from('tasks')
+            .select('*')
+            .eq('id', taskId)
+            .eq('user_id', userId)
+            .single();
 
-    if (error) throw error;
-    return data;
-  }
+        if (fetchError) throw fetchError;
 
-  async completeTask(taskId: string, userId: string): Promise<void> {
-    const { data: task, error: fetchError } = await supabase
-        .from('tasks')
-        .select('*')
-        .eq('id', taskId)
-        .eq('user_id', userId)
-        .single();
+        if (task.is_completed) {
+            throw new Error('Task already completed');
+        }
 
-    if (fetchError) throw fetchError;
+        const { error: updateError } = await supabase
+            .from('tasks')
+            .update({
+                is_completed: true,
+                completed_at: new Date().toISOString(),
+            })
+            .eq('id', taskId);
 
-    if (task.is_completed) {
-      throw new Error('Task already completed');
+        if (updateError) throw updateError;
+
+        // Award credits
+        await creditService.addCredits(
+            userId,
+            task.credit_reward,
+            'reward',
+            `Task completion: ${task.title}`,
+            taskId
+        );
+
+        // Update user XP and stats
+        await this.updateUserProgress(userId);
     }
 
-    const { error: updateError } = await supabase
-        .from('tasks')
-        .update({
-          is_completed: true,
-          completed_at: new Date().toISOString(),
-        })
-        .eq('id', taskId);
+    async getTodaysTasks(userId: string): Promise<Task[]> {
+        const todayStart = new Date();
+        todayStart.setHours(0, 0, 0, 0);
+        const todayEnd = new Date();
+        todayEnd.setHours(23, 59, 59, 999);
 
-    if (updateError) throw updateError;
+        const { data, error } = await supabase
+            .from('tasks')
+            .select('*')
+            .eq('user_id', userId)
+            .eq('is_daily', true)
+            .gte('created_at', todayStart.toISOString())
+            .lte('created_at', todayEnd.toISOString())
+            .order('created_at', { ascending: true });
 
-    // Award credits
-    await creditService.addCredits(
-        userId,
-        task.credit_reward,
-        'reward',
-        `Task completion: ${task.title}`,
-        taskId
-    );
+        if (error) throw error;
+        return data || [];
+    }
 
-    // Update user XP and stats
-    await this.updateUserProgress(userId);
-  }
+    private async updateUserProgress(userId: string): Promise<void> {
+        const { error } = await supabase.rpc('update_user_progress', {
+            user_id: userId,
+            xp_gained: 10, // Base XP per task
+        });
 
-  async getTodaysTasks(userId: string): Promise<Task[]> {
-    const todayStart = new Date();
-    todayStart.setHours(0, 0, 0, 0);
-    const todayEnd = new Date();
-    todayEnd.setHours(23, 59, 59, 999);
-
-    const { data, error } = await supabase
-        .from('tasks')
-        .select('*')
-        .eq('user_id', userId)
-        .eq('is_daily', true)
-        .gte('created_at', todayStart.toISOString())
-        .lte('created_at', todayEnd.toISOString())
-        .order('created_at', { ascending: true });
-
-    if (error) throw error;
-    return data || [];
-  }
-
-  private async updateUserProgress(userId: string): Promise<void> {
-    const { error } = await supabase.rpc('update_user_progress', {
-      user_id: userId,
-      xp_gained: 10, // Base XP per task
-    });
-
-    if (error) throw error;
-  }
+        if (error) throw error;
+    }
 }
 
 export const taskService = new TaskService();

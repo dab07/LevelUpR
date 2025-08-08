@@ -24,6 +24,7 @@ interface BettingModalProps {
     onClose: () => void;
     challenge: Challenge | null;
     onBetPlaced: () => void;
+    userCredits?: number; // Optional prop to pass current credits from parent
 }
 
 interface PhotoSubmission {
@@ -39,7 +40,7 @@ interface VotingData {
     description: string;
 }
 
-export default function BettingModal({ visible, onClose, challenge, onBetPlaced }: BettingModalProps) {
+export default function BettingModal({ visible, onClose, challenge, onBetPlaced, userCredits: parentUserCredits }: BettingModalProps) {
     // Betting state
     const [betType, setBetType] = useState<'yes' | 'no'>('yes');
     const [betAmount, setBetAmount] = useState('');
@@ -54,14 +55,31 @@ export default function BettingModal({ visible, onClose, challenge, onBetPlaced 
     });
     const [uploadingPhotos, setUploadingPhotos] = useState(false);
     const [uploadProgress, setUploadProgress] = useState(0);
+    const [currentUser, setCurrentUser] = useState<any>(null);
 
     // Initialize betting amount when challenge changes
     useEffect(() => {
         if (visible && challenge?.minimumBet) {
             setBetAmount(challenge.minimumBet.toString());
             loadUserCredits();
+            loadCurrentUser();
         }
     }, [visible, challenge]);
+
+    // Reload credits whenever modal becomes visible to ensure fresh data
+    useEffect(() => {
+        if (visible) {
+            loadUserCredits();
+        }
+    }, [visible]);
+
+    // Sync with parent credits if provided
+    useEffect(() => {
+        if (parentUserCredits !== undefined) {
+            setUserCredits(parentUserCredits);
+            console.log('BettingModal: Synced with parent credits:', parentUserCredits);
+        }
+    }, [parentUserCredits]);
 
     // Reset state when modal closes
     useEffect(() => {
@@ -84,9 +102,24 @@ export default function BettingModal({ visible, onClose, challenge, onBetPlaced 
             if (user) {
                 const credits = await creditService.getUserCredits(user.id);
                 setUserCredits(credits);
+                setCurrentUser(user);
+                console.log('BettingModal: Loaded user credits:', credits);
+            } else {
+                console.log('BettingModal: No user found');
+                setUserCredits(0);
             }
         } catch (error) {
             console.error('Error loading user credits:', error);
+            setUserCredits(0);
+        }
+    };
+
+    const loadCurrentUser = async () => {
+        try {
+            const { data: { user } } = await supabase.auth.getUser();
+            setCurrentUser(user);
+        } catch (error) {
+            console.error('Error loading current user:', error);
         }
     };
 
@@ -134,6 +167,11 @@ export default function BettingModal({ visible, onClose, challenge, onBetPlaced 
             return;
         }
 
+        if (!currentUser) {
+            Alert.alert('Error', 'User not authenticated');
+            return;
+        }
+
         const amount = parseInt(betAmount);
 
         if (isNaN(amount) || amount < safeChallenge.minimumBet) {
@@ -148,18 +186,23 @@ export default function BettingModal({ visible, onClose, challenge, onBetPlaced 
 
         setLoading(true);
         try {
-            const { data: { user } } = await supabase.auth.getUser();
-            if (!user) throw new Error('User not authenticated');
+            await challengeService.placeBet(currentUser.id, challenge.id, betType, amount);
 
-            await challengeService.placeBet(user.id, challenge.id, betType, amount);
+            // Refresh user credits after successful bet and update local state
+            const newCredits = await creditService.getUserCredits(currentUser.id);
+            setUserCredits(newCredits);
+            console.log('BettingModal: Credits after bet placement:', newCredits);
 
             Alert.alert(
                 'Bet Placed!',
                 `You bet ${amount} credits on "${betType.toUpperCase()}" for this challenge.`,
-                [{ text: 'OK', onPress: () => {
+                [{
+                    text: 'OK', onPress: () => {
+                        // Call onBetPlaced to refresh parent component data
                         onBetPlaced();
                         onClose();
-                    }}]
+                    }
+                }]
             );
         } catch (error: any) {
             console.error('Error placing bet:', error);
@@ -269,7 +312,7 @@ export default function BettingModal({ visible, onClose, challenge, onBetPlaced 
                 const blob = await response.blob();
 
                 // Generate unique filename
-                const fileName = `${challenge.id}/${Date.now()}_${i + 1}.jpg`;
+                const fileName = `${currentUser.id}/${challenge.id}/${Date.now()}_${i + 1}.jpg`;
 
                 // Upload to Supabase storage
                 const { data, error } = await supabase.storage
@@ -295,10 +338,12 @@ export default function BettingModal({ visible, onClose, challenge, onBetPlaced 
             Alert.alert(
                 'Proof Submitted!',
                 'Your proof has been uploaded successfully. The voting period has started.',
-                [{ text: 'OK', onPress: () => {
+                [{
+                    text: 'OK', onPress: () => {
                         onBetPlaced(); // Refresh challenge data
                         onClose();
-                    }}]
+                    }
+                }]
             );
 
         } catch (error) {

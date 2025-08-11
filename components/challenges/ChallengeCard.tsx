@@ -82,79 +82,80 @@ export default function ChallengeCard({
     };
 
     const handleSubmitProof = async () => {
-        // setSubmittingProof(true);
-        // try {
-        //     // Simulate proof submission
-        //     await challengeService.submitProof(
-        //         challenge.id,
-        //         'mock_image_url.jpg'
-        //     );
-        //     Alert.alert('Success', 'Proof submitted! Voting period has started.');
-        //     onBetPlaced(); // Refresh challenge data
-        // } catch (error) {
-        //     console.error('Error submitting proof:', error);
-        //     Alert.alert('Error', 'Failed to submit proof. Please try again.');
-        // } finally {
-        //     setSubmittingProof(false);
-        // }
-        Alert.alert(
-            'Submit Proof',
-            'Photo upload feature coming soon! For now, proof submission is simulated.',
-            [
-                { text: 'Cancel', style: 'cancel' },
-                {
-                    text: 'Submit',
-                    onPress: async () => {
-                        setSubmittingProof(true);
-                        try {
-                            // Simulate proof submission
-                            await challengeService.submitProof(
-                                challenge.id,
-                                'mock_image_url.jpg'
-                            );
-                            Alert.alert('Success', 'Proof submitted! Voting period has started.');
-                            onBetPlaced(); // Refresh challenge data
-                        } catch (error) {
-                            console.error('Error submitting proof:', error);
-                            Alert.alert('Error', 'Failed to submit proof. Please try again.');
-                        } finally {
-                            setSubmittingProof(false);
-                        }
-                    }
-                }
-            ]
-        );
+        setSubmittingProof(true);
+        try {
+            // Simulate proof submission
+            await challengeService.submitProof(
+                challenge.id,
+                'mock_image_url.jpg'
+            );
+            console.log("Proof Submitted")
+            Alert.alert('Success', 'Proof submitted! Voting period has started.');
+            onBetPlaced(); // Refresh challenge data
+        } catch (error) {
+            console.error('Error submitting proof:', error);
+            Alert.alert('Error', 'Failed to submit proof. Please try again.');
+        } finally {
+            setSubmittingProof(false);
+        }
+        // Alert.alert(
+        //     'Submit Proof',
+        //     'Photo upload feature coming soon! For now, proof submission is simulated.',
+        //     [
+        //         { text: 'Cancel', style: 'cancel' },
+        //         {
+        //             text: 'Submit',
+        //             onPress: async () => {
+        //                 setSubmittingProof(true);
+        //                 try {
+        //                     // Simulate proof submission
+        //                     await challengeService.submitProof(
+        //                         challenge.id,
+        //                         'mock_image_url.jpg'
+        //                     );
+        //                     Alert.alert('Success', 'Proof submitted! Voting period has started.');
+        //                     onBetPlaced(); // Refresh challenge data
+        //                 } catch (error) {
+        //                     console.error('Error submitting proof:', error);
+        //                     Alert.alert('Error', 'Failed to submit proof. Please try again.');
+        //                 } finally {
+        //                     setSubmittingProof(false);
+        //                 }
+        //             }
+        //         }
+        //     ]
+        // );
     };
 
-    const handleVote = (vote: 'yes' | 'no') => {
-        // try {
-        //     await challengeService.voteOnCompletion(challenge.id, vote);
-        //     Alert.alert('Success', 'Vote submitted successfully!');
-        //     onVoteSubmitted();
-        // } catch (error: any) {
-        //     console.error('Error voting:', error);
-        //     Alert.alert('Error', error.message || 'Failed to submit vote.');
-        // }
-        Alert.alert(
-            'Cast Vote',
-            `Vote "${vote.toUpperCase()}" on this challenge completion?`,
-            [
-                { text: 'Cancel', style: 'cancel' },
-                {
-                    text: 'Confirm',
-                    onPress: async () => {
-                        try {
-                            await challengeService.voteOnCompletion(challenge.id, vote);
-                            Alert.alert('Success', 'Vote submitted successfully!');
-                            onVoteSubmitted();
-                        } catch (error: any) {
-                            console.error('Error voting:', error);
-                            Alert.alert('Error', error.message || 'Failed to submit vote.');
-                        }
-                    }
-                }
-            ]
-        );
+    const handleVote = async (vote: 'yes' | 'no') => {
+        try {
+            await challengeService.voteOnCompletion(challenge.id, vote);
+            Alert.alert('Success', 'Vote submitted successfully!');
+            onVoteSubmitted();
+        } catch (error: any) {
+            console.error('Error voting:', error);
+            Alert.alert('Error', error.message || 'Failed to submit vote.');
+        }
+        // Alert.alert(
+        //     'Cast Vote',
+        //     `Vote "${vote.toUpperCase()}" on this challenge completion?`,
+        //     [
+        //         { text: 'Cancel', style: 'cancel' },
+        //         {
+        //             text: 'Confirm',
+        //             onPress: async () => {
+        //                 try {
+        //                     await challengeService.voteOnCompletion(challenge.id, vote);
+        //                     Alert.alert('Success', 'Vote submitted successfully!');
+        //                     onVoteSubmitted();
+        //                 } catch (error: any) {
+        //                     console.error('Error voting:', error);
+        //                     Alert.alert('Error', error.message || 'Failed to submit vote.');
+        //                 }
+        //             }
+        //         }
+        //     ]
+        // );
     };
 
     const getTotalPool = () => {
@@ -309,6 +310,7 @@ export default function ChallengeCard({
                     setShowBettingModal(false);
                     onBetPlaced();
                 }}
+                isCreator={isCreator}
             />
         </>
     );

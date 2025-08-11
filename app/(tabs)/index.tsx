@@ -48,7 +48,7 @@ export default function HomeScreen() {
 
       setUser(user);
       await loadUserData(user.id);
-      // await processDailyLogin(user.id);
+      await checkDailyLoginStatus(user.id);
       await initializePedometer();
       await checkMeditationStatus();
     } catch (error) {
@@ -125,24 +125,26 @@ export default function HomeScreen() {
     return data;
   };
 
-  // const processDailyLogin = async (userId: string) => {
-  //   try {
-  //     const rewardGiven = await creditService.processDailyLogin(userId);
-  //     setDailyLoginCompleted(!rewardGiven); // If reward was given, login wasn't completed before
-  //     if (rewardGiven) {
-  //       Alert.alert(
-  //           '🎉 Daily Reward!',
-  //           'You received 1 credit for logging in today!',
-  //           [{ text: 'Awesome!', style: 'default' }]
-  //       );
-  //       // Refresh credits after reward
-  //       const newCredits = await creditService.getUserCredits(userId);
-  //       setCredits(newCredits);
-  //     }
-  //   } catch (error) {
-  //     console.error('Error processing daily login:', error);
-  //   }
-  // };
+  const checkDailyLoginStatus = async (userId: string) => {
+    try {
+      // Check if user has already claimed daily login today
+      const { data: user, error } = await supabase
+        .from('users')
+        .select('last_login_date')
+        .eq('id', userId)
+        .single();
+
+      if (error) throw error;
+
+      const today = new Date().toISOString().split('T')[0];
+      const lastLogin = user.last_login_date?.split('T')[0];
+
+      // If last login was today, daily login is already completed
+      setDailyLoginCompleted(lastLogin === today);
+    } catch (error) {
+      console.error('Error checking daily login status:', error);
+    }
+  };
 
   const handleDailyLoginClaim = async () => {
     if (!user || dailyLoginCompleted) return;
@@ -150,8 +152,43 @@ export default function HomeScreen() {
     console.log('Claiming daily login for user:', user.id);
 
     try {
+      // Implement daily login logic directly to avoid import issues
+      const { data: userProfile, error } = await supabase
+        .from('users')
+        .select('last_login_date, daily_login_streak')
+        .eq('id', user.id)
+        .single();
+
+      if (error) throw error;
+
+      const today = new Date().toISOString().split('T')[0];
+      const lastLogin = userProfile.last_login_date?.split('T')[0];
+
+      if (lastLogin === today) {
+        Alert.alert('Already Claimed', 'You have already claimed your daily login reward today.');
+        setDailyLoginCompleted(true);
+        return;
+      }
+
+      // Calculate new streak
+      const isConsecutive = lastLogin === new Date(Date.now() - 86400000).toISOString().split('T')[0];
+      const newStreak = isConsecutive ? userProfile.daily_login_streak + 1 : 1;
+
+      // Update user's last login date and streak
+      await supabase
+        .from('users')
+        .update({
+          last_login_date: new Date().toISOString(),
+          daily_login_streak: newStreak,
+        })
+        .eq('id', user.id);
+
+      // Add credits
       await creditService.addCredits(user.id, 1, 'reward', 'Daily login reward');
+
+      // Update local state
       setDailyLoginCompleted(true);
+      setStreak(newStreak);
 
       // Refresh credits
       const newCredits = await creditService.getUserCredits(user.id);
@@ -267,6 +304,7 @@ export default function HomeScreen() {
     setRefreshing(true);
     await Promise.all([
       loadUserData(user.id),
+      checkDailyLoginStatus(user.id),
       checkMeditationStatus(),
     ]);
     setRefreshing(false);

@@ -156,7 +156,31 @@ class ChallengeService {
             .order('created_at', { ascending: false });
 
         if (error) throw error;
-        return data || [];
+        
+        // Map database fields to TypeScript interface
+        const mappedData = (data || []).map(challenge => ({
+            id: challenge.id,
+            creatorId: challenge.creator_id,
+            title: challenge.title,
+            description: challenge.description,
+            minimumBet: challenge.minimum_bet,
+            deadline: challenge.deadline,
+            isGlobal: challenge.is_global,
+            groupId: challenge.group_id,
+            status: challenge.status,
+            proofImageUrl: challenge.proof_image_url,
+            proofSubmittedAt: challenge.proof_submitted_at,
+            votingEndsAt: challenge.voting_ends_at,
+            totalYesBets: challenge.total_yes_bets,
+            totalNoBets: challenge.total_no_bets,
+            totalCreditsPool: challenge.total_credits_pool,
+            isCompleted: challenge.is_completed,
+            completionVotes: challenge.completion_votes,
+            createdAt: challenge.created_at,
+            updatedAt: challenge.updated_at
+        }));
+        
+        return mappedData;
     }
 
     async finalizeChallenge(challengeId: string): Promise<void> {
@@ -257,7 +281,31 @@ class ChallengeService {
         const { data, error } = await query.order('created_at', { ascending: false });
 
         if (error) throw error;
-        return data || [];
+        
+        // Map database fields to TypeScript interface
+        const mappedData = (data || []).map(challenge => ({
+            id: challenge.id,
+            creatorId: challenge.creator_id,
+            title: challenge.title,
+            description: challenge.description,
+            minimumBet: challenge.minimum_bet,
+            deadline: challenge.deadline,
+            isGlobal: challenge.is_global,
+            groupId: challenge.group_id,
+            status: challenge.status,
+            proofImageUrl: challenge.proof_image_url,
+            proofSubmittedAt: challenge.proof_submitted_at,
+            votingEndsAt: challenge.voting_ends_at,
+            totalYesBets: challenge.total_yes_bets,
+            totalNoBets: challenge.total_no_bets,
+            totalCreditsPool: challenge.total_credits_pool,
+            isCompleted: challenge.is_completed,
+            completionVotes: challenge.completion_votes,
+            createdAt: challenge.created_at,
+            updatedAt: challenge.updated_at
+        }));
+        
+        return mappedData;
     }
 }
 

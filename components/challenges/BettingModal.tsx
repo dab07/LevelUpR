@@ -25,6 +25,7 @@ interface BettingModalProps {
     challenge: Challenge | null;
     onBetPlaced: () => void;
     userCredits?: number; // Optional prop to pass current credits from parent
+    isCreator?: boolean; // Whether the current user is the creator of the challenge
 }
 
 interface PhotoSubmission {
@@ -40,7 +41,7 @@ interface VotingData {
     description: string;
 }
 
-export default function BettingModal({ visible, onClose, challenge, onBetPlaced, userCredits: parentUserCredits }: BettingModalProps) {
+export default function BettingModal({ visible, onClose, challenge, onBetPlaced, userCredits: parentUserCredits, isCreator = false }: BettingModalProps) {
     // Betting state
     const [betType, setBetType] = useState<'yes' | 'no'>('yes');
     const [betAmount, setBetAmount] = useState('');
@@ -48,7 +49,7 @@ export default function BettingModal({ visible, onClose, challenge, onBetPlaced,
     const [userCredits, setUserCredits] = useState(0);
 
     // Voting/Photo submission state
-    const [showVotingSection, setShowVotingSection] = useState(false);
+    const [showVotingSection, setShowVotingSection] = useState(isCreator);
     const [votingData, setVotingData] = useState<VotingData>({
         photos: [],
         description: ''
@@ -91,7 +92,7 @@ export default function BettingModal({ visible, onClose, challenge, onBetPlaced,
     const resetModalState = () => {
         setBetType('yes');
         setBetAmount('');
-        setShowVotingSection(false);
+        setShowVotingSection(isCreator);
         setVotingData({ photos: [], description: '' });
         setUploadProgress(0);
     };
@@ -373,7 +374,7 @@ export default function BettingModal({ visible, onClose, challenge, onBetPlaced,
                         <X size={24} color="#6B7280" />
                     </TouchableOpacity>
                     <Text style={styles.title}>
-                        {showVotingSection ? 'Submit Proof' : 'Place Your Bet'}
+                        {isCreator ? 'Submit Proof' : (showVotingSection ? 'Submit Proof' : 'Place Your Bet')}
                     </Text>
                     <View style={styles.placeholder} />
                 </View>
@@ -601,8 +602,8 @@ export default function BettingModal({ visible, onClose, challenge, onBetPlaced,
                     )}
                 </View>
 
-                {/* Toggle to voting section button */}
-                {!showVotingSection && safeChallenge.status === 'active' && (
+                {/* Toggle to voting section button - only for non-creators */}
+                {!isCreator && !showVotingSection && safeChallenge.status === 'active' && (
                     <TouchableOpacity
                         onPress={() => setShowVotingSection(true)}
                         style={styles.toggleButton}

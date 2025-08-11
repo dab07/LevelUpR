@@ -45,32 +45,32 @@ export default function ProfileScreen() {
     };
 
     const handleLogout = async () => {
-        // const success = await profileService.logout();
-        //     if (success) {
-        //         router.replace('/auth');
-        //     } else {
-        //         console.log("Unable to LogOut", success);
-        //         Alert.alert('Error', 'Failed to logout. Please try again.');
-        //     }
-        Alert.alert(
-            'Logout',
-            'Are you sure you want to logout?',
-            [
-                {text: 'Cancel', style: 'cancel'},
-                {
-                    text: 'Logout',
-                    style: 'destructive',
-                    onPress: async () => {
-                        const success = await profileService.logout();
-                        if (success) {
-                            router.replace('/auth');
-                        } else {
-                            Alert.alert('Error', 'Failed to logout. Please try again.');
-                        }
-                    },
-                },
-            ]
-        );
+        const success = await profileService.logout();
+            if (success) {
+                router.replace('/auth');
+            } else {
+                console.log("Unable to LogOut", success);
+                Alert.alert('Error', 'Failed to logout. Please try again.');
+            }
+        // Alert.alert(
+        //     'Logout',
+        //     'Are you sure you want to logout?',
+        //     [
+        //         {text: 'Cancel', style: 'cancel'},
+        //         {
+        //             text: 'Logout',
+        //             style: 'destructive',
+        //             onPress: async () => {
+        //                 const success = await profileService.logout();
+        //                 if (success) {
+        //                     router.replace('/auth');
+        //                 } else {
+        //                     Alert.alert('Error', 'Failed to logout. Please try again.');
+        //                 }
+        //             },
+        //         },
+        //     ]
+        // );
     };
     const handleProfileUpdate = (updatedUserProfile: User) => {
         setUserData(updatedUserProfile);

@@ -45,36 +45,36 @@ class CreditService {
     return true;
   }
 
-  // async processDailyLogin(userId: string): Promise<boolean> {
-  //   const { data: user, error } = await supabase
-  //       .from('users')
-  //       .select('last_login_date, daily_login_streak')
-  //       .eq('id', userId)
-  //       .single();
+  async processDailyLogin(userId: string): Promise<boolean> {
+    const { data: user, error } = await supabase
+        .from('users')
+        .select('last_login_date, daily_login_streak')
+        .eq('id', userId)
+        .single();
 
-  //   if (error) throw error;
+    if (error) throw error;
 
-  //   const today = new Date().toISOString().split('T')[0];
-  //   const lastLogin = user.last_login_date?.split('T')[0];
+    const today = new Date().toISOString().split('T')[0];
+    const lastLogin = user.last_login_date?.split('T')[0];
 
-  //   if (lastLogin === today) {
-  //     return false; // Already logged in today
-  //   }
+    if (lastLogin === today) {
+      return false; // Already logged in today
+    }
 
-  //   const isConsecutive = lastLogin === new Date(Date.now() - 86400000).toISOString().split('T')[0];
-  //   const newStreak = isConsecutive ? user.daily_login_streak + 1 : 1;
+    const isConsecutive = lastLogin === new Date(Date.now() - 86400000).toISOString().split('T')[0];
+    const newStreak = isConsecutive ? user.daily_login_streak + 1 : 1;
 
-  //   await supabase
-  //       .from('users')
-  //       .update({
-  //         last_login_date: new Date().toISOString(),
-  //         daily_login_streak: newStreak,
-  //       })
-  //       .eq('id', userId);
+    await supabase
+        .from('users')
+        .update({
+          last_login_date: new Date().toISOString(),
+          daily_login_streak: newStreak,
+        })
+        .eq('id', userId);
 
-  //   await this.addCredits(userId, 1, 'reward', 'Daily login reward');
-  //   return true;
-  // }
+    await this.addCredits(userId, 1, 'reward', 'Daily login reward');
+    return true;
+  }
 
   async getTransactionHistory(userId: string, limit = 50): Promise<CreditTransaction[]> {
     const { data, error } = await supabase

@@ -8,7 +8,7 @@ interface MeditationTimerProps {
     onComplete: () => void;
 }
 
-const DURATION_OPTIONS = [5, 10, 15, 20, 30, 45, 60]; // minutes
+const DURATION_OPTIONS = [1, 5, 10, 15, 20, 30, 45, 60]; // minutes
 
 export default function MeditationTimer({ onComplete }: MeditationTimerProps) {
     const [duration, setDuration] = useState(10); // minutes

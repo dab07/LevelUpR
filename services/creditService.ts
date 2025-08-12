@@ -62,7 +62,7 @@ class CreditService {
     }
 
     const isConsecutive = lastLogin === new Date(Date.now() - 86400000).toISOString().split('T')[0];
-    const newStreak = isConsecutive ? user.daily_login_streak + 1 : 1;
+    const newStreak = isConsecutive ? user.daily_login_streak + 1 : 0;
 
     await supabase
         .from('users')

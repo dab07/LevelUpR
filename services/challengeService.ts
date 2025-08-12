@@ -76,20 +76,45 @@ class ChallengeService {
         });
     }
 
-    async submitProof(challengeId: string, imageUrl: string): Promise<void> {
+    async submitProof(challengeId: string, imageUrl: string, description?: string): Promise<void> {
         const userId = await getCurrentUserId();
         if (!userId) throw new Error('User not authenticated');
+
+        // Check if we're in the correct time window for proof submission
+        const { data: challenge, error: challengeError } = await supabase
+            .from('challenges')
+            .select('deadline, status, creator_id')
+            .eq('id', challengeId)
+            .single();
+
+        if (challengeError) throw challengeError;
+
+        if (challenge.creator_id !== userId) {
+            throw new Error('Only the challenge creator can submit proof');
+        }
+
+        const now = new Date();
+        const deadline = new Date(challenge.deadline);
+        const proofDeadline = new Date(deadline.getTime() + 3 * 60 * 60 * 1000); // 3 hours after deadline
+
+        if (now < deadline) {
+            throw new Error('Cannot submit proof before the challenge deadline');
+        }
+
+        if (now > proofDeadline) {
+            throw new Error('Proof submission deadline has passed');
+        }
 
         const { error } = await supabase
             .from('challenges')
             .update({
                 proof_image_url: imageUrl,
+                proof_description: description,
                 proof_submitted_at: new Date().toISOString(),
                 status: 'voting',
                 voting_ends_at: new Date(Date.now() + 6 * 60 * 60 * 1000).toISOString(), // 6 hours from now
             })
-            .eq('id', challengeId)
-            .eq('creator_id', userId);
+            .eq('id', challengeId);
 
         if (error) throw error;
     }
@@ -145,7 +170,19 @@ class ChallengeService {
             .single();
 
         if (error && error.code !== 'PGRST116') throw error;
-        return data;
+        
+        if (!data) return null;
+
+        // Map database fields to TypeScript interface
+        return {
+            id: data.id,
+            userId: data.user_id,
+            challengeId: data.challenge_id,
+            betType: data.bet_type,
+            amount: data.amount,
+            payout: data.payout,
+            createdAt: data.created_at
+        };
     }
 
     async getGroupChallenges(groupId: string): Promise<Challenge[]> {

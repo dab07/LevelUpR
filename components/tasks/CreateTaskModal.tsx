@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useState, useRef } from 'react';
 import {
     View,
     Text,
@@ -9,8 +9,9 @@ import {
     ScrollView,
     Alert,
     ActivityIndicator,
+    Dimensions,
 } from 'react-native';
-import { X, Plus, Calendar, Star, Tag, ChevronRight } from 'lucide-react-native';
+import { X, Plus, Calendar, Star, Tag, ChevronRight, Rows } from 'lucide-react-native';
 import { taskService } from '@/services/taskService';
 import { Task } from '@/types';
 
@@ -40,12 +41,19 @@ export default function CreateTaskModal({
         description: '',
         category: 'personal' as Task['category'],
         dueDate: new Date(),
-        dueHour: 23,
-        dueMinute: 59,
+        dueHour: Math.min(23, new Date().getHours() + 1), // Default to next hour, max 23
+        dueMinute: 0, // Default to top of the hour
     });
-    const [showDatePicker, setShowDatePicker] = useState(false);
+    const [showDateTimePopup, setShowDateTimePopup] = useState(false);
     const [showYearPicker, setShowYearPicker] = useState(false);
+    const [tempHour, setTempHour] = useState(Math.min(23, new Date().getHours() + 1));
+    const [tempMinute, setTempMinute] = useState(0);
+    const [tempDate, setTempDate] = useState(new Date());
     const [loading, setLoading] = useState(false);
+
+    const hourScrollRef = useRef<ScrollView>(null);
+    const minuteScrollRef = useRef<ScrollView>(null);
+    const ITEM_HEIGHT = 50;
 
     const handleSubmit = async () => {
         if (!formData.title.trim()) {
@@ -111,10 +119,10 @@ export default function CreateTaskModal({
             description: '',
             category: 'personal',
             dueDate: new Date(),
-            dueHour: 23,
-            dueMinute: 59,
+            dueHour: Math.min(23, new Date().getHours() + 1),
+            dueMinute: 0,
         });
-        setShowDatePicker(false);
+        setShowDateTimePopup(false);
         setShowYearPicker(false);
         onClose();
     };
@@ -143,8 +151,8 @@ export default function CreateTaskModal({
     };
 
     const getCalendarData = () => {
-        const year = formData.dueDate.getFullYear();
-        const month = formData.dueDate.getMonth();
+        const year = tempDate.getFullYear();
+        const month = tempDate.getMonth();
 
         // First day of the month
         const firstDay = new Date(year, month, 1);
@@ -172,13 +180,13 @@ export default function CreateTaskModal({
     };
 
     const navigateMonth = (direction: 'prev' | 'next') => {
-        const newDate = new Date(formData.dueDate);
+        const newDate = new Date(tempDate);
         if (direction === 'prev') {
             newDate.setMonth(newDate.getMonth() - 1);
         } else {
             newDate.setMonth(newDate.getMonth() + 1);
         }
-        setFormData(prev => ({ ...prev, dueDate: newDate }));
+        setTempDate(newDate);
     };
 
     const navigateYear = (direction: 'prev' | 'next') => {
@@ -201,26 +209,105 @@ export default function CreateTaskModal({
     };
 
     const selectYear = (year: number) => {
-        const newDate = new Date(formData.dueDate);
+        const newDate = new Date(tempDate);
         newDate.setFullYear(year);
-        setFormData(prev => ({ ...prev, dueDate: newDate }));
+        setTempDate(newDate);
         setShowYearPicker(false);
     };
 
     const getHourOptions = () => {
         const hours = [];
         for (let i = 0; i < 24; i++) {
-            hours.push(i.toString().padStart(2, '0'));
+            hours.push(i);
         }
         return hours;
     };
 
     const getMinuteOptions = () => {
         const minutes = [];
-        for (let i = 0; i < 60; i += 5) { // 5-minute intervals
-            minutes.push(i.toString().padStart(2, '0'));
+        for (let i = 0; i < 60; i++) {
+            minutes.push(i);
         }
         return minutes;
+    };
+
+    const openDateTimePopup = () => {
+        setTempHour(formData.dueHour);
+        setTempMinute(formData.dueMinute);
+        setTempDate(new Date(formData.dueDate));
+        setShowDateTimePopup(true);
+
+        // Scroll to current values after a longer delay to ensure the ScrollViews are fully rendered
+        setTimeout(() => {
+            scrollToHour(formData.dueHour);
+            scrollToMinute(formData.dueMinute);
+        }, 300);
+    };
+
+    const applyDateTimeChanges = () => {
+        setFormData(prev => ({
+            ...prev,
+            dueDate: tempDate,
+            dueHour: tempHour,
+            dueMinute: tempMinute
+        }));
+        setShowDateTimePopup(false);
+    };
+
+    const cancelDateTimeChanges = () => {
+        setShowDateTimePopup(false);
+        setShowYearPicker(false);
+    };
+
+    const scrollToHour = (hour: number) => {
+        // Account for the 2 padding items at the top (2 * ITEM_HEIGHT)
+        const scrollY = (hour + 2) * ITEM_HEIGHT;
+        hourScrollRef.current?.scrollTo({
+            y: scrollY,
+            animated: true,
+        });
+    };
+
+    const scrollToMinute = (minute: number) => {
+        // Account for the 2 padding items at the top (2 * ITEM_HEIGHT)
+        const scrollY = (minute + 2) * ITEM_HEIGHT;
+        minuteScrollRef.current?.scrollTo({
+            y: scrollY,
+            animated: true,
+        });
+    };
+
+    const handleHourScroll = (event: any) => {
+        const y = event.nativeEvent.contentOffset.y;
+        // Subtract the padding offset (2 items) to get the actual hour index
+        const index = Math.round(y / ITEM_HEIGHT) - 2;
+        const newHour = Math.max(0, Math.min(23, index));
+        if (newHour !== tempHour && newHour >= 0) {
+            setTempHour(newHour);
+        }
+    };
+
+    const handleMinuteScroll = (event: any) => {
+        const y = event.nativeEvent.contentOffset.y;
+        // Subtract the padding offset (2 items) to get the actual minute index
+        const index = Math.round(y / ITEM_HEIGHT) - 2;
+        const newMinute = Math.max(0, Math.min(59, index));
+        if (newMinute !== tempMinute && newMinute >= 0) {
+            setTempMinute(newMinute);
+        }
+    };
+
+    const renderTimePickerItems = (items: number[], selectedValue: number) => {
+        return items.map((item, index) => (
+            <View key={item} style={styles.timePickerItem}>
+                <Text style={[
+                    styles.timePickerItemText,
+                    item === selectedValue && styles.selectedTimePickerItemText
+                ]}>
+                    {item.toString().padStart(2, '0')}
+                </Text>
+            </View>
+        ));
     };
 
     const isDateDisabled = (date: Date) => {
@@ -230,16 +317,15 @@ export default function CreateTaskModal({
     };
 
     const isDateSelected = (date: Date) => {
-        return date.toDateString() === formData.dueDate.toDateString();
+        return date.toDateString() === tempDate.toDateString();
     };
 
     const isDateInCurrentMonth = (date: Date) => {
-        return date.getMonth() === formData.dueDate.getMonth();
+        return date.getMonth() === tempDate.getMonth();
     };
 
     const handleDateSelect = (date: Date) => {
-        setFormData(prev => ({ ...prev, dueDate: date }));
-        setShowDatePicker(false);
+        setTempDate(date);
     };
 
     return (
@@ -315,190 +401,230 @@ export default function CreateTaskModal({
                     <View style={styles.section}>
                         <Text style={styles.label}>Due Date & Time</Text>
 
-                        {/* Date and Time Selectors */}
-                        <View style={styles.dateTimeRow}>
-                            {/* Date Selection */}
-                            <View style={styles.dateColumn}>
-                                <TouchableOpacity
-                                    style={styles.dateSelector}
-                                    onPress={() => setShowDatePicker(!showDatePicker)}
-                                >
-                                    <Calendar size={20} color="#8B5CF6" />
-                                    <Text style={styles.dateText}>{formatDate(formData.dueDate)}</Text>
-                                    <ChevronRight size={20} color="#6B7280" />
-                                </TouchableOpacity>
-                            </View>
-
-                            {/* Time Selection */}
-                            <View style={styles.timeColumn}>
-                                <View style={styles.timeDropdowns}>
-                                    <View style={styles.timeDropdown}>
-                                        <Text style={styles.timeLabel}>Hour</Text>
-                                        <ScrollView style={styles.timeScroll} showsVerticalScrollIndicator={false}>
-                                            {getHourOptions().map((hour) => (
-                                                <TouchableOpacity
-                                                    key={hour}
-                                                    style={[
-                                                        styles.timeOption,
-                                                        formData.dueHour.toString().padStart(2, '0') === hour && styles.selectedTimeOption
-                                                    ]}
-                                                    onPress={() => setFormData(prev => ({ ...prev, dueHour: parseInt(hour) }))}
-                                                >
-                                                    <Text style={[
-                                                        styles.timeOptionText,
-                                                        formData.dueHour.toString().padStart(2, '0') === hour && styles.selectedTimeOptionText
-                                                    ]}>
-                                                        {hour}
-                                                    </Text>
-                                                </TouchableOpacity>
-                                            ))}
-                                        </ScrollView>
-                                    </View>
-                                    <View style={styles.timeDropdown}>
-                                        <Text style={styles.timeLabel}>Min</Text>
-                                        <ScrollView style={styles.timeScroll} showsVerticalScrollIndicator={false}>
-                                            {getMinuteOptions().map((minute) => (
-                                                <TouchableOpacity
-                                                    key={minute}
-                                                    style={[
-                                                        styles.timeOption,
-                                                        formData.dueMinute.toString().padStart(2, '0') === minute && styles.selectedTimeOption
-                                                    ]}
-                                                    onPress={() => setFormData(prev => ({ ...prev, dueMinute: parseInt(minute) }))}
-                                                >
-                                                    <Text style={[
-                                                        styles.timeOptionText,
-                                                        formData.dueMinute.toString().padStart(2, '0') === minute && styles.selectedTimeOptionText
-                                                    ]}>
-                                                        {minute}
-                                                    </Text>
-                                                </TouchableOpacity>
-                                            ))}
-                                        </ScrollView>
-                                    </View>
-                                </View>
-                            </View>
-                        </View>
-
-                        {/* Calendar */}
-                        {showDatePicker && (
-                            <View style={styles.calendarContainer}>
-                                {/* Calendar Header */}
-                                <View style={styles.calendarHeader}>
-                                    <TouchableOpacity
-                                        style={styles.navButton}
-                                        onPress={() => navigateMonth('prev')}
-                                    >
-                                        <Text style={styles.navButtonText}>‹</Text>
-                                    </TouchableOpacity>
-
-                                    <View style={styles.monthYearContainer}>
-                                        <Text style={styles.monthYearText}>
-                                            {getCalendarData().monthName}
-                                        </Text>
-                                        <TouchableOpacity 
-                                            style={styles.yearButton}
-                                            onPress={() => setShowYearPicker(!showYearPicker)}
-                                        >
-                                            <Text style={styles.yearButtonText}>
-                                                {getCalendarData().year} ▼
-                                            </Text>
-                                        </TouchableOpacity>
-                                    </View>
-
-                                    <TouchableOpacity
-                                        style={styles.navButton}
-                                        onPress={() => navigateMonth('next')}
-                                    >
-                                        <Text style={styles.navButtonText}>›</Text>
-                                    </TouchableOpacity>
-                                </View>
-
-                                {/* Year Picker */}
-                                {showYearPicker && (
-                                    <View style={styles.yearPicker}>
-                                        <View style={styles.yearPickerHeader}>
-                                            <TouchableOpacity 
-                                                style={styles.yearNavButton}
-                                                onPress={() => navigateYear('prev')}
-                                            >
-                                                <Text style={styles.navButtonText}>‹</Text>
-                                            </TouchableOpacity>
-                                            <TouchableOpacity 
-                                                style={styles.yearNavButton}
-                                                onPress={() => navigateYear('next')}
-                                            >
-                                                <Text style={styles.navButtonText}>›</Text>
-                                            </TouchableOpacity>
-                                        </View>
-                                        <ScrollView style={styles.yearList} showsVerticalScrollIndicator={false}>
-                                            {getYearRange().map((year) => (
-                                                <TouchableOpacity
-                                                    key={year}
-                                                    style={[
-                                                        styles.yearOption,
-                                                        year === getCalendarData().year && styles.selectedYearOption
-                                                    ]}
-                                                    onPress={() => selectYear(year)}
-                                                >
-                                                    <Text style={[
-                                                        styles.yearOptionText,
-                                                        year === getCalendarData().year && styles.selectedYearOptionText
-                                                    ]}>
-                                                        {year}
-                                                    </Text>
-                                                </TouchableOpacity>
-                                            ))}
-                                        </ScrollView>
-                                    </View>
-                                )}
-
-                                {/* Day Labels */}
-                                <View style={styles.dayLabelsRow}>
-                                    {['Sun', 'Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat'].map((day) => (
-                                        <View key={day} style={styles.dayLabel}>
-                                            <Text style={styles.dayLabelText}>{day}</Text>
-                                        </View>
-                                    ))}
-                                </View>
-
-                                {/* Calendar Grid */}
-                                <View style={styles.calendarGrid}>
-                                    {getCalendarData().days.map((date, index) => {
-                                        const isDisabled = isDateDisabled(date);
-                                        const isSelected = isDateSelected(date);
-                                        const isCurrentMonth = isDateInCurrentMonth(date);
-
-                                        return (
-                                            <TouchableOpacity
-                                                key={index}
-                                                style={[
-                                                    styles.calendarDay,
-                                                    isSelected && styles.selectedCalendarDay,
-                                                    isDisabled && styles.disabledCalendarDay,
-                                                ]}
-                                                onPress={() => !isDisabled && handleDateSelect(date)}
-                                                disabled={isDisabled}
-                                            >
-                                                <Text style={[
-                                                    styles.calendarDayText,
-                                                    !isCurrentMonth && styles.otherMonthText,
-                                                    isSelected && styles.selectedCalendarDayText,
-                                                    isDisabled && styles.disabledCalendarDayText,
-                                                ]}>
-                                                    {date.getDate()}
-                                                </Text>
-                                            </TouchableOpacity>
-                                        );
-                                    })}
-                                </View>
-                            </View>
-                        )}
+                        {/* Date and Time Display */}
+                        <TouchableOpacity
+                            style={styles.dateTimeSelector}
+                            onPress={openDateTimePopup}
+                        >
+                            <Calendar size={20} color="#8B5CF6" />
+                            <Text style={styles.dateTimeText}>
+                                {formatDate(formData.dueDate)} at {formData.dueHour.toString().padStart(2, '0')}:{formData.dueMinute.toString().padStart(2, '0')}
+                            </Text>
+                            <ChevronRight size={20} color="#6B7280" />
+                        </TouchableOpacity>
 
                         <Text style={styles.helperText}>
-                            Task will be due on {formatDate(formData.dueDate)} at {formData.dueHour.toString().padStart(2, '0')}:{formData.dueMinute.toString().padStart(2, '0')}
+                            Tap to change date and time
                         </Text>
                     </View>
+
+                    {/* Date Time Popup */}
+                    {showDateTimePopup && (
+                        <Modal
+                            visible={showDateTimePopup}
+                            transparent={true}
+                            animationType="fade"
+                            onRequestClose={cancelDateTimeChanges}
+                        >
+                            <TouchableOpacity
+                                style={styles.popupOverlay}
+                                activeOpacity={1}
+                                onPress={cancelDateTimeChanges}
+                            >
+                                <View style={styles.popupContainer}>
+                                    <TouchableOpacity activeOpacity={1} onPress={() => { }}>
+                                        {/* Time Selector */}
+                                        <View style={styles.timeSelector}>
+                                            <Text style={styles.popupTitle}>Select Time</Text>
+
+                                            <View style={styles.timePickers}>
+                                                {/* Hour Picker */}
+                                                <View style={styles.timePicker}>
+                                                    <Text style={styles.timePickerLabel}>Hour</Text>
+                                                    <View style={styles.timePickerWrapper}>
+                                                        <View style={styles.timePickerOverlay} />
+                                                        <ScrollView
+                                                            ref={hourScrollRef}
+                                                            style={styles.timePickerScroll}
+                                                            showsVerticalScrollIndicator={false}
+                                                            snapToInterval={ITEM_HEIGHT}
+                                                            decelerationRate="fast"
+                                                            onMomentumScrollEnd={handleHourScroll}
+                                                            onScrollEndDrag={handleHourScroll}
+                                                            contentContainerStyle={styles.timePickerContent}
+                                                        >
+                                                            {/* Padding items for proper centering */}
+                                                            <View style={styles.timePickerPadding} />
+                                                            <View style={styles.timePickerPadding} />
+                                                            {renderTimePickerItems(getHourOptions(), tempHour)}
+                                                            <View style={styles.timePickerPadding} />
+                                                            <View style={styles.timePickerPadding} />
+                                                        </ScrollView>
+                                                    </View>
+                                                </View>
+
+                                                {/* Minute Picker */}
+                                                <View style={styles.timePicker}>
+                                                    <Text style={styles.timePickerLabel}>Minute</Text>
+                                                    <View style={styles.timePickerWrapper}>
+                                                        <View style={styles.timePickerOverlay} />
+                                                        <ScrollView
+                                                            ref={minuteScrollRef}
+                                                            style={styles.timePickerScroll}
+                                                            showsVerticalScrollIndicator={false}
+                                                            snapToInterval={ITEM_HEIGHT}
+                                                            decelerationRate="fast"
+                                                            onMomentumScrollEnd={handleMinuteScroll}
+                                                            onScrollEndDrag={handleMinuteScroll}
+                                                            contentContainerStyle={styles.timePickerContent}
+                                                        >
+                                                            {/* Padding items for proper centering */}
+                                                            <View style={styles.timePickerPadding} />
+                                                            <View style={styles.timePickerPadding} />
+                                                            {renderTimePickerItems(getMinuteOptions(), tempMinute)}
+                                                            <View style={styles.timePickerPadding} />
+                                                            <View style={styles.timePickerPadding} />
+                                                        </ScrollView>
+                                                    </View>
+                                                </View>
+                                            </View>
+                                        </View>
+
+                                        {/* Calendar */}
+                                        <View style={styles.calendarContainer}>
+                                            <Text style={styles.popupTitle}>Select Date</Text>
+
+                                            {/* Calendar Header */}
+                                            <View style={styles.calendarHeader}>
+                                                <TouchableOpacity
+                                                    style={styles.navButton}
+                                                    onPress={() => navigateMonth('prev')}
+                                                >
+                                                    <Text style={styles.navButtonText}>‹</Text>
+                                                </TouchableOpacity>
+
+                                                <View style={styles.monthYearContainer}>
+                                                    <Text style={styles.monthYearText}>
+                                                        {getCalendarData().monthName}
+                                                    </Text>
+                                                    <TouchableOpacity
+                                                        style={styles.yearButton}
+                                                        onPress={() => setShowYearPicker(!showYearPicker)}
+                                                    >
+                                                        <Text style={styles.yearButtonText}>
+                                                            {getCalendarData().year} ▼
+                                                        </Text>
+                                                    </TouchableOpacity>
+                                                </View>
+
+                                                <TouchableOpacity
+                                                    style={styles.navButton}
+                                                    onPress={() => navigateMonth('next')}
+                                                >
+                                                    <Text style={styles.navButtonText}>›</Text>
+                                                </TouchableOpacity>
+                                            </View>
+
+                                            {/* Year Picker */}
+                                            {showYearPicker && (
+                                                <View style={styles.yearPicker}>
+                                                    <View style={styles.yearPickerHeader}>
+                                                        <TouchableOpacity
+                                                            style={styles.yearNavButton}
+                                                            onPress={() => navigateYear('prev')}
+                                                        >
+                                                            <Text style={styles.navButtonText}>‹</Text>
+                                                        </TouchableOpacity>
+                                                        <TouchableOpacity
+                                                            style={styles.yearNavButton}
+                                                            onPress={() => navigateYear('next')}
+                                                        >
+                                                            <Text style={styles.navButtonText}>›</Text>
+                                                        </TouchableOpacity>
+                                                    </View>
+                                                    <ScrollView style={styles.yearList} showsVerticalScrollIndicator={false}>
+                                                        {getYearRange().map((year) => (
+                                                            <TouchableOpacity
+                                                                key={year}
+                                                                style={[
+                                                                    styles.yearOption,
+                                                                    year === getCalendarData().year && styles.selectedYearOption
+                                                                ]}
+                                                                onPress={() => selectYear(year)}
+                                                            >
+                                                                <Text style={[
+                                                                    styles.yearOptionText,
+                                                                    year === getCalendarData().year && styles.selectedYearOptionText
+                                                                ]}>
+                                                                    {year}
+                                                                </Text>
+                                                            </TouchableOpacity>
+                                                        ))}
+                                                    </ScrollView>
+                                                </View>
+                                            )}
+
+                                            {/* Day Labels */}
+                                            <View style={styles.dayLabelsRow}>
+                                                {['Sun', 'Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat'].map((day) => (
+                                                    <View key={day} style={styles.dayLabel}>
+                                                        <Text style={styles.dayLabelText}>{day}</Text>
+                                                    </View>
+                                                ))}
+                                            </View>
+
+                                            {/* Calendar Grid */}
+                                            <View style={styles.calendarGrid}>
+                                                {getCalendarData().days.map((date, index) => {
+                                                    const isDisabled = isDateDisabled(date);
+                                                    const isSelected = isDateSelected(date);
+                                                    const isCurrentMonth = isDateInCurrentMonth(date);
+
+                                                    return (
+                                                        <TouchableOpacity
+                                                            key={index}
+                                                            style={[
+                                                                styles.calendarDay,
+                                                                isSelected && styles.selectedCalendarDay,
+                                                                isDisabled && styles.disabledCalendarDay,
+                                                            ]}
+                                                            onPress={() => !isDisabled && handleDateSelect(date)}
+                                                            disabled={isDisabled}
+                                                        >
+                                                            <Text style={[
+                                                                styles.calendarDayText,
+                                                                !isCurrentMonth && styles.otherMonthText,
+                                                                isSelected && styles.selectedCalendarDayText,
+                                                                isDisabled && styles.disabledCalendarDayText,
+                                                            ]}>
+                                                                {date.getDate()}
+                                                            </Text>
+                                                        </TouchableOpacity>
+                                                    );
+                                                })}
+                                            </View>
+                                        </View>
+
+                                        {/* Action Buttons */}
+                                        <View style={styles.popupActions}>
+                                            <TouchableOpacity
+                                                style={[styles.popupButton, styles.cancelPopupButton]}
+                                                onPress={cancelDateTimeChanges}
+                                            >
+                                                <Text style={styles.cancelPopupButtonText}>Cancel</Text>
+                                            </TouchableOpacity>
+                                            <TouchableOpacity
+                                                style={[styles.popupButton, styles.confirmPopupButton]}
+                                                onPress={applyDateTimeChanges}
+                                            >
+                                                <Text style={styles.confirmPopupButtonText}>Confirm</Text>
+                                            </TouchableOpacity>
+                                        </View>
+                                    </TouchableOpacity>
+                                </View>
+                            </TouchableOpacity>
+                        </Modal>
+                    )}
 
                     <View style={styles.rewardCard}>
                         <Star size={20} color="#F59E0B" />
@@ -620,9 +746,21 @@ const styles = StyleSheet.create({
         fontWeight: '600',
         color: '#6B7280',
         marginBottom: 4,
+        paddingVertical: 10,
+        borderWidth: 1,
+        borderColor: '#D1D5DB',
+    },
+    timeIcon: {
+        marginRight: 8,
+    },
+    timeInput: {
+        flex: 1,
+        fontSize: 16,
+        fontWeight: '600',
+        color: '#111827',
         textAlign: 'center',
     },
-    dateSelector: {
+    dateTimeSelector: {
         flexDirection: 'row',
         alignItems: 'center',
         backgroundColor: '#F9FAFB',
@@ -633,20 +771,135 @@ const styles = StyleSheet.create({
         borderColor: '#D1D5DB',
         marginBottom: 8,
     },
-    dateText: {
+    dateTimeText: {
         flex: 1,
         fontSize: 16,
         fontWeight: '600',
         color: '#111827',
         marginLeft: 8,
     },
-    calendarContainer: {
+    popupOverlay: {
+        flex: 1,
+        backgroundColor: 'rgba(0, 0, 0, 0.5)',
+        justifyContent: 'center',
+        alignItems: 'center',
+        padding: 20,
+    },
+    popupContainer: {
         backgroundColor: '#FFFFFF',
-        borderRadius: 12,
-        borderWidth: 1,
-        borderColor: '#E5E7EB',
+        borderRadius: 16,
+        width: '100%',
+        maxHeight: '80%',
+        shadowColor: '#000',
+        shadowOffset: {
+            width: 0,
+            height: 10,
+        },
+        shadowOpacity: 0.25,
+        shadowRadius: 10,
+        elevation: 10,
+    },
+    popupTitle: {
+        fontSize: 18,
+        fontWeight: '600',
+        color: '#111827',
+        textAlign: 'center',
+        marginBottom: 16,
+    },
+    timeSelector: {
+        padding: 20,
+        borderBottomWidth: 1,
+        borderBottomColor: '#E5E7EB',
+    },
+    timePickers: {
+        flexDirection: 'row',
+        justifyContent: 'center',
+        gap: 40,
+    },
+    timePicker: {
+        alignItems: 'center',
+    },
+    timePickerLabel: {
+        fontSize: 14,
+        fontWeight: '600',
+        color: '#6B7280',
         marginBottom: 12,
-        padding: 16,
+    },
+    timePickerWrapper: {
+        height: 250,
+        width: 80,
+        position: 'relative',
+    },
+    timePickerScroll: {
+        flex: 1,
+    },
+    timePickerContent: {
+        alignItems: 'center',
+    },
+    timePickerOverlay: {
+        position: 'absolute',
+        top: '40%',
+        left: 0,
+        right: 0,
+        height: 50,
+        borderTopWidth: 1,
+        borderBottomWidth: 1,
+        borderColor: '#8B5CF6',
+        backgroundColor: 'rgba(139, 92, 246, 0.1)',
+        zIndex: 1,
+        pointerEvents: 'none',
+    },
+    timePickerItem: {
+        height: 50,
+        justifyContent: 'center',
+        alignItems: 'center',
+        width: 80,
+    },
+    timePickerItemText: {
+        fontSize: 18,
+        fontWeight: '500',
+        color: '#6B7280',
+    },
+    selectedTimePickerItemText: {
+        color: '#8B5CF6',
+        fontWeight: '600',
+        fontSize: 20,
+    },
+    timePickerPadding: {
+        height: 50,
+        width: 80,
+    },
+    popupActions: {
+        flexDirection: 'row',
+        gap: 12,
+        padding: 20,
+        borderTopWidth: 1,
+        borderTopColor: '#E5E7EB',
+    },
+    popupButton: {
+        flex: 1,
+        paddingVertical: 12,
+        borderRadius: 8,
+        alignItems: 'center',
+    },
+    cancelPopupButton: {
+        backgroundColor: '#F3F4F6',
+    },
+    confirmPopupButton: {
+        backgroundColor: '#8B5CF6',
+    },
+    cancelPopupButtonText: {
+        fontSize: 16,
+        fontWeight: '600',
+        color: '#6B7280',
+    },
+    confirmPopupButtonText: {
+        fontSize: 16,
+        fontWeight: '600',
+        color: '#FFFFFF',
+    },
+    calendarContainer: {
+        padding: 20,
     },
     calendarHeader: {
         flexDirection: 'row',
@@ -776,49 +1029,6 @@ const styles = StyleSheet.create({
     },
     otherMonthText: {
         color: '#D1D5DB',
-    },
-    dateTimeRow: {
-        flexDirection: 'row',
-        gap: 12,
-        marginBottom: 12,
-    },
-    dateColumn: {
-        flex: 2,
-    },
-    timeColumn: {
-        flex: 1,
-    },
-    timeDropdowns: {
-        flexDirection: 'row',
-        gap: 8,
-    },
-    timeDropdown: {
-        flex: 1,
-    },
-    timeScroll: {
-        maxHeight: 120,
-        borderWidth: 1,
-        borderColor: '#D1D5DB',
-        borderRadius: 8,
-        backgroundColor: '#FFFFFF',
-    },
-    timeOption: {
-        paddingVertical: 8,
-        paddingHorizontal: 12,
-        borderBottomWidth: 1,
-        borderBottomColor: '#F3F4F6',
-    },
-    selectedTimeOption: {
-        backgroundColor: '#8B5CF6',
-    },
-    timeOptionText: {
-        fontSize: 14,
-        fontWeight: '500',
-        color: '#111827',
-        textAlign: 'center',
-    },
-    selectedTimeOptionText: {
-        color: '#FFFFFF',
     },
     helperText: {
         fontSize: 12,

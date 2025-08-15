@@ -18,6 +18,7 @@ import { Challenge, Bet } from '@/types';
 import { challengeService } from '@/services/challengeService';
 import { creditService } from '@/services/creditService';
 import { supabase } from '@/lib/supabase';
+import { CHALLENGE_CONFIG } from '@/lib/config';
 
 interface BettingModalProps {
   visible: boolean;
@@ -154,7 +155,7 @@ export default function BettingModal({
 
     const now = new Date();
     const deadline = new Date(safeChallenge.deadline);
-    const proofDeadline = new Date(deadline.getTime() + 3 * 60 * 60 * 1000); // 3 hours after deadline
+    const proofDeadline = new Date(deadline.getTime() + CHALLENGE_CONFIG.PROOF_SUBMISSION_HOURS * 60 * 60 * 1000);
 
     if (safeChallenge.status === 'completed') {
       setCurrentPhase('completed');
@@ -269,16 +270,36 @@ export default function BettingModal({
     if (!safeChallenge) return 0;
     
     const amount = parseInt(betAmount) || 0;
-    const totalPool = safeChallenge.totalYesBets + safeChallenge.totalNoBets + amount;
-    const opposingBets = betType === 'yes' ? safeChallenge.totalNoBets : safeChallenge.totalYesBets;
-    const sameBets = betType === 'yes' ? safeChallenge.totalYesBets + amount : safeChallenge.totalNoBets + amount;
+    if (amount === 0) return 0;
 
-    if (opposingBets === 0) return amount;
+    // Current totals
+    const currentYes = safeChallenge.totalYesBets;
+    const currentNo = safeChallenge.totalNoBets;
 
-    const proportion = amount / sameBets;
-    const potentialWin = amount + (opposingBets * proportion);
+    // Calculate new totals including this bet
+    const S = betType === 'yes' ? currentYes + amount : currentYes;
+    const F = betType === 'no' ? currentNo + amount : currentNo;
 
-    return Math.floor(potentialWin);
+    // Determine losing pool and winner total if this bet wins
+    const losingPool = betType === 'yes' ? F : S;
+    const W_total = betType === 'yes' ? S : F;
+
+    // Handle edge cases
+    if (W_total === 0 || losingPool === 0) return amount; // Refund scenario
+
+    // Creator bonus rate
+    const r = CHALLENGE_CONFIG.CREATOR_BONUS_RATE;
+    
+    // Assume user is not the creator for payout calculation
+    // (Creator bonus is separate and only applies if creator is on winning side)
+    const creatorBonus = 0; // Conservative estimate
+    const poolToWinners = losingPool - creatorBonus;
+
+    // Calculate potential payout for this bet
+    const proportionalShare = (amount / W_total) * poolToWinners;
+    const potentialPayout = amount + proportionalShare;
+
+    return Math.floor(potentialPayout);
   };
 
   const getWinChance = () => {

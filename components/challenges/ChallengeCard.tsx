@@ -5,6 +5,7 @@ import { Clock, Users, Coins, CircleCheck as CheckCircle, Circle as XCircle, Cam
 import { Challenge, Bet } from '@/types';
 import { challengeService } from '@/services/challengeService';
 import BettingModal from './BettingModal';
+import { CHALLENGE_CONFIG } from '@/lib/config';
 
 interface ChallengeCardProps {
     challenge: Challenge;
@@ -35,7 +36,7 @@ export default function ChallengeCard({
     const determineCurrentPhase = (): ChallengePhase => {
         const now = new Date();
         const deadline = new Date(challenge.deadline);
-        const proofDeadline = new Date(deadline.getTime() + 3 * 60 * 60 * 1000); // 3 hours after deadline
+        const proofDeadline = new Date(deadline.getTime() + CHALLENGE_CONFIG.PROOF_SUBMISSION_HOURS * 60 * 60 * 1000);
 
         if (challenge.status === 'completed') {
             return 'completed';
@@ -355,7 +356,7 @@ export default function ChallengeCard({
                         {currentPhase === 'proof_submission' && !isCreator && (
                             <View style={styles.waitingState}>
                                 <Clock size={16} color="#F59E0B" />
-                                <Text style={styles.waitingText}>Creator has 3 hours to submit proof</Text>
+                                <Text style={styles.waitingText}>Creator has {CHALLENGE_CONFIG.PROOF_SUBMISSION_HOURS} hours to submit proof</Text>
                             </View>
                         )}
 

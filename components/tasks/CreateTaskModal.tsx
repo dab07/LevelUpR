@@ -10,7 +10,7 @@ import {
     Alert,
     ActivityIndicator,
 } from 'react-native';
-import { X, Plus, Calendar, Star, Tag } from 'lucide-react-native';
+import { X, Plus, Calendar, Star, Tag, ChevronRight } from 'lucide-react-native';
 import { taskService } from '@/services/taskService';
 import { Task } from '@/types';
 
@@ -30,17 +30,21 @@ const CATEGORIES = [
 ] as const;
 
 export default function CreateTaskModal({
-                                            visible,
-                                            onClose,
-                                            onTaskCreated,
-                                            userId
-                                        }: CreateTaskModalProps) {
+    visible,
+    onClose,
+    onTaskCreated,
+    userId
+}: CreateTaskModalProps) {
     const [formData, setFormData] = useState({
         title: '',
         description: '',
         category: 'personal' as Task['category'],
-        dueTime: '23:59', // Default to end of day
+        dueDate: new Date(),
+        dueHour: 23,
+        dueMinute: 59,
     });
+    const [showDatePicker, setShowDatePicker] = useState(false);
+    const [showYearPicker, setShowYearPicker] = useState(false);
     const [loading, setLoading] = useState(false);
 
     const handleSubmit = async () => {
@@ -56,21 +60,21 @@ export default function CreateTaskModal({
 
         setLoading(true);
         try {
-            // Create due date for today with specified time
-            const today = new Date();
-            const [hours, minutes] = formData.dueTime.split(':');
-            const dueDate = new Date(today);
-            dueDate.setHours(parseInt(hours), parseInt(minutes), 0, 0);
+            // Create due date with selected date and time
+            const dueDate = new Date(formData.dueDate);
+            dueDate.setHours(formData.dueHour, formData.dueMinute, 0, 0);
 
-            // If the time has already passed today, set for tomorrow
+            // Ensure the due date is not in the past
             if (dueDate <= new Date()) {
-                dueDate.setDate(dueDate.getDate() + 1);
+                Alert.alert('Invalid Date', 'Please select a future date and time for your task.');
+                setLoading(false);
+                return;
             }
 
             const taskData = {
                 title: formData.title.trim(),
                 description: formData.description.trim() || undefined,
-                isDaily: true,
+                isDaily: false, // Custom tasks with custom deadlines are not daily tasks
                 creditReward: 1,
                 dueDate: dueDate.toISOString(),
                 category: formData.category,
@@ -81,10 +85,12 @@ export default function CreateTaskModal({
             Alert.alert(
                 'Task Created!',
                 'Your new task has been added to today\'s list.',
-                [{ text: 'OK', onPress: () => {
+                [{
+                    text: 'OK', onPress: () => {
                         handleClose();
                         onTaskCreated();
-                    }}]
+                    }
+                }]
             );
         } catch (error: any) {
             console.error('Create task error:', error);
@@ -104,14 +110,136 @@ export default function CreateTaskModal({
             title: '',
             description: '',
             category: 'personal',
-            dueTime: '23:59',
+            dueDate: new Date(),
+            dueHour: 23,
+            dueMinute: 59,
         });
+        setShowDatePicker(false);
+        setShowYearPicker(false);
         onClose();
     };
 
     const getCategoryColor = (category: string) => {
         const categoryData = CATEGORIES.find(c => c.key === category);
         return categoryData?.color || '#6B7280';
+    };
+
+    const formatDate = (date: Date) => {
+        const today = new Date();
+        const tomorrow = new Date(today);
+        tomorrow.setDate(tomorrow.getDate() + 1);
+
+        if (date.toDateString() === today.toDateString()) {
+            return 'Today';
+        } else if (date.toDateString() === tomorrow.toDateString()) {
+            return 'Tomorrow';
+        } else {
+            return date.toLocaleDateString('en-US', {
+                weekday: 'short',
+                month: 'short',
+                day: 'numeric'
+            });
+        }
+    };
+
+    const getCalendarData = () => {
+        const year = formData.dueDate.getFullYear();
+        const month = formData.dueDate.getMonth();
+
+        // First day of the month
+        const firstDay = new Date(year, month, 1);
+        // Last day of the month
+        const lastDay = new Date(year, month + 1, 0);
+
+        // Start from the first day of the week containing the first day of the month
+        const startDate = new Date(firstDay);
+        startDate.setDate(startDate.getDate() - firstDay.getDay());
+
+        // Generate 42 days (6 weeks) to fill the calendar grid
+        const days = [];
+        for (let i = 0; i < 42; i++) {
+            const date = new Date(startDate);
+            date.setDate(startDate.getDate() + i);
+            days.push(date);
+        }
+
+        return {
+            year,
+            month,
+            days,
+            monthName: firstDay.toLocaleDateString('en-US', { month: 'long' })
+        };
+    };
+
+    const navigateMonth = (direction: 'prev' | 'next') => {
+        const newDate = new Date(formData.dueDate);
+        if (direction === 'prev') {
+            newDate.setMonth(newDate.getMonth() - 1);
+        } else {
+            newDate.setMonth(newDate.getMonth() + 1);
+        }
+        setFormData(prev => ({ ...prev, dueDate: newDate }));
+    };
+
+    const navigateYear = (direction: 'prev' | 'next') => {
+        const newDate = new Date(formData.dueDate);
+        if (direction === 'prev') {
+            newDate.setFullYear(newDate.getFullYear() - 1);
+        } else {
+            newDate.setFullYear(newDate.getFullYear() + 1);
+        }
+        setFormData(prev => ({ ...prev, dueDate: newDate }));
+    };
+
+    const getYearRange = () => {
+        const currentYear = new Date().getFullYear();
+        const years = [];
+        for (let i = currentYear; i <= currentYear + 10; i++) {
+            years.push(i);
+        }
+        return years;
+    };
+
+    const selectYear = (year: number) => {
+        const newDate = new Date(formData.dueDate);
+        newDate.setFullYear(year);
+        setFormData(prev => ({ ...prev, dueDate: newDate }));
+        setShowYearPicker(false);
+    };
+
+    const getHourOptions = () => {
+        const hours = [];
+        for (let i = 0; i < 24; i++) {
+            hours.push(i.toString().padStart(2, '0'));
+        }
+        return hours;
+    };
+
+    const getMinuteOptions = () => {
+        const minutes = [];
+        for (let i = 0; i < 60; i += 5) { // 5-minute intervals
+            minutes.push(i.toString().padStart(2, '0'));
+        }
+        return minutes;
+    };
+
+    const isDateDisabled = (date: Date) => {
+        const today = new Date();
+        today.setHours(0, 0, 0, 0);
+        return date < today;
+    };
+
+    const isDateSelected = (date: Date) => {
+        return date.toDateString() === formData.dueDate.toDateString();
+    };
+
+    const isDateInCurrentMonth = (date: Date) => {
+        return date.getMonth() === formData.dueDate.getMonth();
+    };
+
+    const handleDateSelect = (date: Date) => {
+        setFormData(prev => ({ ...prev, dueDate: date }));
+        setShowDatePicker(false);
     };
 
     return (
@@ -185,21 +313,190 @@ export default function CreateTaskModal({
                     </View>
 
                     <View style={styles.section}>
-                        <Text style={styles.label}>Due Time</Text>
-                        <View style={styles.timeContainer}>
-                            <Calendar size={20} color="#8B5CF6" style={styles.timeIcon} />
-                            <TextInput
-                                style={styles.timeInput}
-                                value={formData.dueTime}
-                                onChangeText={(value) => setFormData(prev => ({ ...prev, dueTime: value }))}
-                                placeholder="HH:MM"
-                                maxLength={5}
-                                keyboardType="numeric"
-                            />
-                            <Text style={styles.timeLabel}>Today</Text>
+                        <Text style={styles.label}>Due Date & Time</Text>
+
+                        {/* Date and Time Selectors */}
+                        <View style={styles.dateTimeRow}>
+                            {/* Date Selection */}
+                            <View style={styles.dateColumn}>
+                                <TouchableOpacity
+                                    style={styles.dateSelector}
+                                    onPress={() => setShowDatePicker(!showDatePicker)}
+                                >
+                                    <Calendar size={20} color="#8B5CF6" />
+                                    <Text style={styles.dateText}>{formatDate(formData.dueDate)}</Text>
+                                    <ChevronRight size={20} color="#6B7280" />
+                                </TouchableOpacity>
+                            </View>
+
+                            {/* Time Selection */}
+                            <View style={styles.timeColumn}>
+                                <View style={styles.timeDropdowns}>
+                                    <View style={styles.timeDropdown}>
+                                        <Text style={styles.timeLabel}>Hour</Text>
+                                        <ScrollView style={styles.timeScroll} showsVerticalScrollIndicator={false}>
+                                            {getHourOptions().map((hour) => (
+                                                <TouchableOpacity
+                                                    key={hour}
+                                                    style={[
+                                                        styles.timeOption,
+                                                        formData.dueHour.toString().padStart(2, '0') === hour && styles.selectedTimeOption
+                                                    ]}
+                                                    onPress={() => setFormData(prev => ({ ...prev, dueHour: parseInt(hour) }))}
+                                                >
+                                                    <Text style={[
+                                                        styles.timeOptionText,
+                                                        formData.dueHour.toString().padStart(2, '0') === hour && styles.selectedTimeOptionText
+                                                    ]}>
+                                                        {hour}
+                                                    </Text>
+                                                </TouchableOpacity>
+                                            ))}
+                                        </ScrollView>
+                                    </View>
+                                    <View style={styles.timeDropdown}>
+                                        <Text style={styles.timeLabel}>Min</Text>
+                                        <ScrollView style={styles.timeScroll} showsVerticalScrollIndicator={false}>
+                                            {getMinuteOptions().map((minute) => (
+                                                <TouchableOpacity
+                                                    key={minute}
+                                                    style={[
+                                                        styles.timeOption,
+                                                        formData.dueMinute.toString().padStart(2, '0') === minute && styles.selectedTimeOption
+                                                    ]}
+                                                    onPress={() => setFormData(prev => ({ ...prev, dueMinute: parseInt(minute) }))}
+                                                >
+                                                    <Text style={[
+                                                        styles.timeOptionText,
+                                                        formData.dueMinute.toString().padStart(2, '0') === minute && styles.selectedTimeOptionText
+                                                    ]}>
+                                                        {minute}
+                                                    </Text>
+                                                </TouchableOpacity>
+                                            ))}
+                                        </ScrollView>
+                                    </View>
+                                </View>
+                            </View>
                         </View>
+
+                        {/* Calendar */}
+                        {showDatePicker && (
+                            <View style={styles.calendarContainer}>
+                                {/* Calendar Header */}
+                                <View style={styles.calendarHeader}>
+                                    <TouchableOpacity
+                                        style={styles.navButton}
+                                        onPress={() => navigateMonth('prev')}
+                                    >
+                                        <Text style={styles.navButtonText}>‹</Text>
+                                    </TouchableOpacity>
+
+                                    <View style={styles.monthYearContainer}>
+                                        <Text style={styles.monthYearText}>
+                                            {getCalendarData().monthName}
+                                        </Text>
+                                        <TouchableOpacity 
+                                            style={styles.yearButton}
+                                            onPress={() => setShowYearPicker(!showYearPicker)}
+                                        >
+                                            <Text style={styles.yearButtonText}>
+                                                {getCalendarData().year} ▼
+                                            </Text>
+                                        </TouchableOpacity>
+                                    </View>
+
+                                    <TouchableOpacity
+                                        style={styles.navButton}
+                                        onPress={() => navigateMonth('next')}
+                                    >
+                                        <Text style={styles.navButtonText}>›</Text>
+                                    </TouchableOpacity>
+                                </View>
+
+                                {/* Year Picker */}
+                                {showYearPicker && (
+                                    <View style={styles.yearPicker}>
+                                        <View style={styles.yearPickerHeader}>
+                                            <TouchableOpacity 
+                                                style={styles.yearNavButton}
+                                                onPress={() => navigateYear('prev')}
+                                            >
+                                                <Text style={styles.navButtonText}>‹</Text>
+                                            </TouchableOpacity>
+                                            <TouchableOpacity 
+                                                style={styles.yearNavButton}
+                                                onPress={() => navigateYear('next')}
+                                            >
+                                                <Text style={styles.navButtonText}>›</Text>
+                                            </TouchableOpacity>
+                                        </View>
+                                        <ScrollView style={styles.yearList} showsVerticalScrollIndicator={false}>
+                                            {getYearRange().map((year) => (
+                                                <TouchableOpacity
+                                                    key={year}
+                                                    style={[
+                                                        styles.yearOption,
+                                                        year === getCalendarData().year && styles.selectedYearOption
+                                                    ]}
+                                                    onPress={() => selectYear(year)}
+                                                >
+                                                    <Text style={[
+                                                        styles.yearOptionText,
+                                                        year === getCalendarData().year && styles.selectedYearOptionText
+                                                    ]}>
+                                                        {year}
+                                                    </Text>
+                                                </TouchableOpacity>
+                                            ))}
+                                        </ScrollView>
+                                    </View>
+                                )}
+
+                                {/* Day Labels */}
+                                <View style={styles.dayLabelsRow}>
+                                    {['Sun', 'Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat'].map((day) => (
+                                        <View key={day} style={styles.dayLabel}>
+                                            <Text style={styles.dayLabelText}>{day}</Text>
+                                        </View>
+                                    ))}
+                                </View>
+
+                                {/* Calendar Grid */}
+                                <View style={styles.calendarGrid}>
+                                    {getCalendarData().days.map((date, index) => {
+                                        const isDisabled = isDateDisabled(date);
+                                        const isSelected = isDateSelected(date);
+                                        const isCurrentMonth = isDateInCurrentMonth(date);
+
+                                        return (
+                                            <TouchableOpacity
+                                                key={index}
+                                                style={[
+                                                    styles.calendarDay,
+                                                    isSelected && styles.selectedCalendarDay,
+                                                    isDisabled && styles.disabledCalendarDay,
+                                                ]}
+                                                onPress={() => !isDisabled && handleDateSelect(date)}
+                                                disabled={isDisabled}
+                                            >
+                                                <Text style={[
+                                                    styles.calendarDayText,
+                                                    !isCurrentMonth && styles.otherMonthText,
+                                                    isSelected && styles.selectedCalendarDayText,
+                                                    isDisabled && styles.disabledCalendarDayText,
+                                                ]}>
+                                                    {date.getDate()}
+                                                </Text>
+                                            </TouchableOpacity>
+                                        );
+                                    })}
+                                </View>
+                            </View>
+                        )}
+
                         <Text style={styles.helperText}>
-                            Task will be due today at {formData.dueTime}. If time has passed, it will be due tomorrow.
+                            Task will be due on {formatDate(formData.dueDate)} at {formData.dueHour.toString().padStart(2, '0')}:{formData.dueMinute.toString().padStart(2, '0')}
                         </Text>
                     </View>
 
@@ -215,7 +512,7 @@ export default function CreateTaskModal({
 
                     <View style={styles.limitInfo}>
                         <Text style={styles.limitText}>
-                            📝 You can create up to 5 tasks per day
+                            📝 You can create up to 2 extra tasks with custom deadlines
                         </Text>
                     </View>
                 </ScrollView>
@@ -318,30 +615,210 @@ const styles = StyleSheet.create({
         fontWeight: '500',
         marginLeft: 6,
     },
-    timeContainer: {
+    timeLabel: {
+        fontSize: 12,
+        fontWeight: '600',
+        color: '#6B7280',
+        marginBottom: 4,
+        textAlign: 'center',
+    },
+    dateSelector: {
         flexDirection: 'row',
         alignItems: 'center',
         backgroundColor: '#F9FAFB',
         borderRadius: 8,
         paddingHorizontal: 12,
-        paddingVertical: 10,
+        paddingVertical: 12,
         borderWidth: 1,
         borderColor: '#D1D5DB',
+        marginBottom: 8,
     },
-    timeIcon: {
-        marginRight: 8,
-    },
-    timeInput: {
+    dateText: {
         flex: 1,
         fontSize: 16,
         fontWeight: '600',
         color: '#111827',
+        marginLeft: 8,
+    },
+    calendarContainer: {
+        backgroundColor: '#FFFFFF',
+        borderRadius: 12,
+        borderWidth: 1,
+        borderColor: '#E5E7EB',
+        marginBottom: 12,
+        padding: 16,
+    },
+    calendarHeader: {
+        flexDirection: 'row',
+        alignItems: 'center',
+        justifyContent: 'space-between',
+        marginBottom: 16,
+    },
+    navButton: {
+        width: 32,
+        height: 32,
+        borderRadius: 16,
+        backgroundColor: '#F3F4F6',
+        alignItems: 'center',
+        justifyContent: 'center',
+    },
+    navButtonText: {
+        fontSize: 18,
+        fontWeight: '600',
+        color: '#6B7280',
+    },
+    monthYearContainer: {
+        alignItems: 'center',
+    },
+    monthYearText: {
+        fontSize: 18,
+        fontWeight: '600',
+        color: '#111827',
+        marginBottom: 4,
+    },
+    yearButton: {
+        paddingHorizontal: 8,
+        paddingVertical: 4,
+        borderRadius: 4,
+        backgroundColor: '#F3F4F6',
+    },
+    yearButtonText: {
+        fontSize: 14,
+        fontWeight: '500',
+        color: '#6B7280',
+    },
+    yearPicker: {
+        backgroundColor: '#F9FAFB',
+        borderRadius: 8,
+        marginBottom: 12,
+        maxHeight: 200,
+    },
+    yearPickerHeader: {
+        flexDirection: 'row',
+        justifyContent: 'space-between',
+        paddingHorizontal: 16,
+        paddingVertical: 8,
+        borderBottomWidth: 1,
+        borderBottomColor: '#E5E7EB',
+    },
+    yearNavButton: {
+        width: 24,
+        height: 24,
+        borderRadius: 12,
+        backgroundColor: '#E5E7EB',
+        alignItems: 'center',
+        justifyContent: 'center',
+    },
+    yearList: {
+        maxHeight: 150,
+    },
+    yearOption: {
+        paddingHorizontal: 16,
+        paddingVertical: 12,
+        borderBottomWidth: 1,
+        borderBottomColor: '#F3F4F6',
+    },
+    selectedYearOption: {
+        backgroundColor: '#8B5CF6',
+    },
+    yearOptionText: {
+        fontSize: 16,
+        fontWeight: '500',
+        color: '#111827',
         textAlign: 'center',
     },
-    timeLabel: {
-        fontSize: 14,
+    selectedYearOptionText: {
+        color: '#FFFFFF',
+    },
+    dayLabelsRow: {
+        flexDirection: 'row',
+        marginBottom: 8,
+    },
+    dayLabel: {
+        flex: 1,
+        alignItems: 'center',
+        paddingVertical: 8,
+    },
+    dayLabelText: {
+        fontSize: 12,
+        fontWeight: '600',
         color: '#6B7280',
+    },
+    calendarGrid: {
+        flexDirection: 'row',
+        flexWrap: 'wrap',
+    },
+    calendarDay: {
+        width: '14.28%', // 100% / 7 days
+        aspectRatio: 1,
+        alignItems: 'center',
+        justifyContent: 'center',
+        borderRadius: 8,
+        marginBottom: 4,
+    },
+    selectedCalendarDay: {
+        backgroundColor: '#8B5CF6',
+    },
+    disabledCalendarDay: {
+        opacity: 0.3,
+    },
+    calendarDayText: {
+        fontSize: 16,
         fontWeight: '500',
+        color: '#111827',
+    },
+    selectedCalendarDayText: {
+        color: '#FFFFFF',
+        fontWeight: '600',
+    },
+    disabledCalendarDayText: {
+        color: '#D1D5DB',
+    },
+    otherMonthText: {
+        color: '#D1D5DB',
+    },
+    dateTimeRow: {
+        flexDirection: 'row',
+        gap: 12,
+        marginBottom: 12,
+    },
+    dateColumn: {
+        flex: 2,
+    },
+    timeColumn: {
+        flex: 1,
+    },
+    timeDropdowns: {
+        flexDirection: 'row',
+        gap: 8,
+    },
+    timeDropdown: {
+        flex: 1,
+    },
+    timeScroll: {
+        maxHeight: 120,
+        borderWidth: 1,
+        borderColor: '#D1D5DB',
+        borderRadius: 8,
+        backgroundColor: '#FFFFFF',
+    },
+    timeOption: {
+        paddingVertical: 8,
+        paddingHorizontal: 12,
+        borderBottomWidth: 1,
+        borderBottomColor: '#F3F4F6',
+    },
+    selectedTimeOption: {
+        backgroundColor: '#8B5CF6',
+    },
+    timeOptionText: {
+        fontSize: 14,
+        fontWeight: '500',
+        color: '#111827',
+        textAlign: 'center',
+    },
+    selectedTimeOptionText: {
+        color: '#FFFFFF',
     },
     helperText: {
         fontSize: 12,

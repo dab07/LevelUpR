@@ -3,6 +3,7 @@ import { View, Text, StyleSheet, ScrollView, RefreshControl, Alert } from 'react
 import { LinearGradient } from 'expo-linear-gradient';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { Plus, Calendar, Zap } from 'lucide-react-native';
+import { CHALLENGE_CONFIG } from '@/lib/config';
 
 import CreditDisplay from '@/components/ui/CreditDisplay';
 import GradientButton from '@/components/ui/GradientButton';
@@ -91,14 +92,14 @@ export default function HomeScreen() {
 
   const loadUserData = async (userId: string) => {
     try {
-      const [userCredits, todaysTasks, userProfile] = await Promise.all([
+      const [userCredits, userCreatedTasks, userProfile] = await Promise.all([
         creditService.getUserCredits(userId),
-        taskService.getTodaysTasks(userId),
+        taskService.getUserCreatedTasks(userId),
         getUserProfile(userId)
       ]);
 
       setCredits(userCredits);
-      setTasks(todaysTasks);
+      setTasks(userCreatedTasks);
       setStreak(userProfile?.daily_login_streak || 0);
     } catch (error) {
       console.error('Error loading user data:', error);
@@ -291,8 +292,8 @@ export default function HomeScreen() {
 
     // Reload tasks after creation
     try {
-      const todaysTasks = await taskService.getTodaysTasks(user.id);
-      setTasks(todaysTasks);
+      const userCreatedTasks = await taskService.getUserCreatedTasks(user.id);
+      setTasks(userCreatedTasks);
     } catch (error) {
       console.error('Error reloading tasks:', error);
     }
@@ -401,12 +402,12 @@ export default function HomeScreen() {
               onPress={handleCreateTask}
               size="small"
               style={styles.addButton}
-              disabled={totalExtraTasks >= 5}
+              disabled={totalExtraTasks >= CHALLENGE_CONFIG.MAX_EXTRA_TASKS}
             />
           </View>
 
           <Text style={styles.taskLimitText}>
-            {totalExtraTasks}/5 tasks created today
+            {totalExtraTasks}/2 tasks created today
           </Text>
 
           {totalExtraTasks === 0 ? (

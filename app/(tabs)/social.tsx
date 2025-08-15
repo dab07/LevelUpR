@@ -33,7 +33,16 @@ export default function SocialScreen() {
 
   useEffect(() => {
     initialize();
-  }, []);
+
+    // Set up periodic refresh to update challenge statuses
+    const interval = setInterval(() => {
+      if (user) {
+        loadUserGroups(user.id);
+      }
+    }, 60000); // Refresh every minute
+
+    return () => clearInterval(interval);
+  }, [user]);
 
   const initialize = async () => {
     try {
@@ -114,6 +123,14 @@ export default function SocialScreen() {
   const handleVoteSubmitted = async () => {
     if (!user) return;
     await loadUserGroups(user.id);
+  };
+
+  const handleChallengeInteraction = async (challengeId: string) => {
+    // Refresh specific challenge status when user interacts with it
+    await challengeService.refreshChallengeStatus(challengeId);
+    if (user) {
+      await loadUserGroups(user.id);
+    }
   };
 
   const onRefresh = async () => {
@@ -274,8 +291,8 @@ export default function SocialScreen() {
                                         key={challenge.id}
                                         challenge={challenge}
                                         userBet={userBets[challenge.id]}
-                                        onBetPlaced={handleBetPlaced}
-                                        onVoteSubmitted={handleVoteSubmitted}
+                                        onBetPlaced={() => handleChallengeInteraction(challenge.id)}
+                                        onVoteSubmitted={() => handleChallengeInteraction(challenge.id)}
                                         isCreator={isUserCreator(challenge)}
                                     />
                                 ))}

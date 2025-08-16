@@ -31,18 +31,75 @@ export default function SocialScreen() {
   const [refreshing, setRefreshing] = useState(false);
   const [user, setUser] = useState<any>(null);
 
+  // Subscription refs
+  const challengeSubscriptionRef = useRef<any>(null);
+  const betSubscriptionRef = useRef<any>(null);
+
   useEffect(() => {
     initialize();
+  }, []);
 
-    // Set up periodic refresh to update challenge statuses
-    const interval = setInterval(() => {
-      if (user) {
-        loadUserGroups(user.id);
+  // Only refresh when user changes, not continuously
+  useEffect(() => {
+    if (user) {
+      loadUserGroups(user.id);
+      setupRealtimeSubscriptions();
+    }
+
+    return () => {
+      // Cleanup subscriptions
+      if (challengeSubscriptionRef.current) {
+        challengeSubscriptionRef.current.unsubscribe();
       }
-    }, 60000); // Refresh every minute
-
-    return () => clearInterval(interval);
+      if (betSubscriptionRef.current) {
+        betSubscriptionRef.current.unsubscribe();
+      }
+    };
   }, [user]);
+
+  const setupRealtimeSubscriptions = () => {
+    if (!user) return;
+
+    // Subscribe to challenge updates for user's groups
+    challengeSubscriptionRef.current = supabase
+      .channel('challenges')
+      .on('postgres_changes', 
+        { 
+          event: '*', 
+          schema: 'public', 
+          table: 'challenges',
+          filter: `group_id=in.(${userGroups.map(g => g.id).join(',')})`
+        }, 
+        (payload) => {
+          console.log('Challenge update received:', payload);
+          // Only refresh if there's an actual change
+          if (user) {
+            loadUserGroups(user.id, true);
+          }
+        }
+      )
+      .subscribe();
+
+    // Subscribe to bet updates
+    betSubscriptionRef.current = supabase
+      .channel('bets')
+      .on('postgres_changes', 
+        { 
+          event: '*', 
+          schema: 'public', 
+          table: 'bets',
+          filter: `user_id=eq.${user.id}`
+        }, 
+        (payload) => {
+          console.log('Bet update received:', payload);
+          // Only refresh if there's an actual change
+          if (user) {
+            loadUserGroups(user.id, true);
+          }
+        }
+      )
+      .subscribe();
+  };
 
   const initialize = async () => {
     try {
@@ -58,13 +115,16 @@ export default function SocialScreen() {
     }
   };
 
-  const loadUserGroups = async (userId: string) => {
+  const loadUserGroups = async (userId: string, forceRefresh = false) => {
     try {
       const groups = await groupService.getUserGroups(userId);
-      setUserGroups(groups);
-
-      // Load challenges for each group
-      await loadGroupChallenges(groups);
+      
+      // Only update if groups have actually changed or force refresh
+      if (forceRefresh || JSON.stringify(groups) !== JSON.stringify(userGroups)) {
+        setUserGroups(groups);
+        // Load challenges for each group
+        await loadGroupChallenges(groups);
+      }
     } catch (error) {
       console.error('Error loading user groups:', error);
     }
@@ -75,18 +135,23 @@ export default function SocialScreen() {
       const challengesData: { [groupId: string]: Challenge[] } = {};
       const betsData: { [challengeId: string]: Bet } = {};
 
-      for (const group of groups) {
+      // Use Promise.all to load challenges in parallel instead of sequentially
+      const challengePromises = groups.map(async (group) => {
         const challenges = await challengeService.getGroupChallenges(group.id);
         challengesData[group.id] = challenges;
 
-        // Load user bets for each challenge
-        for (const challenge of challenges) {
+        // Load user bets for each challenge in parallel
+        const betPromises = challenges.map(async (challenge) => {
           const userBet = await challengeService.getUserBet(challenge.id);
           if (userBet) {
             betsData[challenge.id] = userBet;
           }
-        }
-      }
+        });
+
+        await Promise.all(betPromises);
+      });
+
+      await Promise.all(challengePromises);
 
       setGroupChallenges(challengesData);
       setUserBets(betsData);
@@ -97,7 +162,7 @@ export default function SocialScreen() {
 
   const handleGroupCreated = async () => {
     if (!user) return;
-    await loadUserGroups(user.id);
+    await loadUserGroups(user.id, true); 
   };
 
   const handleOpenGroupChat = (group: Group) => {
@@ -112,24 +177,24 @@ export default function SocialScreen() {
 
   const handleChallengeCreated = async () => {
     if (!user) return;
-    await loadUserGroups(user.id);
+    await loadUserGroups(user.id); 
   };
 
   const handleBetPlaced = async () => {
     if (!user) return;
-    await loadUserGroups(user.id);
+    await loadUserGroups(user.id); 
   };
 
   const handleVoteSubmitted = async () => {
     if (!user) return;
-    await loadUserGroups(user.id);
+    await loadUserGroups(user.id); 
   };
 
   const handleChallengeInteraction = async (challengeId: string) => {
     // Refresh specific challenge status when user interacts with it
     await challengeService.refreshChallengeStatus(challengeId);
     if (user) {
-      await loadUserGroups(user.id);
+      await loadUserGroups(user.id); // Force refresh after interaction
     }
   };
 
@@ -137,7 +202,7 @@ export default function SocialScreen() {
     if (!user) return;
 
     setRefreshing(true);
-    await loadUserGroups(user.id);
+    await loadUserGroups(user.id, true); // Force refresh on manual pull-to-refresh
     setRefreshing(false);
   };
 

@@ -30,7 +30,7 @@ export default function CreateChallengeModal({
     const [formData, setFormData] = useState({
         title: '',
         description: '',
-        minimumBet: '1',
+        minimumBet: '0',
         deadline: '',
     });
     const [loading, setLoading] = useState(false);

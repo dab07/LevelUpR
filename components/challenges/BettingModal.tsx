@@ -45,14 +45,14 @@ interface VotingData {
 
 type ChallengePhase = 'betting' | 'waiting_for_proof' | 'proof_submission' | 'verification' | 'completed';
 
-export default function BettingModal({ 
-  visible, 
-  onClose, 
-  challenge, 
-  onBetPlaced, 
-  userCredits: parentUserCredits, 
+export default function BettingModal({
+  visible,
+  onClose,
+  challenge,
+  onBetPlaced,
+  userCredits: parentUserCredits,
   isCreator = false,
-  userBet 
+  userBet
 }: BettingModalProps) {
   // Betting state
   const [betType, setBetType] = useState<'yes' | 'no'>('yes');
@@ -207,7 +207,7 @@ export default function BettingModal({
 
   const getTimeUntilDeadline = () => {
     if (!safeChallenge) return '';
-    
+
     const now = new Date();
     const deadline = new Date(safeChallenge.deadline);
     const diff = deadline.getTime() - now.getTime();
@@ -225,7 +225,7 @@ export default function BettingModal({
 
   const getTimeUntilProofDeadline = () => {
     if (!safeChallenge) return '';
-    
+
     const deadline = new Date(safeChallenge.deadline);
     const proofDeadline = new Date(deadline.getTime() + 3 * 60 * 60 * 1000);
     const now = new Date();
@@ -241,7 +241,7 @@ export default function BettingModal({
 
   const canSubmitProof = () => {
     if (!safeChallenge || !isCreator) return false;
-    
+
     const now = new Date();
     const deadline = new Date(safeChallenge.deadline);
     const proofDeadline = new Date(deadline.getTime() + 3 * 60 * 60 * 1000);
@@ -252,7 +252,7 @@ export default function BettingModal({
 
   const canPlaceBet = () => {
     if (!safeChallenge || userBet) return false;
-    
+
     const now = new Date();
     const deadline = new Date(safeChallenge.deadline);
 
@@ -262,13 +262,13 @@ export default function BettingModal({
 
   const canVote = () => {
     if (!safeChallenge || !userBet || isCreator || hasVoted) return false;
-    
+
     return safeChallenge.status === 'voting' && safeChallenge.proofImageUrl;
   };
 
   const calculatePotentialPayout = () => {
     if (!safeChallenge) return 0;
-    
+
     const amount = parseInt(betAmount) || 0;
     if (amount === 0) return 0;
 
@@ -289,7 +289,7 @@ export default function BettingModal({
 
     // Creator bonus rate
     const r = CHALLENGE_CONFIG.CREATOR_BONUS_RATE;
-    
+
     // Assume user is not the creator for payout calculation
     // (Creator bonus is separate and only applies if creator is on winning side)
     const creatorBonus = 0; // Conservative estimate
@@ -304,7 +304,7 @@ export default function BettingModal({
 
   const getWinChance = () => {
     if (!safeChallenge) return 50;
-    
+
     const totalBets = safeChallenge.totalYesBets + safeChallenge.totalNoBets;
     if (totalBets === 0) return 50;
 
@@ -351,10 +351,12 @@ export default function BettingModal({
       Alert.alert(
         'Bet Placed!',
         `You bet ${amount} credits on "${betType.toUpperCase()}" for this challenge.`,
-        [{ text: 'OK', onPress: () => {
-          onBetPlaced();
-          onClose();
-        }}]
+        [{
+          text: 'OK', onPress: () => {
+            onBetPlaced();
+            onClose();
+          }
+        }]
       );
     } catch (error: any) {
       console.error('Error placing bet:', error);
@@ -455,31 +457,70 @@ export default function BettingModal({
     setUploadProgress(0);
 
     try {
+      console.log('Starting photo upload process...');
+      console.log('Number of photos to upload:', votingData.photos.length);
+
+      // Verify authentication
+      const { data: { session }, error: sessionError } = await supabase.auth.getSession();
+      if (sessionError || !session) {
+        throw new Error('User not authenticated');
+      }
+      console.log('User authenticated, proceeding with upload');
+
       const uploadedUrls: string[] = [];
 
       for (let i = 0; i < votingData.photos.length; i++) {
         const photo = votingData.photos[i];
         setUploadProgress(((i + 1) / votingData.photos.length) * 100);
 
-        const response = await fetch(photo.uri);
-        const blob = await response.blob();
-
         const fileName = `${currentUser.id}/${safeChallenge.id}/${Date.now()}_${i + 1}.jpg`;
 
-        const { data, error } = await supabase.storage
-          .from('challenge_proofs')
-          .upload(fileName, blob, {
-            contentType: 'image/jpeg',
-            upsert: true,
-          });
+        try {
+          console.log(`Uploading photo ${i + 1}/${votingData.photos.length}`);
+          console.log('Photo details:', { uri: photo.uri, type: photo.type, name: photo.name });
 
-        if (error) throw error;
+          // For React Native, we need to handle file uploads differently
+          const response = await fetch(photo.uri);
 
-        const { data: { publicUrl } } = supabase.storage
-          .from('challenge_proofs')
-          .getPublicUrl(data.path);
+          if (!response.ok) {
+            throw new Error(`Failed to read image file: ${response.statusText}`);
+          }
 
-        uploadedUrls.push(publicUrl);
+          const arrayBuffer = await response.arrayBuffer();
+          const uint8Array = new Uint8Array(arrayBuffer);
+
+          console.log('File size after conversion:', uint8Array.length, 'bytes');
+
+          if (uint8Array.length === 0) {
+            throw new Error('Image file is empty');
+          }
+
+          console.log('Uploading to Supabase with filename:', fileName);
+
+          const { data, error } = await supabase.storage
+            .from('challenge_proofs')
+            .upload(fileName, uint8Array, {
+              contentType: 'image/jpeg',
+              upsert: true,
+            });
+
+          if (error) {
+            console.error('Supabase upload error:', error);
+            throw error;
+          }
+
+          console.log('Upload successful, data:', data);
+
+          const { data: { publicUrl } } = supabase.storage
+            .from('challenge_proofs')
+            .getPublicUrl(data.path);
+
+          console.log('Generated public URL:', publicUrl);
+          uploadedUrls.push(publicUrl);
+        } catch (uploadError) {
+          console.error(`Error uploading photo ${i + 1}:`, uploadError);
+          throw new Error(`Failed to upload photo ${i + 1}: ${uploadError.message}`);
+        }
       }
 
       // Submit proof with uploaded URLs and description
@@ -488,10 +529,12 @@ export default function BettingModal({
       Alert.alert(
         'Proof Submitted!',
         'Your proof has been uploaded successfully. The verification period has started.',
-        [{ text: 'OK', onPress: () => {
-          onBetPlaced();
-          onClose();
-        }}]
+        [{
+          text: 'OK', onPress: () => {
+            onBetPlaced();
+            onClose();
+          }
+        }]
       );
 
     } catch (error) {
@@ -518,14 +561,16 @@ export default function BettingModal({
     try {
       await challengeService.voteOnCompletion(safeChallenge.id, vote);
       setHasVoted(true);
-      
+
       Alert.alert(
         'Vote Submitted!',
         `You voted "${vote.toUpperCase()}" on this challenge completion.`,
-        [{ text: 'OK', onPress: () => {
-          onBetPlaced();
-          onClose();
-        }}]
+        [{
+          text: 'OK', onPress: () => {
+            onBetPlaced();
+            onClose();
+          }
+        }]
       );
     } catch (error: any) {
       console.error('Error voting:', error);
@@ -598,7 +643,7 @@ export default function BettingModal({
             <Text style={styles.challengeDescription} numberOfLines={3}>
               {safeChallenge.description}
             </Text>
-            
+
             <View style={styles.phaseIndicator}>
               <Clock size={16} color="#8B5CF6" />
               <Text style={styles.phaseText}>{getPhaseDescription()}</Text>
@@ -760,7 +805,7 @@ export default function BettingModal({
               <View style={styles.section}>
                 <Text style={styles.sectionTitle}>Submitted Proof</Text>
                 <Image source={{ uri: safeChallenge.proofImageUrl }} style={styles.proofImage} />
-                
+
                 {safeChallenge.votingEndsAt && (
                   <View style={styles.votingTimer}>
                     <Vote size={16} color="#F59E0B" />
@@ -777,7 +822,7 @@ export default function BettingModal({
                   <Text style={styles.votingDescription}>
                     Does the submitted proof show that the challenge was completed successfully?
                   </Text>
-                  
+
                   <View style={styles.votingButtons}>
                     <TouchableOpacity
                       onPress={() => handleVote('yes')}
@@ -850,7 +895,7 @@ export default function BettingModal({
                   {safeChallenge.isCompleted ? '🎉 Challenge Completed!' : '❌ Challenge Failed'}
                 </Text>
                 <Text style={styles.resultDescription}>
-                  {safeChallenge.isCompleted 
+                  {safeChallenge.isCompleted
                     ? 'The challenge was completed successfully and verified by the group.'
                     : 'The challenge was not completed or proof was invalid.'
                   }

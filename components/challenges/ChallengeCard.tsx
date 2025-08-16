@@ -4,6 +4,7 @@ import { LinearGradient } from 'expo-linear-gradient';
 import { Clock, Users, Coins, CircleCheck as CheckCircle, Circle as XCircle, Camera, Vote, AlertTriangle } from 'lucide-react-native';
 import { Challenge, Bet } from '@/types';
 import { challengeService } from '@/services/challengeService';
+import { supabase } from '@/lib/supabase';
 import BettingModal from './BettingModal';
 import { CHALLENGE_CONFIG } from '@/lib/config';
 
@@ -25,13 +26,44 @@ export default function ChallengeCard({
     isCreator
 }: ChallengeCardProps) {
     const [showBettingModal, setShowBettingModal] = useState(false);
-    const [submittingProof, setSubmittingProof] = useState(false);
     const [currentPhase, setCurrentPhase] = useState<ChallengePhase>('betting');
+    const [userVote, setUserVote] = useState<'yes' | 'no' | null>(null);
+    const [loadingVote, setLoadingVote] = useState(false);
 
     // Update phase when challenge changes
     useEffect(() => {
         setCurrentPhase(determineCurrentPhase());
+        // Check user's voting status when challenge changes
+        if (challenge.status === 'voting' || challenge.status === 'completed') {
+            checkUserVotingStatus();
+        }
     }, [challenge]);
+
+    const checkUserVotingStatus = async () => {
+        try {
+            setLoadingVote(true);
+            const { data: { user } } = await supabase.auth.getUser();
+            if (!user) return;
+
+            const { data, error } = await supabase
+                .from('completion_votes')
+                .select('vote')
+                .eq('challenge_id', challenge.id)
+                .eq('user_id', user.id)
+                .single();
+
+            if (error && error.code !== 'PGRST116') {
+                console.error('Error checking user vote:', error);
+                return;
+            }
+
+            setUserVote(data?.vote || null);
+        } catch (error) {
+            console.error('Error checking user voting status:', error);
+        } finally {
+            setLoadingVote(false);
+        }
+    };
 
     const determineCurrentPhase = (): ChallengePhase => {
         const now = new Date();
@@ -172,44 +204,20 @@ export default function ChallengeCard({
             currentPhase === 'verification' &&
             userBet &&
             !isCreator &&
-            challenge.proofImageUrl
+            challenge.proofImageUrl &&
+            userVote === null // Can only vote if haven't voted yet
         );
+    };
+
+    const hasVoted = () => {
+        return userVote !== null;
     };
 
     const handleOpenModal = () => {
         setShowBettingModal(true);
     };
 
-    const handleVote = async (vote: 'yes' | 'no') => {
-        try {
-            await challengeService.voteOnCompletion(challenge.id, vote);
-            Alert.alert('Success', 'Vote submitted successfully!');
-            onVoteSubmitted();
-        } catch (error: any) {
-            console.error('Error voting:', error);
-            Alert.alert('Error', error.message || 'Failed to submit vote.');
-        }
-        // Alert.alert(
-        //     'Cast Vote',
-        //     `Vote "${vote.toUpperCase()}" on this challenge completion?`,
-        //     [
-        //         { text: 'Cancel', style: 'cancel' },
-        //         {
-        //             text: 'Confirm',
-        //             onPress: async () => {
-        //                 try {
-        //                     await challengeService.voteOnCompletion(challenge.id, vote);
-        //                     Alert.alert('Success', 'Vote submitted successfully!');
-        //                     onVoteSubmitted();
-        //                 } catch (error: any) {
-        //                     console.error('Error voting:', error);
-        //                     Alert.alert('Error', error.message || 'Failed to submit vote.');
-        //                 }
-        //             }
-        //         }
-        //     ]
-        // );
-    };
+
 
     const getTotalPool = () => {
         return challenge.totalYesBets + challenge.totalNoBets;
@@ -343,6 +351,61 @@ export default function ChallengeCard({
                             </TouchableOpacity>
                         )}
 
+                        {/* Show voting status if user has already voted */}
+                        {hasVoted() && currentPhase === 'verification' && userBet && !isCreator && (
+                            <View style={[
+                                styles.votedStatus,
+                                {
+                                    backgroundColor: userVote === 'yes' ? 'rgba(16, 185, 129, 0.1)' : 'rgba(239, 68, 68, 0.1)',
+                                    borderColor: userVote === 'yes' ? 'rgba(16, 185, 129, 0.3)' : 'rgba(239, 68, 68, 0.3)'
+                                }
+                            ]}>
+                                {userVote === 'yes' ? (
+                                    <CheckCircle size={16} color="#10B981" />
+                                ) : (
+                                    <XCircle size={16} color="#EF4444" />
+                                )}
+                                <Text style={[
+                                    styles.votedStatusText,
+                                    { color: userVote === 'yes' ? '#10B981' : '#EF4444' }
+                                ]}>
+                                    You voted {userVote?.toUpperCase()} on this proof
+                                </Text>
+                            </View>
+                        )}
+
+                        {/* Show loading state while checking vote status */}
+                        {/* Show voting status for completed challenges */}
+                        {hasVoted() && currentPhase === 'completed' && userBet && !isCreator && (
+                            <View style={[
+                                styles.votedStatus,
+                                {
+                                    backgroundColor: userVote === 'yes' ? 'rgba(16, 185, 129, 0.1)' : 'rgba(239, 68, 68, 0.1)',
+                                    borderColor: userVote === 'yes' ? 'rgba(16, 185, 129, 0.3)' : 'rgba(239, 68, 68, 0.3)'
+                                }
+                            ]}>
+                                {userVote === 'yes' ? (
+                                    <CheckCircle size={16} color="#10B981" />
+                                ) : (
+                                    <XCircle size={16} color="#EF4444" />
+                                )}
+                                <Text style={[
+                                    styles.votedStatusText,
+                                    { color: userVote === 'yes' ? '#10B981' : '#EF4444' }
+                                ]}>
+                                    You voted {userVote?.toUpperCase()} on this challenge
+                                </Text>
+                            </View>
+                        )}
+
+                        {/* Show loading state while checking vote status */}
+                        {loadingVote && currentPhase === 'verification' && userBet && !isCreator && (
+                            <View style={styles.waitingState}>
+                                <Vote size={16} color="#3B82F6" />
+                                <Text style={styles.waitingText}>Checking your vote status...</Text>
+                            </View>
+                        )}
+
                         {/* Waiting States */}
                         {currentPhase === 'waiting_for_proof' && (
                             <View style={styles.waitingState}>
@@ -360,7 +423,7 @@ export default function ChallengeCard({
                             </View>
                         )}
 
-                        {currentPhase === 'verification' && !canVote() && (
+                        {currentPhase === 'verification' && !canVote() && !hasVoted() && (
                             <View style={styles.waitingState}>
                                 <Vote size={16} color="#3B82F6" />
                                 <Text style={styles.waitingText}>
@@ -379,6 +442,8 @@ export default function ChallengeCard({
                 onBetPlaced={() => {
                     setShowBettingModal(false);
                     onBetPlaced();
+                    // Refresh voting status after any interaction
+                    checkUserVotingStatus();
                 }}
                 isCreator={isCreator}
                 userBet={userBet}
@@ -561,6 +626,22 @@ const styles = StyleSheet.create({
         fontSize: 12,
         fontWeight: '500',
         color: '#F59E0B',
+        textAlign: 'center',
+        flex: 1,
+    },
+    votedStatus: {
+        flexDirection: 'row',
+        alignItems: 'center',
+        justifyContent: 'center',
+        paddingVertical: 12,
+        paddingHorizontal: 16,
+        borderRadius: 8,
+        gap: 8,
+        borderWidth: 1,
+    },
+    votedStatusText: {
+        fontSize: 12,
+        fontWeight: '600',
         textAlign: 'center',
         flex: 1,
     },

@@ -225,184 +225,273 @@ class ChallengeService {
     }
 
     async finalizeChallenge(challengeId: string): Promise<void> {
-        // Get challenge and votes
-        const { data: challenge, error: challengeError } = await supabase
-            .from('challenges')
-            .select(`
-        *,
-        completion_votes(vote),
-        bets(user_id, bet_type, amount)
-      `)
-            .eq('id', challengeId)
-            .single();
+        try {
+            console.log(`Starting finalization for challenge ${challengeId}`);
 
-        if (challengeError) throw challengeError;
+            // Get challenge and votes
+            const { data: challenge, error: challengeError } = await supabase
+                .from('challenges')
+                .select(`
+            *,
+            completion_votes(vote),
+            bets(user_id, bet_type, amount)
+          `)
+                .eq('id', challengeId)
+                .single();
 
-        // Count votes
-        const yesVotes = challenge.completion_votes.filter((v: any) => v.vote === 'yes').length;
-        const noVotes = challenge.completion_votes.filter((v: any) => v.vote === 'no').length;
-        const isCompleted = yesVotes > noVotes;
+            if (challengeError) {
+                console.error('Error fetching challenge for finalization:', challengeError);
+                throw challengeError;
+            }
 
-        // Calculate payouts
-        await this.calculatePayouts(challenge, isCompleted);
+            // Check if already completed to avoid double processing
+            if (challenge.status === 'completed') {
+                console.log(`Challenge ${challengeId} already completed, skipping finalization`);
+                return;
+            }
 
-        // Update challenge status
-        await supabase
-            .from('challenges')
-            .update({
-                status: 'completed',
-                is_completed: isCompleted,
-                completion_votes: { yes: yesVotes, no: noVotes },
-            })
-            .eq('id', challengeId);
+            // Count votes
+            const yesVotes = challenge.completion_votes.filter((v: any) => v.vote === 'yes').length;
+            const noVotes = challenge.completion_votes.filter((v: any) => v.vote === 'no').length;
+            const isCompleted = yesVotes > noVotes;
+
+            console.log(`Challenge ${challengeId} voting results: YES=${yesVotes}, NO=${noVotes}, Completed=${isCompleted}`);
+
+            // Calculate payouts first
+            await this.calculatePayouts(challenge, isCompleted);
+
+            // Update challenge status
+            const { error: updateError } = await supabase
+                .from('challenges')
+                .update({
+                    status: 'completed',
+                    is_completed: isCompleted,
+                    completion_votes: { yes: yesVotes, no: noVotes },
+                    updated_at: new Date().toISOString(),
+                })
+                .eq('id', challengeId);
+
+            if (updateError) {
+                console.error('Error updating challenge status:', updateError);
+                throw updateError;
+            }
+
+            console.log(`Challenge ${challengeId} finalized successfully`);
+        } catch (error) {
+            console.error(`Error finalizing challenge ${challengeId}:`, error);
+            // Even if payout calculation fails, we should still mark the challenge as completed
+            // to prevent it from being stuck in voting status
+            try {
+                await supabase
+                    .from('challenges')
+                    .update({
+                        status: 'completed',
+                        is_completed: false, // Mark as failed if finalization had errors
+                        updated_at: new Date().toISOString(),
+                    })
+                    .eq('id', challengeId);
+                console.log(`Challenge ${challengeId} marked as completed despite finalization errors`);
+            } catch (fallbackError) {
+                console.error(`Failed to update challenge status as fallback:`, fallbackError);
+            }
+            throw error;
+        }
     }
 
     private async calculatePayouts(challenge: any, isCompleted: boolean): Promise<void> {
-        const yesBets = challenge.bets.filter((b: any) => b.bet_type === 'yes');
-        const noBets = challenge.bets.filter((b: any) => b.bet_type === 'no');
+        try {
+            console.log(`Calculating payouts for challenge ${challenge.id}`);
 
-        // Calculate totals (S = SUCCESS total, F = FAILURE total)
-        const S = yesBets.reduce((sum: number, bet: any) => sum + bet.amount, 0);
-        const F = noBets.reduce((sum: number, bet: any) => sum + bet.amount, 0);
+            // Check if payouts have already been processed to avoid duplicates
+            const { data: existingPayouts, error: payoutCheckError } = await supabase
+                .from('credit_transactions')
+                .select('id')
+                .eq('related_id', challenge.id)
+                .eq('type', 'payout')
+                .limit(1);
 
-        // Creator bonus rate (configurable)
-        const r = CHALLENGE_CONFIG.CREATOR_BONUS_RATE;
-
-        // Determine outcome, losing pool, winners, and winner total
-        const outcome = isCompleted ? 'SUCCESS' : 'FAILURE';
-        let losingPool: number;
-        let winners: any[];
-        let W_total: number;
-
-        if (outcome === 'SUCCESS') {
-            losingPool = F;
-            winners = yesBets;
-            W_total = S;
-        } else {
-            losingPool = S;
-            winners = noBets;
-            W_total = F;
-        }
-
-        // Handle edge cases: void and refund if no bets on one side or no winners
-        if (W_total === 0 || losingPool === 0) {
-            console.log('Voiding challenge - no bets on one side or no winners');
-            
-            // Refund all bets
-            for (const bet of [...yesBets, ...noBets]) {
-                await creditService.addCredits(
-                    bet.user_id,
-                    bet.amount,
-                    'payout',
-                    'Challenge voided - refund',
-                    challenge.id
-                );
+            if (payoutCheckError) {
+                console.error('Error checking existing payouts:', payoutCheckError);
+            } else if (existingPayouts && existingPayouts.length > 0) {
+                console.log(`Payouts already processed for challenge ${challenge.id}, skipping`);
+                return;
             }
-            return;
+
+            const yesBets = challenge.bets.filter((b: any) => b.bet_type === 'yes');
+            const noBets = challenge.bets.filter((b: any) => b.bet_type === 'no');
+
+            // Calculate totals (S = SUCCESS total, F = FAILURE total)
+            const S = yesBets.reduce((sum: number, bet: any) => sum + bet.amount, 0);
+            const F = noBets.reduce((sum: number, bet: any) => sum + bet.amount, 0);
+
+            // Creator bonus rate (configurable)
+            const r = CHALLENGE_CONFIG.CREATOR_BONUS_RATE || 0.1;
+
+            // Determine outcome, losing pool, winners, and winner total
+            const outcome = isCompleted ? 'SUCCESS' : 'FAILURE';
+            let losingPool: number;
+            let winners: any[];
+            let W_total: number;
+
+            if (outcome === 'SUCCESS') {
+                losingPool = F;
+                winners = yesBets;
+                W_total = S;
+            } else {
+                losingPool = S;
+                winners = noBets;
+                W_total = F;
+            }
+
+            console.log(`Payout calculation details:`, {
+                outcome,
+                S,
+                F,
+                losingPool,
+                W_total,
+                winnersCount: winners.length,
+                challengeId: challenge.id
+            });
+
+            // Handle edge cases: void and refund if no bets on one side or no winners
+            if (W_total === 0 || losingPool === 0) {
+                console.log('Voiding challenge - no bets on one side or no winners');
+
+                // Refund all bets
+                const allBets = [...yesBets, ...noBets];
+                for (const bet of allBets) {
+                    try {
+                        await creditService.addCredits(
+                            bet.user_id,
+                            bet.amount,
+                            'payout',
+                            'Challenge voided - refund',
+                            challenge.id
+                        );
+                        console.log(`Refunded ${bet.amount} credits to user ${bet.user_id}`);
+                    } catch (refundError) {
+                        console.error(`Error refunding bet for user ${bet.user_id}:`, refundError);
+                    }
+                }
+                return;
+            }
+
+            // Check if creator is on the winning side
+            const creatorBet = winners.find((bet: any) => bet.user_id === challenge.creator_id);
+            const isCreatorOnWinningSide = !!creatorBet;
+
+            // Calculate creator bonus (only if creator is on winning side)
+            const creatorBonus = isCreatorOnWinningSide ? Math.floor(r * losingPool) : 0;
+
+            // Calculate distributable pool to winners
+            const poolToWinners = losingPool - creatorBonus;
+
+            // Distribute payouts to winners
+            for (const bet of winners) {
+                try {
+                    const w_i = bet.amount;
+                    const proportionalShare = (w_i / W_total) * poolToWinners;
+                    const payout = Math.floor(w_i + proportionalShare);
+
+                    await creditService.addCredits(
+                        bet.user_id,
+                        payout,
+                        'payout',
+                        'Winning bet payout',
+                        challenge.id
+                    );
+                    console.log(`Paid out ${payout} credits to winner ${bet.user_id}`);
+                } catch (payoutError) {
+                    console.error(`Error paying out winner ${bet.user_id}:`, payoutError);
+                }
+            }
+
+            // Give creator bonus separately (if applicable)
+            if (creatorBonus > 0) {
+                try {
+                    await creditService.addCredits(
+                        challenge.creator_id,
+                        creatorBonus,
+                        'payout',
+                        'Challenge creator bonus',
+                        challenge.id
+                    );
+                    console.log(`Paid creator bonus of ${creatorBonus} credits to ${challenge.creator_id}`);
+                } catch (bonusError) {
+                    console.error(`Error paying creator bonus:`, bonusError);
+                }
+            }
+
+            console.log(`Payout calculation completed for challenge ${challenge.id}`);
+        } catch (error) {
+            console.error(`Error in calculatePayouts for challenge ${challenge.id}:`, error);
+            throw error;
         }
-
-        // Check if creator is on the winning side
-        const creatorBet = winners.find((bet: any) => bet.user_id === challenge.creator_id);
-        const isCreatorOnWinningSide = !!creatorBet;
-
-        // Calculate creator bonus (only if creator is on winning side)
-        const creatorBonus = isCreatorOnWinningSide ? r * losingPool : 0;
-
-        // Calculate distributable pool to winners
-        const poolToWinners = losingPool - creatorBonus;
-
-        // Distribute payouts to winners
-        for (const bet of winners) {
-            const w_i = bet.amount;
-            const proportionalShare = (w_i / W_total) * poolToWinners;
-            const payout = w_i + proportionalShare;
-
-            await creditService.addCredits(
-                bet.user_id,
-                payout,
-                'payout',
-                'Winning bet payout',
-                challenge.id
-            );
-        }
-
-        // Give creator bonus separately (if applicable)
-        if (creatorBonus > 0) {
-            await creditService.addCredits(
-                challenge.creator_id,
-                creatorBonus,
-                'payout',
-                'Challenge creator bonus',
-                challenge.id
-            );
-        }
-
-        // Log the payout calculation for debugging
-        console.log('Payout calculation:', {
-            outcome,
-            S,
-            F,
-            losingPool,
-            W_total,
-            creatorBonus,
-            poolToWinners,
-            isCreatorOnWinningSide,
-            winnersCount: winners.length
-        });
-
-        // Note: Losers automatically forfeit their stakes (no action needed)
-        // Their credits were already deducted when they placed their bets
     }
 
     private async updateChallengeStatuses(groupId?: string): Promise<void> {
-        const now = new Date();
+        try {
+            const now = new Date();
 
-        // Get challenges that might need status updates
-        let query = supabase
-            .from('challenges')
-            .select('id, status, deadline, proof_image_url, voting_ends_at, proof_submitted_at');
+            // Get challenges that might need status updates
+            let query = supabase
+                .from('challenges')
+                .select('id, status, deadline, proof_image_url, voting_ends_at, proof_submitted_at');
 
-        if (groupId) {
-            query = query.eq('group_id', groupId);
-        }
-
-        const { data: challenges, error } = await query
-            .in('status', ['active', 'voting'])
-            .order('created_at', { ascending: false });
-
-        if (error) {
-            console.error('Error fetching challenges for status update:', error);
-            return;
-        }
-
-        for (const challenge of challenges || []) {
-            const deadline = new Date(challenge.deadline);
-            const proofDeadline = new Date(deadline.getTime() + CHALLENGE_CONFIG.PROOF_SUBMISSION_HOURS * 60 * 60 * 1000);
-
-            // Handle active challenges that have passed their deadline
-            if (challenge.status === 'active' && now > deadline) {
-                // If proof deadline has also passed and no proof submitted, mark as failed
-                if (now > proofDeadline && !challenge.proof_image_url) {
-                    await supabase
-                        .from('challenges')
-                        .update({
-                            status: 'completed',
-                            is_completed: false,
-                        })
-                        .eq('id', challenge.id);
-                }
-                // If deadline passed but still within proof window, don't change status yet
-                // The status will be updated when proof is submitted or proof deadline passes
+            if (groupId) {
+                query = query.eq('group_id', groupId);
             }
 
-            // Handle voting challenges where voting period has ended
-            if (challenge.status === 'voting' && challenge.voting_ends_at) {
-                const votingEnd = new Date(challenge.voting_ends_at);
-                if (now > votingEnd) {
-                    // Finalize the challenge based on votes
-                    await this.finalizeChallenge(challenge.id);
+            const { data: challenges, error } = await query
+                .in('status', ['active', 'voting'])
+                .order('created_at', { ascending: false });
+
+            if (error) {
+                console.error('Error fetching challenges for status update:', error);
+                return;
+            }
+
+            console.log(`Checking ${challenges?.length || 0} challenges for status updates`);
+
+            for (const challenge of challenges || []) {
+                try {
+                    const deadline = new Date(challenge.deadline);
+                    const proofDeadline = new Date(deadline.getTime() + CHALLENGE_CONFIG.PROOF_SUBMISSION_HOURS * 60 * 60 * 1000);
+
+                    // Handle active challenges that have passed their deadline
+                    if (challenge.status === 'active' && now > deadline) {
+                        // If proof deadline has also passed and no proof submitted, mark as failed
+                        if (now > proofDeadline && !challenge.proof_image_url) {
+                            console.log(`Marking challenge ${challenge.id} as failed - no proof submitted`);
+                            await supabase
+                                .from('challenges')
+                                .update({
+                                    status: 'completed',
+                                    is_completed: false,
+                                    updated_at: new Date().toISOString(),
+                                })
+                                .eq('id', challenge.id);
+                        }
+                        // If deadline passed but still within proof window, don't change status yet
+                        // The status will be updated when proof is submitted or proof deadline passes
+                    }
+
+                    // Handle voting challenges where voting period has ended
+                    if (challenge.status === 'voting' && challenge.voting_ends_at) {
+                        const votingEnd = new Date(challenge.voting_ends_at);
+                        if (now > votingEnd) {
+                            console.log(`Finalizing challenge ${challenge.id} - voting period ended`);
+                            // Finalize the challenge based on votes
+                            await this.finalizeChallenge(challenge.id);
+                        }
+                    }
+                } catch (challengeError) {
+                    console.error(`Error updating status for challenge ${challenge.id}:`, challengeError);
+                    // Continue with other challenges even if one fails
                 }
             }
+        } catch (error) {
+            console.error('Error in updateChallengeStatuses:', error);
         }
     }
 
@@ -452,41 +541,105 @@ class ChallengeService {
         return mappedData;
     }
     async refreshChallengeStatus(challengeId: string): Promise<void> {
-        const { data: challenge, error } = await supabase
-            .from('challenges')
-            .select('id, status, deadline, proof_image_url, voting_ends_at, proof_submitted_at')
-            .eq('id', challengeId)
-            .single();
+        try {
+            const { data: challenge, error } = await supabase
+                .from('challenges')
+                .select('id, status, deadline, proof_image_url, voting_ends_at, proof_submitted_at')
+                .eq('id', challengeId)
+                .single();
 
-        if (error) {
-            console.error('Error fetching challenge for status refresh:', error);
-            return;
-        }
-
-        const now = new Date();
-        const deadline = new Date(challenge.deadline);
-        const proofDeadline = new Date(deadline.getTime() + 3 * 60 * 60 * 1000);
-
-        // Handle active challenges that have passed their deadline
-        if (challenge.status === 'active' && now > deadline) {
-            // If proof deadline has also passed and no proof submitted, mark as failed
-            if (now > proofDeadline && !challenge.proof_image_url) {
-                await supabase
-                    .from('challenges')
-                    .update({
-                        status: 'completed',
-                        is_completed: false,
-                    })
-                    .eq('id', challenge.id);
+            if (error) {
+                console.error('Error fetching challenge for status refresh:', error);
+                return;
             }
-        }
 
-        // Handle voting challenges where voting period has ended
-        if (challenge.status === 'voting' && challenge.voting_ends_at) {
-            const votingEnd = new Date(challenge.voting_ends_at);
-            if (now > votingEnd) {
+            const now = new Date();
+            const deadline = new Date(challenge.deadline);
+            const proofDeadline = new Date(deadline.getTime() + CHALLENGE_CONFIG.PROOF_SUBMISSION_HOURS * 60 * 60 * 1000);
+
+            // Handle active challenges that have passed their deadline
+            if (challenge.status === 'active' && now > deadline) {
+                // If proof deadline has also passed and no proof submitted, mark as failed
+                if (now > proofDeadline && !challenge.proof_image_url) {
+                    console.log(`Refreshing challenge ${challengeId} - marking as failed`);
+                    await supabase
+                        .from('challenges')
+                        .update({
+                            status: 'completed',
+                            is_completed: false,
+                            updated_at: new Date().toISOString(),
+                        })
+                        .eq('id', challenge.id);
+                }
+            }
+
+            // Handle voting challenges where voting period has ended
+            if (challenge.status === 'voting' && challenge.voting_ends_at) {
+                const votingEnd = new Date(challenge.voting_ends_at);
+                if (now > votingEnd) {
+                    console.log(`Refreshing challenge ${challengeId} - finalizing voting`);
+                    await this.finalizeChallenge(challenge.id);
+                }
+            }
+        } catch (error) {
+            console.error(`Error refreshing challenge status for ${challengeId}:`, error);
+        }
+    }
+
+    // Method to fix stuck challenges that should be completed but aren't
+    async fixStuckChallenges(): Promise<void> {
+        try {
+            console.log('Checking for stuck challenges...');
+            const now = new Date();
+
+            // Find challenges that are stuck in voting status past their voting deadline
+            const { data: stuckChallenges, error } = await supabase
+                .from('challenges')
+                .select('id, status, voting_ends_at, deadline')
+                .eq('status', 'voting')
+                .lt('voting_ends_at', now.toISOString());
+
+            if (error) {
+                console.error('Error finding stuck challenges:', error);
+                return;
+            }
+
+            console.log(`Found ${stuckChallenges?.length || 0} stuck challenges`);
+
+            for (const challenge of stuckChallenges || []) {
+                console.log(`Fixing stuck challenge ${challenge.id}`);
                 await this.finalizeChallenge(challenge.id);
             }
+
+            // Also find active challenges that should have failed
+            const { data: expiredChallenges, error: expiredError } = await supabase
+                .from('challenges')
+                .select('id, status, deadline, proof_image_url')
+                .eq('status', 'active')
+                .lt('deadline', new Date(now.getTime() - CHALLENGE_CONFIG.PROOF_SUBMISSION_HOURS * 60 * 60 * 1000).toISOString());
+
+            if (expiredError) {
+                console.error('Error finding expired challenges:', expiredError);
+                return;
+            }
+
+            console.log(`Found ${expiredChallenges?.length || 0} expired challenges`);
+
+            for (const challenge of expiredChallenges || []) {
+                if (!challenge.proof_image_url) {
+                    console.log(`Marking expired challenge ${challenge.id} as failed`);
+                    await supabase
+                        .from('challenges')
+                        .update({
+                            status: 'completed',
+                            is_completed: false,
+                            updated_at: new Date().toISOString(),
+                        })
+                        .eq('id', challenge.id);
+                }
+            }
+        } catch (error) {
+            console.error('Error fixing stuck challenges:', error);
         }
     }
 }

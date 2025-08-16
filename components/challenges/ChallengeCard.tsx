@@ -205,7 +205,7 @@ export default function ChallengeCard({
             userBet &&
             !isCreator &&
             challenge.proofImageUrl &&
-            userVote === null // Can only vote if haven't voted yet
+            userVote === null 
         );
     };
 

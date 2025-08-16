@@ -117,6 +117,9 @@ export default function SocialScreen() {
 
   const loadUserGroups = async (userId: string, forceRefresh = false) => {
     try {
+      // Fix any stuck challenges before loading
+      await challengeService.fixStuckChallenges();
+      
       const groups = await groupService.getUserGroups(userId);
       
       // Only update if groups have actually changed or force refresh

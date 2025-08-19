@@ -120,9 +120,29 @@ class ChallengeService {
         if (error) throw error;
     }
 
-    async voteOnCompletion(challengeId: string, vote: 'yes' | 'no'): Promise<void> {
+    async voteOnCompletion(challengeId: string, vote: 'yes' | 'no'): Promise<{
+        success: boolean;
+        userVote?: {
+            hasVoted: boolean;
+            voteChoice: 'yes' | 'no';
+            votedAt: string;
+        };
+        error?: string;
+    }> {
         const userId = await getCurrentUserId();
         if (!userId) throw new Error('User not authenticated');
+
+        // Check if user has already voted
+        const { data: existingVote, error: existingVoteError } = await supabase
+            .from('completion_votes')
+            .select('vote')
+            .eq('challenge_id', challengeId)
+            .eq('user_id', userId)
+            .single();
+
+        if (!existingVoteError && existingVote) {
+            throw new Error('You have already voted on this challenge');
+        }
 
         // Check if user has bet on this challenge
         const { data: bet, error: betError } = await supabase
@@ -148,15 +168,26 @@ class ChallengeService {
         }
 
         // Submit vote
-        const { error: voteError } = await supabase
+        const { data: voteData, error: voteError } = await supabase
             .from('completion_votes')
             .upsert({
                 challenge_id: challengeId,
                 user_id: userId,
                 vote,
-            });
+            })
+            .select('vote, created_at')
+            .single();
 
         if (voteError) throw voteError;
+
+        return {
+            success: true,
+            userVote: {
+                hasVoted: true,
+                voteChoice: voteData.vote,
+                votedAt: voteData.created_at
+            }
+        };
     }
 
     async getUserBet(challengeId: string): Promise<Bet | null> {
@@ -186,6 +217,76 @@ class ChallengeService {
         };
     }
 
+    async getUserVoteStatus(challengeId: string): Promise<{
+        hasVoted: boolean;
+        voteChoice?: 'yes' | 'no';
+        votedAt?: string;
+        canVote: boolean;
+        votingEnded: boolean;
+    }> {
+        const userId = await getCurrentUserId();
+        if (!userId) {
+            return {
+                hasVoted: false,
+                canVote: false,
+                votingEnded: false
+            };
+        }
+
+        // Check if user has voted
+        const { data: voteData, error: voteError } = await supabase
+            .from('completion_votes')
+            .select('vote, created_at')
+            .eq('challenge_id', challengeId)
+            .eq('user_id', userId)
+            .single();
+
+        const hasVoted = !voteError && !!voteData;
+
+        // Get challenge info to determine voting status
+        const { data: challenge, error: challengeError } = await supabase
+            .from('challenges')
+            .select('status, voting_ends_at, creator_id')
+            .eq('id', challengeId)
+            .single();
+
+        if (challengeError) {
+            return {
+                hasVoted,
+                voteChoice: hasVoted ? voteData.vote : undefined,
+                votedAt: hasVoted ? voteData.created_at : undefined,
+                canVote: false,
+                votingEnded: true
+            };
+        }
+
+        // Check if user has bet on this challenge (required to vote)
+        const userBet = await this.getUserBet(challengeId);
+        const hasBet = !!userBet;
+
+        // Determine if voting period has ended
+        const votingEnded = challenge.status !== 'voting' || 
+            (challenge.voting_ends_at && new Date(challenge.voting_ends_at) < new Date());
+
+        // User can vote if:
+        // - They have bet on the challenge
+        // - They haven't voted yet
+        // - They are not the creator
+        // - Voting period is still active
+        const canVote = hasBet && 
+            !hasVoted && 
+            challenge.creator_id !== userId && 
+            !votingEnded;
+
+        return {
+            hasVoted,
+            voteChoice: hasVoted ? voteData.vote : undefined,
+            votedAt: hasVoted ? voteData.created_at : undefined,
+            canVote,
+            votingEnded
+        };
+    }
+
     async getGroupChallenges(groupId: string): Promise<Challenge[]> {
         // First, update any challenges that need status updates
         await this.updateChallengeStatuses(groupId);
@@ -198,27 +299,32 @@ class ChallengeService {
 
         if (error) throw error;
 
-        // Map database fields to TypeScript interface
-        const mappedData = (data || []).map(challenge => ({
-            id: challenge.id,
-            creatorId: challenge.creator_id,
-            title: challenge.title,
-            description: challenge.description,
-            minimumBet: challenge.minimum_bet,
-            deadline: challenge.deadline,
-            isGlobal: challenge.is_global,
-            groupId: challenge.group_id,
-            status: challenge.status,
-            proofImageUrl: challenge.proof_image_url,
-            proofSubmittedAt: challenge.proof_submitted_at,
-            votingEndsAt: challenge.voting_ends_at,
-            totalYesBets: challenge.total_yes_bets,
-            totalNoBets: challenge.total_no_bets,
-            totalCreditsPool: challenge.total_credits_pool,
-            isCompleted: challenge.is_completed,
-            completionVotes: challenge.completion_votes,
-            createdAt: challenge.created_at,
-            updatedAt: challenge.updated_at
+        // Map database fields to TypeScript interface and add vote status
+        const mappedData = await Promise.all((data || []).map(async challenge => {
+            const voteStatus = await this.getUserVoteStatus(challenge.id);
+            
+            return {
+                id: challenge.id,
+                creatorId: challenge.creator_id,
+                title: challenge.title,
+                description: challenge.description,
+                minimumBet: challenge.minimum_bet,
+                deadline: challenge.deadline,
+                isGlobal: challenge.is_global,
+                groupId: challenge.group_id,
+                status: challenge.status,
+                proofImageUrl: challenge.proof_image_url,
+                proofSubmittedAt: challenge.proof_submitted_at,
+                votingEndsAt: challenge.voting_ends_at,
+                totalYesBets: challenge.total_yes_bets,
+                totalNoBets: challenge.total_no_bets,
+                totalCreditsPool: challenge.total_credits_pool,
+                isCompleted: challenge.is_completed,
+                completionVotes: challenge.completion_votes,
+                createdAt: challenge.created_at,
+                updatedAt: challenge.updated_at,
+                userVote: voteStatus
+            };
         }));
 
         return mappedData;

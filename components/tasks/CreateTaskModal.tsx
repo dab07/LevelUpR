@@ -455,7 +455,13 @@ export default function CreateTaskModal({
                                                 <Text style={styles.navButtonText}>›</Text>
                                             </TouchableOpacity>
                                         </View>
-                                        <ScrollView style={styles.yearList} showsVerticalScrollIndicator={false}>
+                                        <ScrollView
+                                            style={styles.yearList}
+                                            contentContainerStyle={styles.yearListContent}
+                                            showsVerticalScrollIndicator={false}
+                                            nestedScrollEnabled={true}
+                                            bounces={false}
+                                        >
                                             {getYearRange().map((year) => (
                                                 <TouchableOpacity
                                                     key={year}
@@ -819,6 +825,10 @@ const styles = StyleSheet.create({
     },
     yearList: {
         maxHeight: 150,
+        flex: 1,
+    },
+    yearListContent: {
+        flexGrow: 1,
     },
     yearOption: {
         paddingHorizontal: 16,

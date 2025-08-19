@@ -34,6 +34,7 @@ export default function SocialScreen() {
   // Subscription refs
   const challengeSubscriptionRef = useRef<any>(null);
   const betSubscriptionRef = useRef<any>(null);
+  const voteSubscriptionRef = useRef<any>(null);
 
   useEffect(() => {
     initialize();
@@ -53,6 +54,9 @@ export default function SocialScreen() {
       }
       if (betSubscriptionRef.current) {
         betSubscriptionRef.current.unsubscribe();
+      }
+      if (voteSubscriptionRef.current) {
+        voteSubscriptionRef.current.unsubscribe();
       }
     };
   }, [user]);
@@ -93,6 +97,25 @@ export default function SocialScreen() {
         (payload) => {
           console.log('Bet update received:', payload);
           // Only refresh if there's an actual change
+          if (user) {
+            loadUserGroups(user.id, true);
+          }
+        }
+      )
+      .subscribe();
+
+    // Subscribe to completion_votes updates
+    voteSubscriptionRef.current = supabase
+      .channel('completion_votes')
+      .on('postgres_changes', 
+        { 
+          event: '*', 
+          schema: 'public', 
+          table: 'completion_votes'
+        }, 
+        (payload) => {
+          console.log('Vote update received:', payload);
+          // Refresh data when votes are updated
           if (user) {
             loadUserGroups(user.id, true);
           }
@@ -190,14 +213,14 @@ export default function SocialScreen() {
 
   const handleVoteSubmitted = async () => {
     if (!user) return;
-    await loadUserGroups(user.id); 
+    await loadUserGroups(user.id, true); // Force refresh after vote submission
   };
 
   const handleChallengeInteraction = async (challengeId: string) => {
     // Refresh specific challenge status when user interacts with it
     await challengeService.refreshChallengeStatus(challengeId);
     if (user) {
-      await loadUserGroups(user.id); // Force refresh after interaction
+      await loadUserGroups(user.id, true); // Force refresh after interaction
     }
   };
 

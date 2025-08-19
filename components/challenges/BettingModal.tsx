@@ -558,23 +558,62 @@ export default function BettingModal({
     }
 
     setVotingLoading(true);
+    
+    // Optimistic update - immediately show that user has voted
+    const previousHasVoted = hasVoted;
+    setHasVoted(true);
+    
     try {
       await challengeService.voteOnCompletion(safeChallenge.id, vote);
-      setHasVoted(true);
 
       Alert.alert(
-        'Vote Submitted!',
-        `You voted "${vote.toUpperCase()}" on this challenge completion.`,
+        'Vote Submitted Successfully! ✅',
+        `You voted "${vote.toUpperCase()}" on this challenge completion. Your vote has been recorded and will be counted when the voting period ends.`,
         [{
           text: 'OK', onPress: () => {
-            onBetPlaced();
+            onBetPlaced(); // This will trigger a data refresh
             onClose();
           }
         }]
       );
     } catch (error: any) {
       console.error('Error voting:', error);
-      Alert.alert('Error', error.message || 'Failed to submit vote.');
+      
+      // Revert optimistic update on error
+      setHasVoted(previousHasVoted);
+      
+      // Provide specific error messages based on error type
+      let errorMessage = 'Failed to submit vote.';
+      let showRetry = false;
+      
+      if (error.message.includes('You must have bet on this challenge')) {
+        errorMessage = 'You must place a bet on this challenge before you can vote.';
+      } else if (error.message.includes('Voting period has ended')) {
+        errorMessage = 'The voting period for this challenge has ended.';
+      } else if (error.message.includes('already voted')) {
+        errorMessage = 'You have already voted on this challenge.';
+      } else if (error.message.includes('network') || error.message.includes('connection')) {
+        errorMessage = 'Network error. Please check your connection and try again.';
+        showRetry = true;
+      } else if (error.message) {
+        errorMessage = error.message;
+      }
+      
+      if (showRetry) {
+        Alert.alert(
+          'Vote Failed',
+          errorMessage,
+          [
+            { text: 'Cancel', style: 'cancel' },
+            { 
+              text: 'Retry', 
+              onPress: () => handleVote(vote) // Retry the same vote
+            }
+          ]
+        );
+      } else {
+        Alert.alert('Vote Failed', errorMessage);
+      }
     } finally {
       setVotingLoading(false);
     }

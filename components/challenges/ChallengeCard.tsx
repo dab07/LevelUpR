@@ -27,43 +27,12 @@ export default function ChallengeCard({
 }: ChallengeCardProps) {
     const [showBettingModal, setShowBettingModal] = useState(false);
     const [currentPhase, setCurrentPhase] = useState<ChallengePhase>('betting');
-    const [userVote, setUserVote] = useState<'yes' | 'no' | null>(null);
-    const [loadingVote, setLoadingVote] = useState(false);
+    const [votingInProgress, setVotingInProgress] = useState(false);
 
     // Update phase when challenge changes
     useEffect(() => {
         setCurrentPhase(determineCurrentPhase());
-        // Check user's voting status when challenge changes
-        if (challenge.status === 'voting' || challenge.status === 'completed') {
-            checkUserVotingStatus();
-        }
     }, [challenge]);
-
-    const checkUserVotingStatus = async () => {
-        try {
-            setLoadingVote(true);
-            const { data: { user } } = await supabase.auth.getUser();
-            if (!user) return;
-
-            const { data, error } = await supabase
-                .from('completion_votes')
-                .select('vote')
-                .eq('challenge_id', challenge.id)
-                .eq('user_id', user.id)
-                .single();
-
-            if (error && error.code !== 'PGRST116') {
-                console.error('Error checking user vote:', error);
-                return;
-            }
-
-            setUserVote(data?.vote || null);
-        } catch (error) {
-            console.error('Error checking user voting status:', error);
-        } finally {
-            setLoadingVote(false);
-        }
-    };
 
     const determineCurrentPhase = (): ChallengePhase => {
         const now = new Date();
@@ -200,17 +169,32 @@ export default function ChallengeCard({
     };
 
     const canVote = () => {
+        // Use the vote status from the challenge data if available
+        if (challenge.userVote) {
+            return challenge.userVote.canVote && !votingInProgress;
+        }
+        
+        // Fallback to original logic
         return (
             currentPhase === 'verification' &&
             userBet &&
             !isCreator &&
             challenge.proofImageUrl &&
-            userVote === null 
+            !votingInProgress
         );
     };
 
     const hasVoted = () => {
-        return userVote !== null;
+        // Use the vote status from the challenge data if available
+        if (challenge.userVote) {
+            return challenge.userVote.hasVoted;
+        }
+        
+        return false;
+    };
+
+    const getUserVoteChoice = () => {
+        return challenge.userVote?.voteChoice;
     };
 
     const handleOpenModal = () => {
@@ -344,10 +328,13 @@ export default function ChallengeCard({
                         {canVote() && (
                             <TouchableOpacity
                                 onPress={handleOpenModal}
-                                style={styles.voteButton}
+                                style={[styles.voteButton, votingInProgress && styles.disabledButton]}
+                                disabled={votingInProgress}
                             >
                                 <Vote size={20} color="#FFFFFF" />
-                                <Text style={styles.voteButtonText}>Vote on Proof</Text>
+                                <Text style={styles.voteButtonText}>
+                                    {votingInProgress ? 'Submitting Vote...' : 'Vote on Proof'}
+                                </Text>
                             </TouchableOpacity>
                         )}
 
@@ -356,20 +343,20 @@ export default function ChallengeCard({
                             <View style={[
                                 styles.votedStatus,
                                 {
-                                    backgroundColor: userVote === 'yes' ? 'rgba(16, 185, 129, 0.1)' : 'rgba(239, 68, 68, 0.1)',
-                                    borderColor: userVote === 'yes' ? 'rgba(16, 185, 129, 0.3)' : 'rgba(239, 68, 68, 0.3)'
+                                    backgroundColor: getUserVoteChoice() === 'yes' ? 'rgba(16, 185, 129, 0.1)' : 'rgba(239, 68, 68, 0.1)',
+                                    borderColor: getUserVoteChoice() === 'yes' ? 'rgba(16, 185, 129, 0.3)' : 'rgba(239, 68, 68, 0.3)'
                                 }
                             ]}>
-                                {userVote === 'yes' ? (
+                                {getUserVoteChoice() === 'yes' ? (
                                     <CheckCircle size={16} color="#10B981" />
                                 ) : (
                                     <XCircle size={16} color="#EF4444" />
                                 )}
                                 <Text style={[
                                     styles.votedStatusText,
-                                    { color: userVote === 'yes' ? '#10B981' : '#EF4444' }
+                                    { color: getUserVoteChoice() === 'yes' ? '#10B981' : '#EF4444' }
                                 ]}>
-                                    You voted {userVote?.toUpperCase()} on this proof
+                                    You voted {getUserVoteChoice()?.toUpperCase()} on this proof
                                 </Text>
                             </View>
                         )}
@@ -380,29 +367,29 @@ export default function ChallengeCard({
                             <View style={[
                                 styles.votedStatus,
                                 {
-                                    backgroundColor: userVote === 'yes' ? 'rgba(16, 185, 129, 0.1)' : 'rgba(239, 68, 68, 0.1)',
-                                    borderColor: userVote === 'yes' ? 'rgba(16, 185, 129, 0.3)' : 'rgba(239, 68, 68, 0.3)'
+                                    backgroundColor: getUserVoteChoice() === 'yes' ? 'rgba(16, 185, 129, 0.1)' : 'rgba(239, 68, 68, 0.1)',
+                                    borderColor: getUserVoteChoice() === 'yes' ? 'rgba(16, 185, 129, 0.3)' : 'rgba(239, 68, 68, 0.3)'
                                 }
                             ]}>
-                                {userVote === 'yes' ? (
+                                {getUserVoteChoice() === 'yes' ? (
                                     <CheckCircle size={16} color="#10B981" />
                                 ) : (
                                     <XCircle size={16} color="#EF4444" />
                                 )}
                                 <Text style={[
                                     styles.votedStatusText,
-                                    { color: userVote === 'yes' ? '#10B981' : '#EF4444' }
+                                    { color: getUserVoteChoice() === 'yes' ? '#10B981' : '#EF4444' }
                                 ]}>
-                                    You voted {userVote?.toUpperCase()} on this challenge
+                                    You voted {getUserVoteChoice()?.toUpperCase()} on this challenge
                                 </Text>
                             </View>
                         )}
 
-                        {/* Show loading state while checking vote status */}
-                        {loadingVote && currentPhase === 'verification' && userBet && !isCreator && (
+                        {/* Show voting in progress state */}
+                        {votingInProgress && currentPhase === 'verification' && userBet && !isCreator && (
                             <View style={styles.waitingState}>
                                 <Vote size={16} color="#3B82F6" />
-                                <Text style={styles.waitingText}>Checking your vote status...</Text>
+                                <Text style={styles.waitingText}>Submitting your vote...</Text>
                             </View>
                         )}
 
@@ -431,6 +418,15 @@ export default function ChallengeCard({
                                 </Text>
                             </View>
                         )}
+
+                        {currentPhase === 'verification' && hasVoted() && !isCreator && (
+                            <View style={styles.waitingState}>
+                                <Vote size={16} color="#10B981" />
+                                <Text style={styles.waitingText}>
+                                    Your vote has been submitted. Waiting for other votes...
+                                </Text>
+                            </View>
+                        )}
                     </View>
                 </LinearGradient>
             </View>
@@ -442,8 +438,6 @@ export default function ChallengeCard({
                 onBetPlaced={() => {
                     setShowBettingModal(false);
                     onBetPlaced();
-                    // Refresh voting status after any interaction
-                    checkUserVotingStatus();
                 }}
                 isCreator={isCreator}
                 userBet={userBet}
@@ -611,6 +605,10 @@ const styles = StyleSheet.create({
         fontSize: 14,
         fontWeight: '600',
         color: '#FFFFFF',
+    },
+    disabledButton: {
+        backgroundColor: '#9CA3AF',
+        opacity: 0.7,
     },
     waitingState: {
         flexDirection: 'row',

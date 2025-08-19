@@ -50,6 +50,12 @@ export interface Challenge {
     yes: number;
     no: number;
   };
+  userVote?: VoteStatus;
+  votingStats?: {
+    totalVotes: number;
+    yesVotes: number;
+    noVotes: number;
+  };
   createdAt: string;
   updatedAt: string;
 }
@@ -62,6 +68,23 @@ export interface Bet {
   amount: number;
   payout?: number;
   createdAt: string;
+}
+
+export interface VoteStatus {
+  hasVoted: boolean;
+  voteChoice?: 'yes' | 'no';
+  votedAt?: string;
+  canVote: boolean;
+  votingEnded: boolean;
+}
+
+export interface VoteStatusResponse {
+  challengeId: string;
+  userId: string;
+  vote?: 'yes' | 'no';
+  votedAt?: string;
+  canVote: boolean;
+  votingEnded: boolean;
 }
 
 export interface Group {

@@ -2,7 +2,6 @@ import React, { useState } from 'react';
 import {
     View,
     Text,
-    StyleSheet,
     Modal,
     TextInput,
     TouchableOpacity,
@@ -115,23 +114,23 @@ export default function CreateGroupModal({ visible, onClose, onGroupCreated }: C
             presentationStyle="pageSheet"
             onRequestClose={handleClose}
         >
-            <View style={styles.container}>
-                <View style={styles.header}>
-                    <TouchableOpacity onPress={handleClose} style={styles.closeButton}>
+            <View className="flex-1 bg-white">
+                <View className="flex-row items-center justify-between px-5 py-4 border-b border-gray-200">
+                    <TouchableOpacity onPress={handleClose} className="p-1">
                         <X size={24} color="#6B7280" />
                     </TouchableOpacity>
-                    <Text style={styles.title}>
+                    <Text className="text-lg font-semibold text-gray-900">
                         {step === 1 ? 'Create Group' : 'Add Members'}
                     </Text>
-                    <View style={styles.placeholder} />
+                    <View className="w-8" />
                 </View>
 
                 {step === 1 ? (
-                    <ScrollView style={styles.content}>
-                        <View style={styles.section}>
-                            <Text style={styles.label}>Group Name *</Text>
+                    <ScrollView className="flex-1 p-5">
+                        <View className="mb-6">
+                            <Text className="text-base font-semibold text-gray-700 mb-2">Group Name *</Text>
                             <TextInput
-                                style={styles.input}
+                                className="border border-gray-300 rounded-lg px-3 py-2.5 text-base text-gray-900"
                                 value={groupName}
                                 onChangeText={setGroupName}
                                 placeholder="Enter group name"
@@ -139,10 +138,11 @@ export default function CreateGroupModal({ visible, onClose, onGroupCreated }: C
                             />
                         </View>
 
-                        <View style={styles.section}>
-                            <Text style={styles.label}>Description (Optional)</Text>
+                        <View className="mb-6">
+                            <Text className="text-base font-semibold text-gray-700 mb-2">Description (Optional)</Text>
                             <TextInput
-                                style={[styles.input, styles.textArea]}
+                                className="border border-gray-300 rounded-lg px-3 py-2.5 text-base text-gray-900 h-20"
+                                style={{ textAlignVertical: 'top' }}
                                 value={groupDescription}
                                 onChangeText={setGroupDescription}
                                 placeholder="What's this group about?"
@@ -154,18 +154,18 @@ export default function CreateGroupModal({ visible, onClose, onGroupCreated }: C
 
                         <TouchableOpacity
                             onPress={handleNext}
-                            style={styles.nextButton}
+                            className="bg-purple-500 py-3 rounded-lg items-center mt-5"
                         >
-                            <Text style={styles.nextButtonText}>Next: Add Members</Text>
+                            <Text className="text-base font-semibold text-white">Next: Add Members</Text>
                         </TouchableOpacity>
                     </ScrollView>
                 ) : (
-                    <View style={styles.content}>
-                        <View style={styles.searchSection}>
-                            <View style={styles.searchContainer}>
+                    <View className="flex-1 p-5">
+                        <View className="mb-6">
+                            <View className="flex-row items-center bg-gray-50 rounded-lg px-3 py-2.5 border border-gray-200">
                                 <Search size={20} color="#6B7280" />
                                 <TextInput
-                                    style={styles.searchInput}
+                                    className="flex-1 text-base text-gray-900 ml-2"
                                     value={searchQuery}
                                     onChangeText={handleSearch}
                                     placeholder="Search by username..."
@@ -175,16 +175,16 @@ export default function CreateGroupModal({ visible, onClose, onGroupCreated }: C
                             </View>
 
                             {searchResults.length > 0 && (
-                                <ScrollView style={styles.searchResults}>
+                                <ScrollView className="max-h-[200px] mt-2 rounded-lg bg-gray-50">
                                     {searchResults.map((user) => (
                                         <TouchableOpacity
                                             key={user.id}
                                             onPress={() => handleAddMember(user)}
-                                            style={styles.searchResult}
+                                            className="flex-row items-center justify-between px-4 py-3 border-b border-gray-200"
                                         >
-                                            <View style={styles.userInfo}>
-                                                <Text style={styles.username}>@{user.username}</Text>
-                                                <Text style={styles.displayName}>{user.displayName}</Text>
+                                            <View className="flex-1">
+                                                <Text className="text-base font-semibold text-gray-900">@{user.username}</Text>
+                                                <Text className="text-sm text-gray-500 mt-0.5">{user.displayName}</Text>
                                             </View>
                                             <UserPlus size={20} color="#8B5CF6" />
                                         </TouchableOpacity>
@@ -194,20 +194,20 @@ export default function CreateGroupModal({ visible, onClose, onGroupCreated }: C
                         </View>
 
                         {selectedMembers.length > 0 && (
-                            <View style={styles.selectedSection}>
-                                <Text style={styles.selectedTitle}>
+                            <View className="flex-1">
+                                <Text className="text-base font-semibold text-gray-700 mb-3">
                                     Selected Members ({selectedMembers.length})
                                 </Text>
-                                <ScrollView style={styles.selectedList}>
+                                <ScrollView className="flex-1">
                                     {selectedMembers.map((member) => (
-                                        <View key={member.id} style={styles.selectedMember}>
-                                            <View style={styles.memberInfo}>
-                                                <Text style={styles.memberUsername}>@{member.username}</Text>
-                                                <Text style={styles.memberDisplayName}>{member.displayName}</Text>
+                                        <View key={member.id} className="flex-row items-center justify-between px-4 py-3 bg-gray-100 rounded-lg mb-2">
+                                            <View className="flex-1">
+                                                <Text className="text-base font-semibold text-gray-900">@{member.username}</Text>
+                                                <Text className="text-sm text-gray-500 mt-0.5">{member.displayName}</Text>
                                             </View>
                                             <TouchableOpacity
                                                 onPress={() => handleRemoveMember(member.id)}
-                                                style={styles.removeButton}
+                                                className="p-1"
                                             >
                                                 <X size={16} color="#EF4444" />
                                             </TouchableOpacity>
@@ -217,17 +217,17 @@ export default function CreateGroupModal({ visible, onClose, onGroupCreated }: C
                             </View>
                         )}
 
-                        <View style={styles.footer}>
+                        <View className="flex-row gap-3 pt-5">
                             <TouchableOpacity
                                 onPress={() => setStep(1)}
-                                style={styles.backButton}
+                                className="flex-1 bg-gray-100 py-3 rounded-lg items-center"
                             >
-                                <Text style={styles.backButtonText}>Back</Text>
+                                <Text className="text-base font-semibold text-gray-500">Back</Text>
                             </TouchableOpacity>
 
                             <TouchableOpacity
                                 onPress={handleCreateGroup}
-                                style={styles.createButton}
+                                className="flex-2 bg-purple-500 py-3 rounded-lg items-center flex-row justify-center"
                                 disabled={loading}
                             >
                                 {loading ? (
@@ -235,7 +235,7 @@ export default function CreateGroupModal({ visible, onClose, onGroupCreated }: C
                                 ) : (
                                     <>
                                         <Users size={20} color="#FFFFFF" />
-                                        <Text style={styles.createButtonText}>Create Group</Text>
+                                        <Text className="text-base font-semibold text-white ml-2">Create Group</Text>
                                     </>
                                 )}
                             </TouchableOpacity>
@@ -247,184 +247,4 @@ export default function CreateGroupModal({ visible, onClose, onGroupCreated }: C
     );
 }
 
-const styles = StyleSheet.create({
-    container: {
-        flex: 1,
-        backgroundColor: '#FFFFFF',
-    },
-    header: {
-        flexDirection: 'row',
-        alignItems: 'center',
-        justifyContent: 'space-between',
-        paddingHorizontal: 20,
-        paddingVertical: 16,
-        borderBottomWidth: 1,
-        borderBottomColor: '#E5E7EB',
-    },
-    closeButton: {
-        padding: 4,
-    },
-    title: {
-        fontSize: 18,
-        fontWeight: '600',
-        color: '#111827',
-    },
-    placeholder: {
-        width: 32,
-    },
-    content: {
-        flex: 1,
-        padding: 20,
-    },
-    section: {
-        marginBottom: 24,
-    },
-    label: {
-        fontSize: 16,
-        fontWeight: '600',
-        color: '#374151',
-        marginBottom: 8,
-    },
-    input: {
-        borderWidth: 1,
-        borderColor: '#D1D5DB',
-        borderRadius: 8,
-        paddingHorizontal: 12,
-        paddingVertical: 10,
-        fontSize: 16,
-        color: '#111827',
-    },
-    textArea: {
-        height: 80,
-        textAlignVertical: 'top',
-    },
-    nextButton: {
-        backgroundColor: '#8B5CF6',
-        paddingVertical: 12,
-        borderRadius: 8,
-        alignItems: 'center',
-        marginTop: 20,
-    },
-    nextButtonText: {
-        fontSize: 16,
-        fontWeight: '600',
-        color: '#FFFFFF',
-    },
-    searchSection: {
-        marginBottom: 24,
-    },
-    searchContainer: {
-        flexDirection: 'row',
-        alignItems: 'center',
-        backgroundColor: '#F9FAFB',
-        borderRadius: 8,
-        paddingHorizontal: 12,
-        paddingVertical: 10,
-        borderWidth: 1,
-        borderColor: '#E5E7EB',
-    },
-    searchInput: {
-        flex: 1,
-        fontSize: 16,
-        color: '#111827',
-        marginLeft: 8,
-    },
-    searchResults: {
-        maxHeight: 200,
-        marginTop: 8,
-        borderRadius: 8,
-        backgroundColor: '#F9FAFB',
-    },
-    searchResult: {
-        flexDirection: 'row',
-        alignItems: 'center',
-        justifyContent: 'space-between',
-        paddingHorizontal: 16,
-        paddingVertical: 12,
-        borderBottomWidth: 1,
-        borderBottomColor: '#E5E7EB',
-    },
-    userInfo: {
-        flex: 1,
-    },
-    username: {
-        fontSize: 16,
-        fontWeight: '600',
-        color: '#111827',
-    },
-    displayName: {
-        fontSize: 14,
-        color: '#6B7280',
-        marginTop: 2,
-    },
-    selectedSection: {
-        flex: 1,
-    },
-    selectedTitle: {
-        fontSize: 16,
-        fontWeight: '600',
-        color: '#374151',
-        marginBottom: 12,
-    },
-    selectedList: {
-        flex: 1,
-    },
-    selectedMember: {
-        flexDirection: 'row',
-        alignItems: 'center',
-        justifyContent: 'space-between',
-        paddingHorizontal: 16,
-        paddingVertical: 12,
-        backgroundColor: '#F3F4F6',
-        borderRadius: 8,
-        marginBottom: 8,
-    },
-    memberInfo: {
-        flex: 1,
-    },
-    memberUsername: {
-        fontSize: 16,
-        fontWeight: '600',
-        color: '#111827',
-    },
-    memberDisplayName: {
-        fontSize: 14,
-        color: '#6B7280',
-        marginTop: 2,
-    },
-    removeButton: {
-        padding: 4,
-    },
-    footer: {
-        flexDirection: 'row',
-        gap: 12,
-        paddingTop: 20,
-    },
-    backButton: {
-        flex: 1,
-        backgroundColor: '#F3F4F6',
-        paddingVertical: 12,
-        borderRadius: 8,
-        alignItems: 'center',
-    },
-    backButtonText: {
-        fontSize: 16,
-        fontWeight: '600',
-        color: '#6B7280',
-    },
-    createButton: {
-        flex: 2,
-        backgroundColor: '#8B5CF6',
-        paddingVertical: 12,
-        borderRadius: 8,
-        alignItems: 'center',
-        flexDirection: 'row',
-        justifyContent: 'center',
-    },
-    createButtonText: {
-        fontSize: 16,
-        fontWeight: '600',
-        color: '#FFFFFF',
-        marginLeft: 8,
-    },
-});
+

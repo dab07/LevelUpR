@@ -1,5 +1,5 @@
 import React, { useState, useEffect, useRef } from 'react';
-import { View, Text, StyleSheet, ScrollView, RefreshControl, Alert, TouchableOpacity, ActivityIndicator } from 'react-native';
+import { View, Text, ScrollView, RefreshControl, Alert, TouchableOpacity, ActivityIndicator } from 'react-native';
 import { LinearGradient } from 'expo-linear-gradient';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { Plus, Users, MessageCircle, Trophy, Target, TrendingUp } from 'lucide-react-native';
@@ -246,66 +246,66 @@ export default function SocialScreen() {
 
   if (loading) {
     return (
-        <SafeAreaView style={styles.container}>
-          <View style={styles.loadingContainer}>
+        <SafeAreaView className="flex-1 bg-gray-50">
+          <View className="flex-1 justify-center items-center">
             <ActivityIndicator size="large" color="#8B5CF6" />
-            <Text style={styles.loadingText}>Loading social features...</Text>
+            <Text className="text-base text-gray-500 mt-3">Loading social features...</Text>
           </View>
         </SafeAreaView>
     );
   }
 
   return (
-      <SafeAreaView style={styles.container}>
+      <SafeAreaView className="flex-1 bg-gray-50">
         <LinearGradient
             colors={['#8B5CF6', '#3B82F6']}
-            style={styles.header}
+            className="px-5 py-6 rounded-b-3xl"
         >
-          <View style={styles.headerContent}>
+          <View className="flex-row justify-between items-start mb-6">
             <View>
-              <Text style={styles.greeting}>Social Hub 👥</Text>
-              <Text style={styles.subtitle}>Connect, challenge, and compete!</Text>
+              <Text className="text-2xl font-bold text-white mb-1">Social Hub 👥</Text>
+              <Text className="text-base text-gray-200">Connect, challenge, and compete!</Text>
             </View>
             <TouchableOpacity
                 onPress={() => setShowCreateGroup(true)}
-                style={styles.createButton}
+                className="w-11 h-11 rounded-full bg-white/20 justify-center items-center"
             >
               <Plus size={20} color="#FFFFFF" />
             </TouchableOpacity>
           </View>
 
-          <View style={styles.statsContainer}>
-            <View style={styles.statCard}>
+          <View className="flex-row gap-3">
+            <View className="flex-1 bg-white/20 rounded-2xl p-4 items-center">
               <Users size={20} color="#8B5CF6" />
-              <Text style={styles.statNumber}>{userGroups.length}</Text>
-              <Text style={styles.statLabel}>Groups</Text>
+              <Text className="text-xl font-bold text-white mt-2 mb-1">{userGroups.length}</Text>
+              <Text className="text-xs text-gray-200 font-medium">Groups</Text>
             </View>
 
-            <View style={styles.statCard}>
+            <View className="flex-1 bg-white/20 rounded-2xl p-4 items-center">
               <MessageCircle size={20} color="#8B5CF6" />
-              <Text style={styles.statNumber}>{getTotalMembers()}</Text>
-              <Text style={styles.statLabel}>Members</Text>
+              <Text className="text-xl font-bold text-white mt-2 mb-1">{getTotalMembers()}</Text>
+              <Text className="text-xs text-gray-200 font-medium">Members</Text>
             </View>
 
-            <View style={styles.statCard}>
+            <View className="flex-1 bg-white/20 rounded-2xl p-4 items-center">
               <Trophy size={20} color="#8B5CF6" />
-              <Text style={styles.statNumber}>{getTotalActiveChallenges()}</Text>
-              <Text style={styles.statLabel}>Challenges</Text>
+              <Text className="text-xl font-bold text-white mt-2 mb-1">{getTotalActiveChallenges()}</Text>
+              <Text className="text-xs text-gray-200 font-medium">Challenges</Text>
             </View>
           </View>
         </LinearGradient>
 
         <ScrollView
-            style={styles.content}
+            className="flex-1 -mt-3"
             refreshControl={
               <RefreshControl refreshing={refreshing} onRefresh={onRefresh} />
             }
         >
           {userGroups.length === 0 ? (
-              <View style={styles.emptyState}>
+              <View className="items-center py-15 px-5">
                 <Users size={64} color="#D1D5DB" />
-                <Text style={styles.emptyTitle}>No Groups Yet</Text>
-                <Text style={styles.emptyText}>
+                <Text className="text-2xl font-bold text-gray-900 mt-4 mb-2">No Groups Yet</Text>
+                <Text className="text-base text-gray-500 text-center leading-6 mb-8">
                   Create your first group to start challenging friends and earning credits together!
                 </Text>
 
@@ -313,67 +313,67 @@ export default function SocialScreen() {
                     title="Create Your First Group"
                     onPress={() => setShowCreateGroup(true)}
                     size="large"
-                    style={styles.createFirstGroupButton}
+                    style={{ marginBottom: 32 }}
                 />
 
-                <View style={styles.featuresContainer}>
-                  <Text style={styles.featuresTitle}>What you can do:</Text>
-                  <View style={styles.featureItem}>
+                <View className="items-start w-full">
+                  <Text className="text-lg font-semibold text-gray-900 mb-4">What you can do:</Text>
+                  <View className="flex-row items-center mb-3">
                     <Target size={16} color="#8B5CF6" />
-                    <Text style={styles.featureText}>Create betting challenges</Text>
+                    <Text className="text-base text-gray-500 ml-3">Create betting challenges</Text>
                   </View>
-                  <View style={styles.featureItem}>
+                  <View className="flex-row items-center mb-3">
                     <MessageCircle size={16} color="#8B5CF6" />
-                    <Text style={styles.featureText}>Chat with group members</Text>
+                    <Text className="text-base text-gray-500 ml-3">Chat with group members</Text>
                   </View>
-                  <View style={styles.featureItem}>
+                  <View className="flex-row items-center mb-3">
                     <TrendingUp size={16} color="#8B5CF6" />
-                    <Text style={styles.featureText}>Earn credits from winning bets</Text>
+                    <Text className="text-base text-gray-500 ml-3">Earn credits from winning bets</Text>
                   </View>
                 </View>
               </View>
           ) : (
-              <View style={styles.groupsList}>
-                <Text style={styles.sectionTitle}>Your Groups</Text>
+              <View className="p-5">
+                <Text className="text-xl font-bold text-gray-900 mb-4">Your Groups</Text>
 
                 {userGroups.map((group) => (
-                    <View key={group.id} style={styles.groupCard}>
-                      <View style={styles.groupHeader}>
-                        <View style={styles.groupInfo}>
-                          <Text style={styles.groupName}>{group.name}</Text>
-                          <Text style={styles.groupMembers}>
+                    <View key={group.id} className="bg-white rounded-2xl p-4 mb-4 shadow-sm">
+                      <View className="mb-4">
+                        <View className="flex-1">
+                          <Text className="text-lg font-semibold text-gray-900 mb-1">{group.name}</Text>
+                          <Text className="text-sm text-violet-500 font-medium mb-2">
                             {group.memberCount} member{group.memberCount !== 1 ? 's' : ''}
                           </Text>
                           {group.description && (
-                              <Text style={styles.groupDescription} numberOfLines={2}>
+                              <Text className="text-sm text-gray-500 leading-5" numberOfLines={2}>
                                 {group.description}
                               </Text>
                           )}
                         </View>
                       </View>
 
-                      <View style={styles.groupActions}>
+                      <View className="flex-row gap-3 mb-4">
                         <TouchableOpacity
                             onPress={() => handleOpenGroupChat(group)}
-                            style={styles.actionButton}
+                            className="flex-1 flex-row items-center justify-center bg-violet-50 py-2.5 rounded-lg border border-violet-100"
                         >
                           <MessageCircle size={16} color="#8B5CF6" />
-                          <Text style={styles.actionButtonText}>Chat</Text>
+                          <Text className="text-sm font-medium text-violet-500 ml-1.5">Chat</Text>
                         </TouchableOpacity>
 
                         <TouchableOpacity
                             onPress={() => handleCreateChallenge(group)}
-                            style={styles.actionButton}
+                            className="flex-1 flex-row items-center justify-center bg-violet-50 py-2.5 rounded-lg border border-violet-100"
                         >
                           <Trophy size={16} color="#10B981" />
-                          <Text style={styles.actionButtonText}>Add Challenge</Text>
+                          <Text className="text-sm font-medium text-violet-500 ml-1.5">Add Challenge</Text>
                         </TouchableOpacity>
                       </View>
 
                       {/* Display group challenges */}
                       {groupChallenges[group.id] && groupChallenges[group.id].length > 0 && (
-                          <View style={styles.challengesSection}>
-                            <Text style={styles.challengesTitle}>Active Challenges</Text>
+                          <View className="border-t border-gray-200 pt-4">
+                            <Text className="text-base font-semibold text-gray-900 mb-3">Active Challenges</Text>
                             {groupChallenges[group.id]
                                 .filter(challenge => challenge.status !== 'completed')
                                 .slice(0, 2) // Show only first 2 challenges
@@ -389,7 +389,7 @@ export default function SocialScreen() {
                                 ))}
 
                             {groupChallenges[group.id].filter(c => c.status !== 'completed').length > 2 && (
-                                <Text style={styles.moreChallenges}>
+                                <Text className="text-sm text-violet-500 font-medium text-center mt-2 italic">
                                   +{groupChallenges[group.id].filter(c => c.status !== 'completed').length - 2} more challenges
                                 </Text>
                             )}
@@ -426,202 +426,4 @@ export default function SocialScreen() {
   );
 }
 
-const styles = StyleSheet.create({
-  container: {
-    flex: 1,
-    backgroundColor: '#F9FAFB',
-  },
-  loadingContainer: {
-    flex: 1,
-    justifyContent: 'center',
-    alignItems: 'center',
-  },
-  loadingText: {
-    fontSize: 16,
-    color: '#6B7280',
-    marginTop: 12,
-  },
-  header: {
-    paddingHorizontal: 20,
-    paddingVertical: 24,
-    borderBottomLeftRadius: 24,
-    borderBottomRightRadius: 24,
-  },
-  headerContent: {
-    flexDirection: 'row',
-    justifyContent: 'space-between',
-    alignItems: 'flex-start',
-    marginBottom: 24,
-  },
-  greeting: {
-    fontSize: 24,
-    fontWeight: '700',
-    color: '#FFFFFF',
-    marginBottom: 4,
-  },
-  subtitle: {
-    fontSize: 16,
-    color: '#E5E7EB',
-  },
-  createButton: {
-    width: 44,
-    height: 44,
-    borderRadius: 22,
-    backgroundColor: 'rgba(255, 255, 255, 0.2)',
-    justifyContent: 'center',
-    alignItems: 'center',
-  },
-  statsContainer: {
-    flexDirection: 'row',
-    gap: 12,
-  },
-  statCard: {
-    flex: 1,
-    backgroundColor: 'rgba(255, 255, 255, 0.2)',
-    borderRadius: 16,
-    padding: 16,
-    alignItems: 'center',
-  },
-  statNumber: {
-    fontSize: 20,
-    fontWeight: '700',
-    color: '#FFFFFF',
-    marginTop: 8,
-    marginBottom: 4,
-  },
-  statLabel: {
-    fontSize: 12,
-    color: '#E5E7EB',
-    fontWeight: '500',
-  },
-  content: {
-    flex: 1,
-    marginTop: -12,
-  },
-  emptyState: {
-    alignItems: 'center',
-    paddingVertical: 60,
-    paddingHorizontal: 20,
-  },
-  emptyTitle: {
-    fontSize: 24,
-    fontWeight: '700',
-    color: '#111827',
-    marginTop: 16,
-    marginBottom: 8,
-  },
-  emptyText: {
-    fontSize: 16,
-    color: '#6B7280',
-    textAlign: 'center',
-    lineHeight: 24,
-    marginBottom: 32,
-  },
-  createFirstGroupButton: {
-    marginBottom: 32,
-  },
-  featuresContainer: {
-    alignItems: 'flex-start',
-    width: '100%',
-  },
-  featuresTitle: {
-    fontSize: 18,
-    fontWeight: '600',
-    color: '#111827',
-    marginBottom: 16,
-  },
-  featureItem: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    marginBottom: 12,
-  },
-  featureText: {
-    fontSize: 16,
-    color: '#6B7280',
-    marginLeft: 12,
-  },
-  groupsList: {
-    padding: 20,
-  },
-  sectionTitle: {
-    fontSize: 20,
-    fontWeight: '700',
-    color: '#111827',
-    marginBottom: 16,
-  },
-  groupCard: {
-    backgroundColor: '#FFFFFF',
-    borderRadius: 16,
-    padding: 16,
-    marginBottom: 16,
-    shadowColor: '#000',
-    shadowOffset: { width: 0, height: 2 },
-    shadowOpacity: 0.1,
-    shadowRadius: 4,
-    elevation: 2,
-  },
-  groupHeader: {
-    marginBottom: 16,
-  },
-  groupInfo: {
-    flex: 1,
-  },
-  groupName: {
-    fontSize: 18,
-    fontWeight: '600',
-    color: '#111827',
-    marginBottom: 4,
-  },
-  groupMembers: {
-    fontSize: 14,
-    color: '#8B5CF6',
-    fontWeight: '500',
-    marginBottom: 8,
-  },
-  groupDescription: {
-    fontSize: 14,
-    color: '#6B7280',
-    lineHeight: 20,
-  },
-  groupActions: {
-    flexDirection: 'row',
-    gap: 12,
-    marginBottom: 16,
-  },
-  actionButton: {
-    flex: 1,
-    flexDirection: 'row',
-    alignItems: 'center',
-    justifyContent: 'center',
-    backgroundColor: 'rgba(139, 92, 246, 0.1)',
-    paddingVertical: 10,
-    borderRadius: 8,
-    borderWidth: 1,
-    borderColor: 'rgba(139, 92, 246, 0.2)',
-  },
-  actionButtonText: {
-    fontSize: 14,
-    fontWeight: '500',
-    color: '#8B5CF6',
-    marginLeft: 6,
-  },
-  challengesSection: {
-    borderTopWidth: 1,
-    borderTopColor: '#E5E7EB',
-    paddingTop: 16,
-  },
-  challengesTitle: {
-    fontSize: 16,
-    fontWeight: '600',
-    color: '#111827',
-    marginBottom: 12,
-  },
-  moreChallenges: {
-    fontSize: 14,
-    color: '#8B5CF6',
-    fontWeight: '500',
-    textAlign: 'center',
-    marginTop: 8,
-    fontStyle: 'italic',
-  },
-});
+

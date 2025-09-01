@@ -2,7 +2,6 @@ import React, { useState, useEffect } from 'react';
 import {
     View,
     Text,
-    StyleSheet,
     ScrollView,
     TouchableOpacity,
     TextInput,
@@ -107,58 +106,59 @@ export default function ChallengeHistory({ userId }: ChallengeHistoryProps) {
     };
 
     const renderChallengeCard = (challenge: ChallengeHistoryItem) => (
-        <View key={challenge.id} style={styles.challengeCard}>
-            <View style={styles.cardHeader}>
-                <View style={styles.titleContainer}>
-                    <Text style={styles.challengeTitle} numberOfLines={2}>
+        <View key={challenge.id} className="bg-white rounded-xl p-4 mb-4 border border-gray-200 shadow-sm">
+            <View className="flex-row justify-between items-start mb-2">
+                <View className="flex-1 mr-3">
+                    <Text className="text-base font-semibold text-gray-900 mb-1" numberOfLines={2}>
                         {challenge.title}
                     </Text>
-                    <View style={[
-                        styles.difficultyBadge,
-                        { backgroundColor: getDifficultyColor(challenge.difficulty) }
-                    ]}>
-                        <Text style={styles.difficultyText}>
+                    <View 
+                        className="self-start px-2 py-0.5 rounded"
+                        style={{ backgroundColor: getDifficultyColor(challenge.difficulty) }}
+                    >
+                        <Text className="text-[10px] font-bold text-white">
                             {challenge.difficulty.toUpperCase()}
                         </Text>
                     </View>
                 </View>
 
-                <View style={styles.statusContainer}>
+                <View className="items-center">
                     {challenge.isCompleted ? (
                         <Trophy size={20} color="#10B981" />
                     ) : (
-                        <View style={styles.failedIcon}>
-                            <Text style={styles.failedText}>✗</Text>
+                        <View className="w-5 h-5 rounded-full bg-red-500 justify-center items-center">
+                            <Text className="text-xs text-white font-bold">✗</Text>
                         </View>
                     )}
                 </View>
             </View>
 
-            <Text style={styles.challengeDescription} numberOfLines={2}>
+            <Text className="text-sm text-gray-500 leading-5 mb-3" numberOfLines={2}>
                 {challenge.description}
             </Text>
 
-            <View style={styles.cardFooter}>
-                <View style={styles.footerItem}>
+            <View className="flex-row justify-between items-center">
+                <View className="flex-row items-center gap-1">
                     <Calendar size={16} color="#6B7280" />
-                    <Text style={styles.footerText}>
+                    <Text className="text-xs text-gray-500 font-medium">
                         {formatDate(challenge.completedAt)}
                     </Text>
                 </View>
 
-                <View style={styles.footerItem}>
+                <View className="flex-row items-center gap-1">
                     <Users size={16} color="#6B7280" />
-                    <Text style={styles.footerText}>
+                    <Text className="text-xs text-gray-500 font-medium">
                         {challenge.totalParticipants} participants
                     </Text>
                 </View>
 
-                <View style={styles.creditsContainer}>
+                <View className="flex-row items-center gap-1">
                     <Star size={16} color="#F59E0B" />
-                    <Text style={[
-                        styles.creditsText,
-                        { color: challenge.creditsEarned > 0 ? '#10B981' : '#EF4444' }
-                    ]}>
+                    <Text 
+                        className={`text-sm font-bold ${
+                            challenge.creditsEarned > 0 ? 'text-green-500' : 'text-red-500'
+                        }`}
+                    >
                         {challenge.creditsEarned > 0 ? '+' : ''}{challenge.creditsEarned}
                     </Text>
                 </View>
@@ -168,29 +168,29 @@ export default function ChallengeHistory({ userId }: ChallengeHistoryProps) {
 
     if (loading) {
         return (
-            <View style={styles.loadingContainer}>
+            <View className="flex-1 justify-center items-center p-10">
                 <ActivityIndicator size="large" color="#8B5CF6" />
-                <Text style={styles.loadingText}>Loading challenge history...</Text>
+                <Text className="text-base text-gray-500 mt-3">Loading challenge history...</Text>
             </View>
         );
     }
 
     return (
-        <View style={styles.container}>
-            <View style={styles.header}>
-                <Text style={styles.title}>Challenge History</Text>
+        <View className="flex-1 bg-white">
+            <View className="flex-row justify-between items-center px-5 py-4 border-b border-gray-200">
+                <Text className="text-xl font-bold text-gray-900">Challenge History</Text>
                 <TouchableOpacity
                     onPress={() => setShowFilters(!showFilters)}
-                    style={styles.filterButton}
+                    className="p-2 rounded-lg bg-violet-500/10"
                 >
                     <Filter size={20} color="#8B5CF6" />
                 </TouchableOpacity>
             </View>
 
-            <View style={styles.searchContainer}>
+            <View className="flex-row items-center bg-gray-50 rounded-lg px-3 py-2.5 m-5 border border-gray-200">
                 <Search size={20} color="#6B7280" />
                 <TextInput
-                    style={styles.searchInput}
+                    className="flex-1 text-base text-gray-900 ml-2"
                     value={searchQuery}
                     onChangeText={setSearchQuery}
                     placeholder="Search challenges..."
@@ -199,10 +199,10 @@ export default function ChallengeHistory({ userId }: ChallengeHistoryProps) {
             </View>
 
             {showFilters && (
-                <View style={styles.filtersContainer}>
-                    <View style={styles.filterRow}>
-                        <Text style={styles.filterLabel}>Sort by:</Text>
-                        <View style={styles.filterOptions}>
+                <View className="bg-gray-50 px-5 py-4 border-b border-gray-200">
+                    <View className="mb-3">
+                        <Text className="text-sm font-semibold text-gray-700 mb-2">Sort by:</Text>
+                        <View className="flex-row gap-2">
                             {[
                                 { key: 'date', label: 'Date' },
                                 { key: 'credits', label: 'Credits' },
@@ -211,15 +211,15 @@ export default function ChallengeHistory({ userId }: ChallengeHistoryProps) {
                                 <TouchableOpacity
                                     key={option.key}
                                     onPress={() => setSortBy(option.key as SortOption)}
-                                    style={[
-                                        styles.filterOption,
-                                        sortBy === option.key && styles.activeFilterOption
-                                    ]}
+                                    className={`px-3 py-1.5 rounded-2xl border ${
+                                        sortBy === option.key 
+                                            ? 'bg-violet-500 border-violet-500' 
+                                            : 'bg-white border-gray-200'
+                                    }`}
                                 >
-                                    <Text style={[
-                                        styles.filterOptionText,
-                                        sortBy === option.key && styles.activeFilterOptionText
-                                    ]}>
+                                    <Text className={`text-sm font-medium ${
+                                        sortBy === option.key ? 'text-white' : 'text-gray-500'
+                                    }`}>
                                         {option.label}
                                     </Text>
                                 </TouchableOpacity>
@@ -227,9 +227,9 @@ export default function ChallengeHistory({ userId }: ChallengeHistoryProps) {
                         </View>
                     </View>
 
-                    <View style={styles.filterRow}>
-                        <Text style={styles.filterLabel}>Filter:</Text>
-                        <View style={styles.filterOptions}>
+                    <View>
+                        <Text className="text-sm font-semibold text-gray-700 mb-2">Filter:</Text>
+                        <View className="flex-row gap-2">
                             {[
                                 { key: 'all', label: 'All' },
                                 { key: 'completed', label: 'Completed' },
@@ -238,15 +238,15 @@ export default function ChallengeHistory({ userId }: ChallengeHistoryProps) {
                                 <TouchableOpacity
                                     key={option.key}
                                     onPress={() => setFilterBy(option.key as FilterOption)}
-                                    style={[
-                                        styles.filterOption,
-                                        filterBy === option.key && styles.activeFilterOption
-                                    ]}
+                                    className={`px-3 py-1.5 rounded-2xl border ${
+                                        filterBy === option.key 
+                                            ? 'bg-violet-500 border-violet-500' 
+                                            : 'bg-white border-gray-200'
+                                    }`}
                                 >
-                                    <Text style={[
-                                        styles.filterOptionText,
-                                        filterBy === option.key && styles.activeFilterOptionText
-                                    ]}>
+                                    <Text className={`text-sm font-medium ${
+                                        filterBy === option.key ? 'text-white' : 'text-gray-500'
+                                    }`}>
                                         {option.label}
                                     </Text>
                                 </TouchableOpacity>
@@ -256,12 +256,12 @@ export default function ChallengeHistory({ userId }: ChallengeHistoryProps) {
                 </View>
             )}
 
-            <ScrollView style={styles.challengesList} showsVerticalScrollIndicator={false}>
+            <ScrollView className="flex-1 p-5" showsVerticalScrollIndicator={false}>
                 {filteredChallenges.length === 0 ? (
-                    <View style={styles.emptyState}>
+                    <View className="items-center py-15">
                         <Trophy size={48} color="#D1D5DB" />
-                        <Text style={styles.emptyTitle}>No Challenges Found</Text>
-                        <Text style={styles.emptyText}>
+                        <Text className="text-lg font-semibold text-gray-500 mt-4 mb-2">No Challenges Found</Text>
+                        <Text className="text-sm text-gray-400 text-center leading-5">
                             {searchQuery.trim()
                                 ? 'Try adjusting your search or filters'
                                 : 'Start participating in challenges to see your history here!'
@@ -276,203 +276,4 @@ export default function ChallengeHistory({ userId }: ChallengeHistoryProps) {
     );
 }
 
-const styles = StyleSheet.create({
-    container: {
-        flex: 1,
-        backgroundColor: '#FFFFFF',
-    },
-    loadingContainer: {
-        flex: 1,
-        justifyContent: 'center',
-        alignItems: 'center',
-        padding: 40,
-    },
-    loadingText: {
-        fontSize: 16,
-        color: '#6B7280',
-        marginTop: 12,
-    },
-    header: {
-        flexDirection: 'row',
-        justifyContent: 'space-between',
-        alignItems: 'center',
-        paddingHorizontal: 20,
-        paddingVertical: 16,
-        borderBottomWidth: 1,
-        borderBottomColor: '#E5E7EB',
-    },
-    title: {
-        fontSize: 20,
-        fontWeight: '700',
-        color: '#111827',
-    },
-    filterButton: {
-        padding: 8,
-        borderRadius: 8,
-        backgroundColor: 'rgba(139, 92, 246, 0.1)',
-    },
-    searchContainer: {
-        flexDirection: 'row',
-        alignItems: 'center',
-        backgroundColor: '#F9FAFB',
-        borderRadius: 8,
-        paddingHorizontal: 12,
-        paddingVertical: 10,
-        margin: 20,
-        borderWidth: 1,
-        borderColor: '#E5E7EB',
-    },
-    searchInput: {
-        flex: 1,
-        fontSize: 16,
-        color: '#111827',
-        marginLeft: 8,
-    },
-    filtersContainer: {
-        backgroundColor: '#F9FAFB',
-        paddingHorizontal: 20,
-        paddingVertical: 16,
-        borderBottomWidth: 1,
-        borderBottomColor: '#E5E7EB',
-    },
-    filterRow: {
-        marginBottom: 12,
-    },
-    filterLabel: {
-        fontSize: 14,
-        fontWeight: '600',
-        color: '#374151',
-        marginBottom: 8,
-    },
-    filterOptions: {
-        flexDirection: 'row',
-        gap: 8,
-    },
-    filterOption: {
-        paddingHorizontal: 12,
-        paddingVertical: 6,
-        borderRadius: 16,
-        backgroundColor: '#FFFFFF',
-        borderWidth: 1,
-        borderColor: '#E5E7EB',
-    },
-    activeFilterOption: {
-        backgroundColor: '#8B5CF6',
-        borderColor: '#8B5CF6',
-    },
-    filterOptionText: {
-        fontSize: 14,
-        fontWeight: '500',
-        color: '#6B7280',
-    },
-    activeFilterOptionText: {
-        color: '#FFFFFF',
-    },
-    challengesList: {
-        flex: 1,
-        padding: 20,
-    },
-    challengeCard: {
-        backgroundColor: '#FFFFFF',
-        borderRadius: 12,
-        padding: 16,
-        marginBottom: 16,
-        borderWidth: 1,
-        borderColor: '#E5E7EB',
-        shadowColor: '#000',
-        shadowOffset: { width: 0, height: 1 },
-        shadowOpacity: 0.05,
-        shadowRadius: 2,
-        elevation: 1,
-    },
-    cardHeader: {
-        flexDirection: 'row',
-        justifyContent: 'space-between',
-        alignItems: 'flex-start',
-        marginBottom: 8,
-    },
-    titleContainer: {
-        flex: 1,
-        marginRight: 12,
-    },
-    challengeTitle: {
-        fontSize: 16,
-        fontWeight: '600',
-        color: '#111827',
-        marginBottom: 4,
-    },
-    difficultyBadge: {
-        alignSelf: 'flex-start',
-        paddingHorizontal: 8,
-        paddingVertical: 2,
-        borderRadius: 4,
-    },
-    difficultyText: {
-        fontSize: 10,
-        fontWeight: '700',
-        color: '#FFFFFF',
-    },
-    statusContainer: {
-        alignItems: 'center',
-    },
-    failedIcon: {
-        width: 20,
-        height: 20,
-        borderRadius: 10,
-        backgroundColor: '#EF4444',
-        justifyContent: 'center',
-        alignItems: 'center',
-    },
-    failedText: {
-        fontSize: 12,
-        color: '#FFFFFF',
-        fontWeight: '700',
-    },
-    challengeDescription: {
-        fontSize: 14,
-        color: '#6B7280',
-        lineHeight: 20,
-        marginBottom: 12,
-    },
-    cardFooter: {
-        flexDirection: 'row',
-        justifyContent: 'space-between',
-        alignItems: 'center',
-    },
-    footerItem: {
-        flexDirection: 'row',
-        alignItems: 'center',
-        gap: 4,
-    },
-    footerText: {
-        fontSize: 12,
-        color: '#6B7280',
-        fontWeight: '500',
-    },
-    creditsContainer: {
-        flexDirection: 'row',
-        alignItems: 'center',
-        gap: 4,
-    },
-    creditsText: {
-        fontSize: 14,
-        fontWeight: '700',
-    },
-    emptyState: {
-        alignItems: 'center',
-        paddingVertical: 60,
-    },
-    emptyTitle: {
-        fontSize: 18,
-        fontWeight: '600',
-        color: '#6B7280',
-        marginTop: 16,
-        marginBottom: 8,
-    },
-    emptyText: {
-        fontSize: 14,
-        color: '#9CA3AF',
-        textAlign: 'center',
-        lineHeight: 20,
-    },
-});
+

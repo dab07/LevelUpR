@@ -2,7 +2,6 @@ import React, { useState } from 'react';
 import {
   View,
   Text,
-  StyleSheet,
   TextInput,
   TouchableOpacity,
   Alert,
@@ -60,33 +59,40 @@ export default function AuthScreen() {
   };
 
   return (
-      <SafeAreaView style={styles.container}>
+      <SafeAreaView className="flex-1">
         <LinearGradient
             colors={['#8B5CF6', '#3B82F6']}
-            style={styles.background}
+            className="flex-1"
         >
           <KeyboardAvoidingView
               behavior={Platform.OS === 'ios' ? 'padding' : 'height'}
-              style={styles.keyboardView}
+              className="flex-1"
           >
-            <ScrollView contentContainerStyle={styles.scrollContent}>
-              <View style={styles.header}>
-                <View style={styles.logoContainer}>
+            <ScrollView className="flex-grow justify-center p-5">
+              <View className="items-center mb-12">
+                <View className="w-20 h-20 rounded-full justify-center items-center mb-4 bg-white/20">
                   <Zap size={48} color="#FFFFFF" />
                 </View>
-                <Text style={styles.title}>LevelUpR</Text>
-                <Text style={styles.subtitle}>
+                <Text className="text-3xl font-bold text-white mb-2">LevelUpR</Text>
+                <Text className="text-base text-gray-200 text-center">
                   Gamify your tasks, challenge your friends
                 </Text>
               </View>
 
-              <View style={styles.formContainer}>
-                <View style={styles.form}>
+              <View className="flex-1 justify-center">
+                <View className="bg-white rounded-3xl p-6 shadow-lg"
+                      style={{ 
+                        shadowColor: '#000',
+                        shadowOffset: { width: 0, height: 4 },
+                        shadowOpacity: 0.1,
+                        shadowRadius: 12,
+                        elevation: 8
+                      }}>
                   {isSignUp && (
-                      <View style={styles.inputContainer}>
-                        <User size={20} color="#8B5CF6" style={styles.inputIcon} />
+                      <View className="flex-row items-center bg-gray-50 rounded-xl px-4 py-3 mb-4 border border-gray-200">
+                        <User size={20} color="#8B5CF6" className="mr-3" />
                         <TextInput
-                            style={styles.input}
+                            className="flex-1 text-base text-gray-900"
                             placeholder="Username"
                             value={username}
                             onChangeText={setUsername}
@@ -96,10 +102,10 @@ export default function AuthScreen() {
                       </View>
                   )}
 
-                  <View style={styles.inputContainer}>
-                    <Mail size={20} color="#8B5CF6" style={styles.inputIcon} />
+                  <View className="flex-row items-center bg-gray-50 rounded-xl px-4 py-3 mb-4 border border-gray-200">
+                    <Mail size={20} color="#8B5CF6" className="mr-3" />
                     <TextInput
-                        style={styles.input}
+                        className="flex-1 text-base text-gray-900"
                         placeholder="Email"
                         value={email}
                         onChangeText={setEmail}
@@ -109,10 +115,10 @@ export default function AuthScreen() {
                     />
                   </View>
 
-                  <View style={styles.inputContainer}>
-                    <Lock size={20} color="#8B5CF6" style={styles.inputIcon} />
+                  <View className="flex-row items-center bg-gray-50 rounded-xl px-4 py-3 mb-4 border border-gray-200">
+                    <Lock size={20} color="#8B5CF6" className="mr-3" />
                     <TextInput
-                        style={styles.input}
+                        className="flex-1 text-base text-gray-900"
                         placeholder="Password"
                         value={password}
                         onChangeText={setPassword}
@@ -121,19 +127,20 @@ export default function AuthScreen() {
                     />
                   </View>
 
-                  <GradientButton
-                      title={loading ? 'Loading...' : (isSignUp ? 'Sign Up' : 'Sign In')}
-                      onPress={handleAuth}
-                      disabled={loading}
-                      size="large"
-                      style={styles.authButton}
-                  />
+                  <View className="mt-2 mb-4">
+                    <GradientButton
+                        title={loading ? 'Loading...' : (isSignUp ? 'Sign Up' : 'Sign In')}
+                        onPress={handleAuth}
+                        disabled={loading}
+                        size="large"
+                    />
+                  </View>
 
                   <TouchableOpacity
                       onPress={() => setIsSignUp(!isSignUp)}
-                      style={styles.switchButton}
+                      className="items-center py-3"
                   >
-                    <Text style={styles.switchText}>
+                    <Text className="text-sm text-purple-600 font-medium">
                       {isSignUp
                           ? 'Already have an account? Sign In'
                           : "Don't have an account? Sign Up"
@@ -148,90 +155,3 @@ export default function AuthScreen() {
       </SafeAreaView>
   );
 }
-
-const styles = StyleSheet.create({
-  container: {
-    flex: 1,
-  },
-  background: {
-    flex: 1,
-  },
-  keyboardView: {
-    flex: 1,
-  },
-  scrollContent: {
-    flexGrow: 1,
-    justifyContent: 'center',
-    padding: 20,
-  },
-  header: {
-    alignItems: 'center',
-    marginBottom: 48,
-  },
-  logoContainer: {
-    width: 80,
-    height: 80,
-    borderRadius: 40,
-    backgroundColor: 'rgba(255, 255, 255, 0.2)',
-    justifyContent: 'center',
-    alignItems: 'center',
-    marginBottom: 16,
-  },
-  title: {
-    fontSize: 32,
-    fontWeight: '700',
-    color: '#FFFFFF',
-    marginBottom: 8,
-  },
-  subtitle: {
-    fontSize: 16,
-    color: '#E5E7EB',
-    textAlign: 'center',
-  },
-  formContainer: {
-    flex: 1,
-    justifyContent: 'center',
-  },
-  form: {
-    backgroundColor: '#FFFFFF',
-    borderRadius: 24,
-    padding: 24,
-    shadowColor: '#000',
-    shadowOffset: { width: 0, height: 4 },
-    shadowOpacity: 0.1,
-    shadowRadius: 12,
-    elevation: 8,
-  },
-  inputContainer: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    backgroundColor: '#F9FAFB',
-    borderRadius: 12,
-    paddingHorizontal: 16,
-    paddingVertical: 12,
-    marginBottom: 16,
-    borderWidth: 1,
-    borderColor: '#E5E7EB',
-  },
-  inputIcon: {
-    marginRight: 12,
-  },
-  input: {
-    flex: 1,
-    fontSize: 16,
-    color: '#111827',
-  },
-  authButton: {
-    marginTop: 8,
-    marginBottom: 16,
-  },
-  switchButton: {
-    alignItems: 'center',
-    paddingVertical: 12,
-  },
-  switchText: {
-    fontSize: 14,
-    color: '#8B5CF6',
-    fontWeight: '500',
-  },
-});

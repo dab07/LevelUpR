@@ -2,7 +2,6 @@
 import {
     View,
     Text,
-    StyleSheet,
     Modal,
     TextInput,
     TouchableOpacity,
@@ -143,32 +142,33 @@ export default function GroupChatModal({ visible, onClose, group }: GroupChatMod
         return (
             <View key={message.id}>
                 {showDateSeparator && (
-                    <View style={styles.dateSeparator}>
-                        <Text style={styles.dateSeparatorText}>
+                    <View className="items-center my-4">
+                        <Text className="text-xs text-gray-400 bg-gray-100 px-3 py-1 rounded-xl">
                             {formatMessageDate(message.createdAt)}
                         </Text>
                     </View>
                 )}
 
-                <View style={[
-                    styles.messageContainer,
-                    isCurrentUser ? styles.currentUserMessage : styles.otherUserMessage
-                ]}>
+                <View className={`my-1 max-w-[80%] px-3 py-2 rounded-2xl ${
+                    isCurrentUser 
+                        ? 'self-end bg-violet-500' 
+                        : 'self-start bg-gray-100'
+                }`}>
                     {!isCurrentUser && (
-                        <Text style={styles.senderName}>
+                        <Text className="text-xs font-semibold text-gray-500 mb-0.5">
                             {message.users?.display_name || 'Unknown User'}
                         </Text>
                     )}
-                    <Text style={[
-                        styles.messageText,
-                        isCurrentUser ? styles.currentUserMessageText : styles.otherUserMessageText
-                    ]}>
+                    <Text className={`text-base leading-5 ${
+                        isCurrentUser ? 'text-white' : 'text-gray-900'
+                    }`}>
                         {message.content}
                     </Text>
-                    <Text style={[
-                        styles.messageTime,
-                        isCurrentUser ? styles.currentUserMessageTime : styles.otherUserMessageTime
-                    ]}>
+                    <Text className={`text-[11px] mt-1 ${
+                        isCurrentUser 
+                            ? 'text-white/70 text-right' 
+                            : 'text-gray-400'
+                    }`}>
                         {formatMessageTime(message.createdAt)}
                     </Text>
                 </View>
@@ -186,24 +186,24 @@ export default function GroupChatModal({ visible, onClose, group }: GroupChatMod
             onRequestClose={onClose}
         >
             <KeyboardAvoidingView
-                style={styles.container}
+                className="flex-1 bg-white"
                 behavior={Platform.OS === 'ios' ? 'padding' : 'height'}
             >
-                <View style={styles.header}>
-                    <TouchableOpacity onPress={onClose} style={styles.closeButton}>
+                <View className="flex-row items-center justify-between px-5 py-4 border-b border-gray-200">
+                    <TouchableOpacity onPress={onClose} className="p-1">
                         <X size={24} color="#6B7280" />
                     </TouchableOpacity>
 
-                    <View style={styles.headerInfo}>
-                        <Text style={styles.groupName}>{group.name}</Text>
-                        <Text style={styles.memberCount}>
+                    <View className="flex-1 items-center">
+                        <Text className="text-lg font-semibold text-gray-900">{group.name}</Text>
+                        <Text className="text-sm text-gray-500 mt-0.5">
                             {members.length} member{members.length !== 1 ? 's' : ''}
                         </Text>
                     </View>
 
                     <TouchableOpacity
                         onPress={handleCreateChallenge}
-                        style={styles.challengeButton}
+                        className="p-2 bg-violet-500/10 rounded-2xl"
                     >
                         <Plus size={20} color="#8B5CF6" />
                     </TouchableOpacity>
@@ -211,15 +211,15 @@ export default function GroupChatModal({ visible, onClose, group }: GroupChatMod
 
                 <ScrollView
                     ref={scrollViewRef}
-                    style={styles.messagesContainer}
-                    contentContainerStyle={styles.messagesContent}
+                    className="flex-1"
+                    contentContainerStyle={{ padding: 16 }}
                     onContentSizeChange={() => scrollViewRef.current?.scrollToEnd({ animated: true })}
                 >
                     {messages.length === 0 ? (
-                        <View style={styles.emptyState}>
+                        <View className="flex-1 items-center justify-center py-15">
                             <Users size={48} color="#D1D5DB" />
-                            <Text style={styles.emptyStateText}>No messages yet</Text>
-                            <Text style={styles.emptyStateSubtext}>
+                            <Text className="text-lg font-semibold text-gray-500 mt-4">No messages yet</Text>
+                            <Text className="text-sm text-gray-400 mt-2 text-center">
                                 Start the conversation with your group!
                             </Text>
                         </View>
@@ -228,9 +228,9 @@ export default function GroupChatModal({ visible, onClose, group }: GroupChatMod
                     )}
                 </ScrollView>
 
-                <View style={styles.inputContainer}>
+                <View className="flex-row items-end px-4 py-3 border-t border-gray-200 bg-white">
                     <TextInput
-                        style={styles.messageInput}
+                        className="flex-1 border border-gray-300 rounded-2xl px-4 py-2.5 text-base max-h-[100px] mr-3"
                         value={newMessage}
                         onChangeText={setNewMessage}
                         placeholder="Type a message..."
@@ -239,10 +239,11 @@ export default function GroupChatModal({ visible, onClose, group }: GroupChatMod
                     />
                     <TouchableOpacity
                         onPress={handleSendMessage}
-                        style={[
-                            styles.sendButton,
-                            (!newMessage.trim() || loading) && styles.sendButtonDisabled
-                        ]}
+                        className={`p-2.5 rounded-2xl ${
+                            (!newMessage.trim() || loading) 
+                                ? 'bg-gray-100' 
+                                : 'bg-violet-500/10'
+                        }`}
                         disabled={!newMessage.trim() || loading}
                     >
                         <Send size={20} color={!newMessage.trim() || loading ? '#9CA3AF' : '#8B5CF6'} />
@@ -253,146 +254,4 @@ export default function GroupChatModal({ visible, onClose, group }: GroupChatMod
     );
 }
 
-const styles = StyleSheet.create({
-    container: {
-        flex: 1,
-        backgroundColor: '#FFFFFF',
-    },
-    header: {
-        flexDirection: 'row',
-        alignItems: 'center',
-        justifyContent: 'space-between',
-        paddingHorizontal: 20,
-        paddingVertical: 16,
-        borderBottomWidth: 1,
-        borderBottomColor: '#E5E7EB',
-    },
-    closeButton: {
-        padding: 4,
-    },
-    headerInfo: {
-        flex: 1,
-        alignItems: 'center',
-    },
-    groupName: {
-        fontSize: 18,
-        fontWeight: '600',
-        color: '#111827',
-    },
-    memberCount: {
-        fontSize: 14,
-        color: '#6B7280',
-        marginTop: 2,
-    },
-    challengeButton: {
-        padding: 8,
-        backgroundColor: 'rgba(139, 92, 246, 0.1)',
-        borderRadius: 20,
-    },
-    messagesContainer: {
-        flex: 1,
-    },
-    messagesContent: {
-        padding: 16,
-    },
-    emptyState: {
-        flex: 1,
-        alignItems: 'center',
-        justifyContent: 'center',
-        paddingVertical: 60,
-    },
-    emptyStateText: {
-        fontSize: 18,
-        fontWeight: '600',
-        color: '#6B7280',
-        marginTop: 16,
-    },
-    emptyStateSubtext: {
-        fontSize: 14,
-        color: '#9CA3AF',
-        marginTop: 8,
-        textAlign: 'center',
-    },
-    dateSeparator: {
-        alignItems: 'center',
-        marginVertical: 16,
-    },
-    dateSeparatorText: {
-        fontSize: 12,
-        color: '#9CA3AF',
-        backgroundColor: '#F3F4F6',
-        paddingHorizontal: 12,
-        paddingVertical: 4,
-        borderRadius: 12,
-    },
-    messageContainer: {
-        marginVertical: 4,
-        maxWidth: '80%',
-        paddingHorizontal: 12,
-        paddingVertical: 8,
-        borderRadius: 16,
-    },
-    currentUserMessage: {
-        alignSelf: 'flex-end',
-        backgroundColor: '#8B5CF6',
-    },
-    otherUserMessage: {
-        alignSelf: 'flex-start',
-        backgroundColor: '#F3F4F6',
-    },
-    senderName: {
-        fontSize: 12,
-        fontWeight: '600',
-        color: '#6B7280',
-        marginBottom: 2,
-    },
-    messageText: {
-        fontSize: 16,
-        lineHeight: 20,
-    },
-    currentUserMessageText: {
-        color: '#FFFFFF',
-    },
-    otherUserMessageText: {
-        color: '#111827',
-    },
-    messageTime: {
-        fontSize: 11,
-        marginTop: 4,
-    },
-    currentUserMessageTime: {
-        color: 'rgba(255, 255, 255, 0.7)',
-        textAlign: 'right',
-    },
-    otherUserMessageTime: {
-        color: '#9CA3AF',
-    },
-    inputContainer: {
-        flexDirection: 'row',
-        alignItems: 'flex-end',
-        paddingHorizontal: 16,
-        paddingVertical: 12,
-        borderTopWidth: 1,
-        borderTopColor: '#E5E7EB',
-        backgroundColor: '#FFFFFF',
-    },
-    messageInput: {
-        flex: 1,
-        borderWidth: 1,
-        borderColor: '#D1D5DB',
-        borderRadius: 20,
-        paddingHorizontal: 16,
-        paddingVertical: 10,
-        fontSize: 16,
-        maxHeight: 100,
-        marginRight: 12,
-    },
-    sendButton: {
-        padding: 10,
-        borderRadius: 20,
-        backgroundColor: 'rgba(139, 92, 246, 0.1)',
-    },
-    sendButtonDisabled: {
-        backgroundColor: '#F3F4F6',
-    },
-});
+

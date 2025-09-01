@@ -1,5 +1,5 @@
 import React , {useState, useEffect} from 'react';
-import {View, Text, StyleSheet, Alert, TouchableOpacity, ScrollView} from 'react-native';
+import {View, Text, Alert, TouchableOpacity, ScrollView} from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import {profileService} from "@/services/profileService";
 import {User} from '@/types';
@@ -78,21 +78,20 @@ export default function ProfileScreen() {
 
     if (loading) {
         return (
-            <SafeAreaView style={styles.container}>
-                <View style={styles.loadingContainer}>
-                    <Text style={styles.loadingText}>Loading profile...</Text>
+            <SafeAreaView className="flex-1 bg-gray-50">
+                <View className="flex-1 justify-center items-center">
+                    <Text className="text-base text-gray-500">Loading profile...</Text>
                 </View>
             </SafeAreaView>
         );
     }
     if (!userData) {
         return (
-            <SafeAreaView style={styles.container}>
-                <View style={styles.errorContainer}>
-                    <Text style={styles.errorText}>Failed to load profile</Text>
-                    <TouchableOpacity onPress={loadUserData} style={styles.retryButton}>
-
-                        <Text style={styles.retryButtonText}>Retry</Text>
+            <SafeAreaView className="flex-1 bg-gray-50">
+                <View className="flex-1 justify-center items-center p-5">
+                    <Text className="text-base text-red-500 mb-4">Failed to load profile</Text>
+                    <TouchableOpacity onPress={loadUserData} className="bg-violet-500 px-5 py-2.5 rounded-lg">
+                        <Text className="text-white font-semibold">Retry</Text>
                     </TouchableOpacity>
                 </View>
             </SafeAreaView>
@@ -100,13 +99,13 @@ export default function ProfileScreen() {
     }
     if (showChallengeHistory) {
         return (
-            <SafeAreaView style={styles.container}>
-                <View style={styles.backHeader}>
+            <SafeAreaView className="flex-1 bg-gray-50">
+                <View className="px-5 py-4 border-b border-gray-200 bg-white">
                     <TouchableOpacity
                         onPress={() => setShowChallengeHistory(false)}
-                        style={styles.backButton}
+                        className="self-start"
                     >
-                        <Text style={styles.backButtonText}>← Back</Text>
+                        <Text className="text-base text-violet-500 font-semibold">← Back</Text>
                     </TouchableOpacity>
                 </View>
                 <ChallengeHistory userId={userData.id} />
@@ -115,60 +114,60 @@ export default function ProfileScreen() {
     }
 
     return (
-        <SafeAreaView style={styles.container}>
-            <ScrollView style={styles.scrollView} showsVerticalScrollIndicator={false}>
+        <SafeAreaView className="flex-1 bg-gray-50">
+            <ScrollView className="flex-1" showsVerticalScrollIndicator={false}>
                 <ProfileHeader profile={userData} onProfileUpdate={handleProfileUpdate} />
 
-                <View style={styles.content}>
-                    <View style={styles.section}>
-                        <Text style={styles.sectionTitle}>Account Settings</Text>
+                <View className="p-5">
+                    <View className="mb-8">
+                        <Text className="text-lg font-bold text-gray-900 mb-4">Account Settings</Text>
 
                         <TouchableOpacity
                             onPress={() => setShowEditModal(true)}
-                            style={styles.menuItem}
+                            className="flex-row items-center justify-between bg-white px-4 py-4 rounded-xl mb-2 shadow-sm"
                         >
-                            <View style={styles.menuItemLeft}>
+                            <View className="flex-row items-center">
                                 <Edit3 size={20} color="#8B5CF6" />
-                                <Text style={styles.menuItemText}>Edit Profile</Text>
+                                <Text className="text-base font-medium text-gray-900 ml-3">Edit Profile</Text>
                             </View>
-                            <Text style={styles.menuItemArrow}>›</Text>
+                            <Text className="text-xl text-gray-400 font-light">›</Text>
                         </TouchableOpacity>
 
                         <TouchableOpacity
                             onPress={() => setShowPasswordModal(true)}
-                            style={styles.menuItem}
+                            className="flex-row items-center justify-between bg-white px-4 py-4 rounded-xl mb-2 shadow-sm"
                         >
-                            <View style={styles.menuItemLeft}>
+                            <View className="flex-row items-center">
                                 <Lock size={20} color="#8B5CF6" />
-                                <Text style={styles.menuItemText}>Change Password</Text>
+                                <Text className="text-base font-medium text-gray-900 ml-3">Change Password</Text>
                             </View>
-                            <Text style={styles.menuItemArrow}>›</Text>
+                            <Text className="text-xl text-gray-400 font-light">›</Text>
                         </TouchableOpacity>
                     </View>
 
-                    <View style={styles.section}>
-                        <Text style={styles.sectionTitle}>Activity</Text>
+                    <View className="mb-8">
+                        <Text className="text-lg font-bold text-gray-900 mb-4">Activity</Text>
 
                         <TouchableOpacity
                             onPress={() => setShowChallengeHistory(true)}
-                            style={styles.menuItem}
+                            className="flex-row items-center justify-between bg-white px-4 py-4 rounded-xl mb-2 shadow-sm"
                         >
-                            <View style={styles.menuItemLeft}>
+                            <View className="flex-row items-center">
                                 <History size={20} color="#8B5CF6" />
-                                <Text style={styles.menuItemText}>Challenge History</Text>
+                                <Text className="text-base font-medium text-gray-900 ml-3">Challenge History</Text>
                             </View>
-                            <Text style={styles.menuItemArrow}>›</Text>
+                            <Text className="text-xl text-gray-400 font-light">›</Text>
                         </TouchableOpacity>
                     </View>
 
-                    <View style={styles.section}>
+                    <View className="mb-8">
                         <TouchableOpacity
                             onPress={handleLogout}
-                            style={[styles.menuItem, styles.logoutItem]}
+                            className="flex-row items-center justify-between bg-red-50 px-4 py-4 rounded-xl mb-2 border border-red-200"
                         >
-                            <View style={styles.menuItemLeft}>
+                            <View className="flex-row items-center">
                                 <LogOut size={20} color="#EF4444" />
-                                <Text style={[styles.menuItemText, styles.logoutText]}>Logout</Text>
+                                <Text className="text-base font-medium text-red-500 ml-3">Logout</Text>
                             </View>
                         </TouchableOpacity>
                     </View>
@@ -190,137 +189,4 @@ export default function ProfileScreen() {
     );
 }
 
-const styles = StyleSheet.create({
-    container: {
-        flex: 1,
-        backgroundColor: '#F9FAFB',
-    },
-    loadingContainer: {
-        flex: 1,
-        justifyContent: 'center',
-        alignItems: 'center',
-    },
-    loadingText: {
-        fontSize: 16,
-        color: '#6B7280',
-    },
-    errorContainer: {
-        flex: 1,
-        justifyContent: 'center',
-        alignItems: 'center',
-        padding: 20,
-    },
-    errorText: {
-        fontSize: 16,
-        color: '#EF4444',
-        marginBottom: 16,
-    },
-    retryButton: {
-        backgroundColor: '#8B5CF6',
-        paddingHorizontal: 20,
-        paddingVertical: 10,
-        borderRadius: 8,
-    },
-    retryButtonText: {
-        color: '#FFFFFF',
-        fontWeight: '600',
-    },
-    backHeader: {
-        paddingHorizontal: 20,
-        paddingVertical: 16,
-        borderBottomWidth: 1,
-        borderBottomColor: '#E5E7EB',
-        backgroundColor: '#FFFFFF',
-    },
-    backButton: {
-        alignSelf: 'flex-start',
-    },
-    backButtonText: {
-        fontSize: 16,
-        color: '#8B5CF6',
-        fontWeight: '600',
-    },
-    scrollView: {
-        flex: 1,
-    },
-    content: {
-        padding: 20,
-    },
-    section: {
-        marginBottom: 32,
-    },
-    sectionTitle: {
-        fontSize: 18,
-        fontWeight: '700',
-        color: '#111827',
-        marginBottom: 16,
-    },
-    menuItem: {
-        flexDirection: 'row',
-        alignItems: 'center',
-        justifyContent: 'space-between',
-        backgroundColor: '#FFFFFF',
-        paddingHorizontal: 16,
-        paddingVertical: 16,
-        borderRadius: 12,
-        marginBottom: 8,
-        shadowColor: '#000',
-        shadowOffset: { width: 0, height: 1 },
-        shadowOpacity: 0.05,
-        shadowRadius: 2,
-        elevation: 1,
-    },
-    menuItemLeft: {
-        flexDirection: 'row',
-        alignItems: 'center',
-    },
-    menuItemText: {
-        fontSize: 16,
-        fontWeight: '500',
-        color: '#111827',
-        marginLeft: 12,
-    },
-    menuItemArrow: {
-        fontSize: 20,
-        color: '#9CA3AF',
-        fontWeight: '300',
-    },
-    logoutItem: {
-        borderWidth: 1,
-        borderColor: '#FEE2E2',
-        backgroundColor: '#FEF2F2',
-    },
-    logoutText: {
-        color: '#EF4444',
-    },
-    statsGrid: {
-        flexDirection: 'row',
-        flexWrap: 'wrap',
-        gap: 12,
-    },
-    statCard: {
-        flex: 1,
-        minWidth: '45%',
-        backgroundColor: '#FFFFFF',
-        padding: 16,
-        borderRadius: 12,
-        alignItems: 'center',
-        shadowColor: '#000',
-        shadowOffset: { width: 0, height: 1 },
-        shadowOpacity: 0.05,
-        shadowRadius: 2,
-        elevation: 1,
-    },
-    statValue: {
-        fontSize: 24,
-        fontWeight: '700',
-        color: '#8B5CF6',
-        marginBottom: 4,
-    },
-    statLabel: {
-        fontSize: 12,
-        color: '#6B7280',
-        fontWeight: '500',
-        textAlign: 'center',
-    },
-});
+

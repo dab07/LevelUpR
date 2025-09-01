@@ -1,5 +1,5 @@
 import React from 'react';
-import { TouchableOpacity, Text, StyleSheet, ViewStyle, TextStyle } from 'react-native';
+import { TouchableOpacity, Text, ViewStyle, TextStyle } from 'react-native';
 import { LinearGradient } from 'expo-linear-gradient';
 
 interface GradientButtonProps {
@@ -34,29 +34,29 @@ export default function GradientButton({
     }
   };
 
-  const getButtonSize = () => {
+  const getSizeClasses = () => {
     switch (size) {
       case 'small':
-        return { height: 36, paddingHorizontal: 16 };
+        return 'h-9 px-4';
       case 'medium':
-        return { height: 44, paddingHorizontal: 24 };
+        return 'h-11 px-6';
       case 'large':
-        return { height: 52, paddingHorizontal: 32 };
+        return 'h-13 px-8';
       default:
-        return { height: 44, paddingHorizontal: 24 };
+        return 'h-11 px-6';
     }
   };
 
-  const getTextSize = () => {
+  const getTextSizeClass = () => {
     switch (size) {
       case 'small':
-        return 14;
+        return 'text-sm';
       case 'medium':
-        return 16;
+        return 'text-base';
       case 'large':
-        return 18;
+        return 'text-lg';
       default:
-        return 16;
+        return 'text-base';
     }
   };
 
@@ -64,16 +64,20 @@ export default function GradientButton({
     <TouchableOpacity
       onPress={onPress}
       disabled={disabled}
-      style={[styles.container, style]}
+      className="rounded-xl overflow-hidden"
+      style={style}
       activeOpacity={0.8}
     >
       <LinearGradient
         colors={disabled ? ['#9CA3AF', '#6B7280'] : getGradientColors()}
         start={{ x: 0, y: 0 }}
         end={{ x: 1, y: 0 }}
-        style={[styles.gradient, getButtonSize()]}
+        className={`justify-center items-center rounded-xl ${getSizeClasses()}`}
       >
-        <Text style={[styles.text, { fontSize: getTextSize() }, textStyle]}>
+        <Text
+          className={`text-white font-semibold text-center ${getTextSizeClass()}`}
+          style={textStyle}
+        >
           {title}
         </Text>
       </LinearGradient>
@@ -81,19 +85,3 @@ export default function GradientButton({
   );
 }
 
-const styles = StyleSheet.create({
-  container: {
-    borderRadius: 12,
-    overflow: 'hidden',
-  },
-  gradient: {
-    justifyContent: 'center',
-    alignItems: 'center',
-    borderRadius: 12,
-  },
-  text: {
-    color: '#FFFFFF',
-    fontWeight: '600',
-    textAlign: 'center',
-  },
-});

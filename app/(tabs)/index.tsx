@@ -1,5 +1,5 @@
 import React, { useState, useEffect, useRef } from 'react';
-import { View, Text, StyleSheet, ScrollView, RefreshControl, Alert } from 'react-native';
+import { View, Text, ScrollView, RefreshControl, Alert } from 'react-native';
 import { LinearGradient } from 'expo-linear-gradient';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { Plus, Calendar, Zap } from 'lucide-react-native';
@@ -321,48 +321,48 @@ export default function HomeScreen() {
   const totalExtraTasks = tasks.length;
 
   return (
-    <SafeAreaView style={styles.container}>
+    <SafeAreaView className="flex-1 bg-gradient-to-tr from-[#1E202C] to-[#60519B]">
       <LinearGradient
-        colors={['#8B5CF6', '#3B82F6']}
-        style={styles.header}
+        colors={['#1E202C', '#60519B']}
+        className="px-5 py-6 rounded-b-3xl"
       >
-        <View style={styles.headerContent}>
+        <View className="flex-row justify-between items-start mb-6">
           <View>
-            <Text style={styles.greeting}>Good morning! 👋</Text>
-            <Text style={styles.subtitle}>Ready to level up today?</Text>
+            <Text className="text-2xl font-bold text-white mb-1">Good morning! 👋</Text>
+            <Text className="text-base text-gray-200">Ready to level up today?</Text>
           </View>
           <CreditDisplay credits={credits} size="large" />
         </View>
 
-        <View style={styles.statsContainer}>
-          <View style={styles.statCard}>
+        <View className="flex-row gap-3">
+          <View className="flex-1 bg-white/20 rounded-2xl p-4 items-center">
             <Calendar size={20} color="#8B5CF6" />
-            <Text style={styles.statNumber}>{streak}</Text>
-            <Text style={styles.statLabel}>Day Streak</Text>
+            <Text className="text-xl font-bold text-white mt-2 mb-1">{streak}</Text>
+            <Text className="text-xs text-gray-200 font-medium">Day Streak</Text>
           </View>
 
-          <View style={styles.statCard}>
+          <View className="flex-1 bg-white/20 rounded-2xl p-4 items-center">
             <Zap size={20} color="#8B5CF6" />
-            <Text style={styles.statNumber}>{completedMainTasks}/3</Text>
-            <Text style={styles.statLabel}>Main Tasks</Text>
+            <Text className="text-xl font-bold text-white mt-2 mb-1">{completedMainTasks}/3</Text>
+            <Text className="text-xs text-gray-200 font-medium">Main Tasks</Text>
           </View>
 
-          <View style={styles.statCard}>
+          <View className="flex-1 bg-white/20 rounded-2xl p-4 items-center">
             <Plus size={20} color="#10B981" />
-            <Text style={styles.statNumber}>{completedExtraTasks}/{totalExtraTasks}</Text>
-            <Text style={styles.statLabel}>Extra Tasks</Text>
+            <Text className="text-xl font-bold text-white mt-2 mb-1">{completedExtraTasks}/{totalExtraTasks}</Text>
+            <Text className="text-xs text-gray-200 font-medium">Extra Tasks</Text>
           </View>
         </View>
       </LinearGradient>
 
       <ScrollView
-        style={styles.content}
+        className="flex-1 -mt-3"
         refreshControl={
           <RefreshControl refreshing={refreshing} onRefresh={onRefresh} />
         }
       >
-        <View style={styles.section}>
-          <Text style={styles.sectionTitle}>Main Tasks</Text>
+        <View className="p-5">
+          <Text className="text-xl font-bold text-gray-900">Main Tasks</Text>
 
           <MainTaskCard
             title="Daily Login"
@@ -394,30 +394,30 @@ export default function HomeScreen() {
           </MainTaskCard>
         </View>
 
-        <View style={styles.section}>
-          <View style={styles.sectionHeader}>
-            <Text style={styles.sectionTitle}>Extra Tasks</Text>
+        <View className="p-5">
+          <View className="flex-row justify-between items-center mb-4">
+            <Text className="text-xl font-bold text-gray-900">Extra Tasks</Text>
             <GradientButton
               title="Add Task"
               onPress={handleCreateTask}
               size="small"
-              style={styles.addButton}
+              className="px-4"
               disabled={totalExtraTasks >= CHALLENGE_CONFIG.MAX_EXTRA_TASKS}
             />
           </View>
 
-          <Text style={styles.taskLimitText}>
+          <Text className="text-sm text-amber-600 font-semibold mb-4 text-center bg-amber-50 py-2 px-4 rounded-lg border border-amber-200">
             {totalExtraTasks}/2 tasks created today
           </Text>
 
           {totalExtraTasks === 0 ? (
-            <View style={styles.emptyState}>
+            <View className="items-center py-12">
               <Plus size={48} color="#D1D5DB" />
-              <Text style={styles.emptyText}>No tasks yet</Text>
-              <Text style={styles.emptySubtext}>Create your first extra task!</Text>
+              <Text className="text-lg font-semibold text-gray-500 mt-4">No tasks yet</Text>
+              <Text className="text-sm text-gray-400 mt-2 text-center">Create your first extra task!</Text>
             </View>
           ) : (
-            <View style={styles.tasksList}>
+            <View className="gap-2">
               {tasks.map((task) => (
                 <TaskCard
                   key={task.id}
@@ -430,13 +430,13 @@ export default function HomeScreen() {
         </View>
 
         {completedMainTasks === 3 && (
-          <View style={styles.congratsCard}>
+          <View className="mx-5 rounded-2xl overflow-hidden">
             <LinearGradient
               colors={['#10B981', '#059669']}
-              style={styles.congratsGradient}
+              className="p-5 items-center"
             >
-              <Text style={styles.congratsTitle}>🎉 Main Tasks Complete!</Text>
-              <Text style={styles.congratsText}>
+              <Text className="text-xl font-bold text-white mb-2">🎉 Main Tasks Complete!</Text>
+              <Text className="text-sm text-green-100 text-center leading-5">
                 You've completed all your main tasks for today. Great job!
               </Text>
             </LinearGradient>
@@ -454,128 +454,4 @@ export default function HomeScreen() {
   );
 }
 
-const styles = StyleSheet.create({
-  container: {
-    flex: 1,
-    backgroundColor: '#F9FAFB',
-  },
-  header: {
-    paddingHorizontal: 20,
-    paddingVertical: 24,
-    borderBottomLeftRadius: 24,
-    borderBottomRightRadius: 24,
-  },
-  headerContent: {
-    flexDirection: 'row',
-    justifyContent: 'space-between',
-    alignItems: 'flex-start',
-    marginBottom: 24,
-  },
-  greeting: {
-    fontSize: 24,
-    fontWeight: '700',
-    color: '#FFFFFF',
-    marginBottom: 4,
-  },
-  subtitle: {
-    fontSize: 16,
-    color: '#E5E7EB',
-  },
-  statsContainer: {
-    flexDirection: 'row',
-    gap: 12,
-  },
-  statCard: {
-    flex: 1,
-    backgroundColor: 'rgba(255, 255, 255, 0.2)',
-    borderRadius: 16,
-    padding: 16,
-    alignItems: 'center',
-  },
-  statNumber: {
-    fontSize: 20,
-    fontWeight: '700',
-    color: '#FFFFFF',
-    marginTop: 8,
-    marginBottom: 4,
-  },
-  statLabel: {
-    fontSize: 12,
-    color: '#E5E7EB',
-    fontWeight: '500',
-  },
-  content: {
-    flex: 1,
-    marginTop: -12,
-  },
-  section: {
-    padding: 20,
-  },
-  sectionHeader: {
-    flexDirection: 'row',
-    justifyContent: 'space-between',
-    alignItems: 'center',
-    marginBottom: 16,
-  },
-  sectionTitle: {
-    fontSize: 20,
-    fontWeight: '700',
-    color: '#111827',
-  },
-  addButton: {
-    paddingHorizontal: 16,
-  },
-  taskLimitText: {
-    fontSize: 14,
-    color: '#F59E0B',
-    fontWeight: '600',
-    marginBottom: 16,
-    textAlign: 'center',
-    backgroundColor: 'rgba(245, 158, 11, 0.1)',
-    paddingVertical: 8,
-    paddingHorizontal: 16,
-    borderRadius: 8,
-    borderWidth: 1,
-    borderColor: 'rgba(245, 158, 11, 0.3)',
-  },
-  emptyState: {
-    alignItems: 'center',
-    paddingVertical: 48,
-  },
-  emptyText: {
-    fontSize: 18,
-    fontWeight: '600',
-    color: '#6B7280',
-    marginTop: 16,
-  },
-  emptySubtext: {
-    fontSize: 14,
-    color: '#9CA3AF',
-    marginTop: 8,
-    textAlign: 'center',
-  },
-  tasksList: {
-    gap: 8,
-  },
-  congratsCard: {
-    margin: 20,
-    borderRadius: 16,
-    overflow: 'hidden',
-  },
-  congratsGradient: {
-    padding: 20,
-    alignItems: 'center',
-  },
-  congratsTitle: {
-    fontSize: 20,
-    fontWeight: '700',
-    color: '#FFFFFF',
-    marginBottom: 8,
-  },
-  congratsText: {
-    fontSize: 14,
-    color: '#E5F7F0',
-    textAlign: 'center',
-    lineHeight: 20,
-  },
-});
+

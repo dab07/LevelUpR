@@ -1,5 +1,5 @@
 import React, { useState } from 'react';
-import { View, Text, StyleSheet, TouchableOpacity, Modal, TextInput, Alert } from 'react-native';
+import { View, Text, TouchableOpacity, Modal, TextInput, Alert } from 'react-native';
 import { LinearGradient } from 'expo-linear-gradient';
 import { Settings, Activity, AlertCircle } from 'lucide-react-native';
 import { StepData } from '@/types';
@@ -28,51 +28,52 @@ export default function StepCounter({ stepData, onUpdateGoal, pedometerError }: 
 
     return (
         <>
-            <View style={styles.container}>
+            <View className="mt-3">
                 {pedometerError && (
-                    <View style={styles.errorContainer}>
+                    <View className="flex-row items-center bg-red-500/10 px-3 py-2 rounded-lg mb-3">
                         <AlertCircle size={16} color="#EF4444" />
-                        <Text style={styles.errorText}>{pedometerError}</Text>
+                        <Text className="text-xs text-red-500 ml-1.5 flex-1">{pedometerError}</Text>
                     </View>
                 )}
 
-                <View style={styles.header}>
-                    <View style={styles.titleContainer}>
+                <View className="flex-row justify-between items-center mb-3">
+                    <View className="flex-row items-center flex-1">
                         <Activity size={20} color="#8B5CF6" />
-                        <Text style={styles.stepCount}>
+                        <Text className="text-base font-semibold text-gray-900 ml-2">
                             {stepData.steps.toLocaleString()}/{stepData.goal.toLocaleString()} steps
                         </Text>
                     </View>
                     <TouchableOpacity
                         onPress={() => setShowSettings(true)}
-                        style={styles.settingsButton}
+                        className="p-1"
                     >
                         <Settings size={20} color="#6B7280" />
                     </TouchableOpacity>
                 </View>
 
-                <View style={styles.progressContainer}>
-                    <View style={styles.progressBar}>
+                <View className="flex-row items-center mb-4">
+                    <View className="flex-1 h-2 bg-gray-200 rounded-sm overflow-hidden mr-3">
                         <LinearGradient
                             colors={['#8B5CF6', '#3B82F6']}
-                            style={[styles.progressFill, { width: `${progressPercentage}%` }]}
+                            className="h-full rounded-sm"
+                            style={{ width: `${progressPercentage}%` }}
                         />
                     </View>
-                    <Text style={styles.progressText}>
+                    <Text className="text-sm font-semibold text-gray-500 min-w-[40px] text-right">
                         {Math.round(progressPercentage)}%
                     </Text>
                 </View>
 
-                <View style={styles.infoContainer}>
-                    <View style={styles.infoItem}>
-                        <Text style={styles.infoLabel}>Automatic Tracking</Text>
-                        <Text style={styles.infoValue}>
+                <View className="flex-row justify-between mt-2">
+                    <View className="items-center">
+                        <Text className="text-xs text-gray-500 mb-0.5">Automatic Tracking</Text>
+                        <Text className="text-xs font-medium text-gray-900">
                             {pedometerError ? 'Unavailable' : 'Active'}
                         </Text>
                     </View>
-                    <View style={styles.infoItem}>
-                        <Text style={styles.infoLabel}>Last Updated</Text>
-                        <Text style={styles.infoValue}>
+                    <View className="items-center">
+                        <Text className="text-xs text-gray-500 mb-0.5">Last Updated</Text>
+                        <Text className="text-xs font-medium text-gray-900">
                             {new Date(stepData.lastUpdated).toLocaleTimeString([], {
                                 hour: '2-digit',
                                 minute: '2-digit'
@@ -88,15 +89,15 @@ export default function StepCounter({ stepData, onUpdateGoal, pedometerError }: 
                 animationType="fade"
                 onRequestClose={() => setShowSettings(false)}
             >
-                <View style={styles.modalOverlay}>
-                    <View style={styles.modalContent}>
-                        <Text style={styles.modalTitle}>Step Goal Settings</Text>
+                <View className="flex-1 bg-black/50 justify-center items-center p-5">
+                    <View className="bg-white rounded-2xl p-6 w-full max-w-[400px]">
+                        <Text className="text-xl font-bold text-gray-900 mb-5 text-center">Step Goal Settings</Text>
 
-                        <View style={styles.inputContainer}>
-                            <Text style={styles.inputLabel}>Daily Step Goal</Text>
-                            <Text style={styles.inputHint}>Minimum: 6,000 steps</Text>
+                        <View className="mb-6">
+                            <Text className="text-sm font-semibold text-gray-700 mb-2">Daily Step Goal</Text>
+                            <Text className="text-xs text-gray-500 mb-2">Minimum: 6,000 steps</Text>
                             <TextInput
-                                style={styles.input}
+                                className="border border-gray-300 rounded-lg px-3 py-2.5 text-base text-gray-900"
                                 value={tempGoal}
                                 onChangeText={setTempGoal}
                                 keyboardType="numeric"
@@ -104,19 +105,19 @@ export default function StepCounter({ stepData, onUpdateGoal, pedometerError }: 
                             />
                         </View>
 
-                        <View style={styles.modalButtons}>
+                        <View className="flex-row gap-3">
                             <TouchableOpacity
                                 onPress={() => setShowSettings(false)}
-                                style={[styles.modalButton, styles.cancelButton]}
+                                className="flex-1 py-3 rounded-lg items-center bg-gray-100"
                             >
-                                <Text style={styles.cancelButtonText}>Cancel</Text>
+                                <Text className="text-base font-semibold text-gray-500">Cancel</Text>
                             </TouchableOpacity>
 
                             <TouchableOpacity
                                 onPress={handleGoalSave}
-                                style={[styles.modalButton, styles.saveButton]}
+                                className="flex-1 py-3 rounded-lg items-center bg-violet-500"
                             >
-                                <Text style={styles.saveButtonText}>Save</Text>
+                                <Text className="text-base font-semibold text-white">Save</Text>
                             </TouchableOpacity>
                         </View>
                     </View>
@@ -126,155 +127,4 @@ export default function StepCounter({ stepData, onUpdateGoal, pedometerError }: 
     );
 }
 
-const styles = StyleSheet.create({
-    container: {
-        marginTop: 12,
-    },
-    errorContainer: {
-        flexDirection: 'row',
-        alignItems: 'center',
-        backgroundColor: 'rgba(239, 68, 68, 0.1)',
-        paddingHorizontal: 12,
-        paddingVertical: 8,
-        borderRadius: 8,
-        marginBottom: 12,
-    },
-    errorText: {
-        fontSize: 12,
-        color: '#EF4444',
-        marginLeft: 6,
-        flex: 1,
-    },
-    header: {
-        flexDirection: 'row',
-        justifyContent: 'space-between',
-        alignItems: 'center',
-        marginBottom: 12,
-    },
-    titleContainer: {
-        flexDirection: 'row',
-        alignItems: 'center',
-        flex: 1,
-    },
-    stepCount: {
-        fontSize: 16,
-        fontWeight: '600',
-        color: '#111827',
-        marginLeft: 8,
-    },
-    settingsButton: {
-        padding: 4,
-    },
-    progressContainer: {
-        flexDirection: 'row',
-        alignItems: 'center',
-        marginBottom: 16,
-    },
-    progressBar: {
-        flex: 1,
-        height: 8,
-        backgroundColor: '#E5E7EB',
-        borderRadius: 4,
-        overflow: 'hidden',
-        marginRight: 12,
-    },
-    progressFill: {
-        height: '100%',
-        borderRadius: 4,
-    },
-    progressText: {
-        fontSize: 14,
-        fontWeight: '600',
-        color: '#6B7280',
-        minWidth: 40,
-        textAlign: 'right',
-    },
-    infoContainer: {
-        flexDirection: 'row',
-        justifyContent: 'space-between',
-        marginTop: 8,
-    },
-    infoItem: {
-        alignItems: 'center',
-    },
-    infoLabel: {
-        fontSize: 12,
-        color: '#6B7280',
-        marginBottom: 2,
-    },
-    infoValue: {
-        fontSize: 12,
-        fontWeight: '500',
-        color: '#111827',
-    },
-    modalOverlay: {
-        flex: 1,
-        backgroundColor: 'rgba(0, 0, 0, 0.5)',
-        justifyContent: 'center',
-        alignItems: 'center',
-        padding: 20,
-    },
-    modalContent: {
-        backgroundColor: '#FFFFFF',
-        borderRadius: 16,
-        padding: 24,
-        width: '100%',
-        maxWidth: 400,
-    },
-    modalTitle: {
-        fontSize: 20,
-        fontWeight: '700',
-        color: '#111827',
-        marginBottom: 20,
-        textAlign: 'center',
-    },
-    inputContainer: {
-        marginBottom: 24,
-    },
-    inputLabel: {
-        fontSize: 14,
-        fontWeight: '600',
-        color: '#374151',
-        marginBottom: 8,
-    },
-    inputHint: {
-        fontSize: 12,
-        color: '#6B7280',
-        marginBottom: 8,
-    },
-    input: {
-        borderWidth: 1,
-        borderColor: '#D1D5DB',
-        borderRadius: 8,
-        paddingHorizontal: 12,
-        paddingVertical: 10,
-        fontSize: 16,
-        color: '#111827',
-    },
-    modalButtons: {
-        flexDirection: 'row',
-        gap: 12,
-    },
-    modalButton: {
-        flex: 1,
-        paddingVertical: 12,
-        borderRadius: 8,
-        alignItems: 'center',
-    },
-    cancelButton: {
-        backgroundColor: '#F3F4F6',
-    },
-    saveButton: {
-        backgroundColor: '#8B5CF6',
-    },
-    cancelButtonText: {
-        fontSize: 16,
-        fontWeight: '600',
-        color: '#6B7280',
-    },
-    saveButtonText: {
-        fontSize: 16,
-        fontWeight: '600',
-        color: '#FFFFFF',
-    },
-});
+

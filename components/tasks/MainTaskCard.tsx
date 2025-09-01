@@ -1,5 +1,5 @@
 import React from 'react';
-import { View, Text, StyleSheet, TouchableOpacity } from 'react-native';
+import { View, Text, TouchableOpacity } from 'react-native';
 import { LinearGradient } from 'expo-linear-gradient';
 import { CheckCircle, Circle } from 'lucide-react-native';
 
@@ -21,23 +21,21 @@ export default function MainTaskCard({
                                          children,
                                      }: MainTaskCardProps) {
     return (
-        <View style={styles.container}>
+        <View className="my-2 rounded-2xl overflow-hidden shadow-sm shadow-black/10">
             <LinearGradient
                 colors={isCompleted ? ['#10B981', '#059669'] : ['#FFFFFF', '#F9FAFB']}
-                style={styles.gradient}
+                className="p-4"
             >
-                <View style={styles.header}>
-                    <View style={styles.titleSection}>
-                        <Text style={[
-                            styles.title,
-                            { color: isCompleted ? '#FFFFFF' : '#111827' }
-                        ]}>
+                <View className="flex-row justify-between items-start">
+                    <View className="flex-1 mr-4">
+                        <Text className={`text-lg font-semibold mb-1 ${
+                            isCompleted ? 'text-white' : 'text-gray-900'
+                        }`}>
                             {title}
                         </Text>
-                        <Text style={[
-                            styles.description,
-                            { color: isCompleted ? '#E5E7EB' : '#6B7280' }
-                        ]}>
+                        <Text className={`text-sm leading-5 ${
+                            isCompleted ? 'text-gray-200' : 'text-gray-500'
+                        }`}>
                             {description}
                         </Text>
                     </View>
@@ -45,28 +43,27 @@ export default function MainTaskCard({
                     <TouchableOpacity
                         onPress={onClaim}
                         disabled={disabled || isCompleted}
-                        style={[
-                            styles.claimButton,
-                            isCompleted && styles.completedButton,
-                            disabled && styles.disabledButton,
-                        ]}
+                        className={`flex-row items-center px-4 py-2 rounded-[20px] border ${
+                            isCompleted 
+                                ? 'bg-white/20 border-white' 
+                                : 'bg-violet-500/10 border-violet-500'
+                        } ${disabled ? 'opacity-50' : ''}`}
                     >
                         {isCompleted ? (
                             <CheckCircle size={20} color="#FFFFFF" />
                         ) : (
                             <Circle size={20} color="#8B5CF6" />
                         )}
-                        <Text style={[
-                            styles.claimText,
-                            { color: isCompleted ? '#FFFFFF' : '#8B5CF6' }
-                        ]}>
+                        <Text className={`text-sm font-semibold ml-1.5 ${
+                            isCompleted ? 'text-white' : 'text-violet-500'
+                        }`}>
                             {isCompleted ? 'Claimed' : 'Claim'}
                         </Text>
                     </TouchableOpacity>
                 </View>
 
                 {children && (
-                    <View style={styles.content}>
+                    <View className="mt-4">
                         {children}
                     </View>
                 )}
@@ -75,61 +72,4 @@ export default function MainTaskCard({
     );
 }
 
-const styles = StyleSheet.create({
-    container: {
-        marginVertical: 8,
-        borderRadius: 16,
-        overflow: 'hidden',
-        elevation: 2,
-        shadowColor: '#000',
-        shadowOffset: { width: 0, height: 2 },
-        shadowOpacity: 0.1,
-        shadowRadius: 4,
-    },
-    gradient: {
-        padding: 16,
-    },
-    header: {
-        flexDirection: 'row',
-        justifyContent: 'space-between',
-        alignItems: 'flex-start',
-    },
-    titleSection: {
-        flex: 1,
-        marginRight: 16,
-    },
-    title: {
-        fontSize: 18,
-        fontWeight: '600',
-        marginBottom: 4,
-    },
-    description: {
-        fontSize: 14,
-        lineHeight: 20,
-    },
-    claimButton: {
-        flexDirection: 'row',
-        alignItems: 'center',
-        backgroundColor: 'rgba(139, 92, 246, 0.1)',
-        paddingHorizontal: 16,
-        paddingVertical: 8,
-        borderRadius: 20,
-        borderWidth: 1,
-        borderColor: '#8B5CF6',
-    },
-    completedButton: {
-        backgroundColor: 'rgba(255, 255, 255, 0.2)',
-        borderColor: '#FFFFFF',
-    },
-    disabledButton: {
-        opacity: 0.5,
-    },
-    claimText: {
-        fontSize: 14,
-        fontWeight: '600',
-        marginLeft: 6,
-    },
-    content: {
-        marginTop: 16,
-    },
-});
+

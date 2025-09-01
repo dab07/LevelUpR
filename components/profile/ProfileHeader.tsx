@@ -1,5 +1,5 @@
 import React, { useState } from 'react';
-import { View, Text, StyleSheet, TouchableOpacity, Image, Alert } from 'react-native';
+import { View, Text, TouchableOpacity, Image, Alert } from 'react-native';
 import { LinearGradient } from 'expo-linear-gradient';
 import { Camera, CreditCard as Edit3, Star, Trophy } from 'lucide-react-native';
 import { profileService } from '@/services/profileService';
@@ -43,61 +43,62 @@ export default function ProfileHeader({ profile, onProfileUpdate }: ProfileHeade
     return (
         <LinearGradient
             colors={['#8B5CF6', '#3B82F6']}
-            style={styles.container}
+            className="px-5 py-6 rounded-b-3xl"
         >
-            <View style={styles.content}>
-                <View style={styles.avatarContainer}>
-                    <TouchableOpacity onPress={handleImageUpload} style={styles.avatarWrapper}>
+            <View className="flex-row items-center mb-5">
+                <View className="relative mr-4">
+                    <TouchableOpacity onPress={handleImageUpload} className="relative">
                         {profile.avatarUrl ? (
-                            <Image source={{ uri: profile.avatarUrl }} style={styles.avatar} />
+                            <Image source={{ uri: profile.avatarUrl }} className="w-20 h-20 rounded-full border-3 border-white" />
                         ) : (
-                            <View style={styles.avatarPlaceholder}>
-                                <Text style={styles.avatarText}>
+                            <View className="w-20 h-20 rounded-full bg-white/20 justify-center items-center border-3 border-white">
+                                <Text className="text-[32px] font-bold text-white">
                                     {profile.displayName}
                                 </Text>
                             </View>
                         )}
-                        <View style={styles.cameraOverlay}>
+                        <View className="absolute bottom-0 right-0 w-7 h-7 rounded-full bg-violet-500 justify-center items-center border-2 border-white">
                             <Camera size={16} color="#FFFFFF" />
                         </View>
                     </TouchableOpacity>
 
                     {uploading && (
-                        <View style={styles.uploadingOverlay}>
-                            <Text style={styles.uploadingText}>Uploading...</Text>
+                        <View className="absolute top-0 left-0 right-0 bottom-0 bg-black/70 rounded-full justify-center items-center">
+                            <Text className="text-white text-xs font-semibold">Uploading...</Text>
                         </View>
                     )}
                 </View>
 
-                <View style={styles.userInfo}>
-                    <Text style={styles.displayName}>{profile.displayName}</Text>
-                    <Text style={styles.username}>@{profile.username}</Text>
+                <View className="flex-1">
+                    <Text className="text-2xl font-bold text-white mb-1">{profile.displayName}</Text>
+                    <Text className="text-base text-gray-200 mb-3">@{profile.username}</Text>
 
-                    <View style={styles.statsRow}>
-                        <View style={styles.statItem}>
+                    <View className="flex-row gap-4">
+                        <View className="flex-row items-center gap-1">
                             <Star size={16} color="#FCD34D" />
-                            <Text style={styles.statText}>Level {profile.level}</Text>
+                            <Text className="text-sm text-white font-medium">Level {profile.level}</Text>
                         </View>
-                        <View style={styles.statItem}>
+                        <View className="flex-row items-center gap-1">
                             <Trophy size={16} color="#FCD34D" />
-                            <Text style={styles.statText}>{profile.dailyLoginStreak} day streak</Text>
+                            <Text className="text-sm text-white font-medium">{profile.dailyLoginStreak} day streak</Text>
                         </View>
                     </View>
                 </View>
 
-                <View style={styles.creditsContainer}>
+                <View className="ml-3">
                     <CreditDisplay credits={profile.credits} size="large" />
                 </View>
             </View>
 
-            <View style={styles.progressContainer}>
-                <View style={styles.progressInfo}>
-                    <Text style={styles.progressLabel}>Progress to Level {profile.level + 1}</Text>
-                    <Text style={styles.progressText}>{profile.xp % 100}/100 XP</Text>
+            <View className="mt-2">
+                <View className="flex-row justify-between items-center mb-2">
+                    <Text className="text-sm text-gray-200 font-medium">Progress to Level {profile.level + 1}</Text>
+                    <Text className="text-sm text-white font-semibold">{profile.xp % 100}/100 XP</Text>
                 </View>
-                <View style={styles.progressBar}>
+                <View className="h-1.5 bg-white/20 rounded-sm overflow-hidden">
                     <View
-                        style={[styles.progressFill, { width: `${(profile.xp % 100)}%` }]}
+                        className="h-full bg-yellow-300 rounded-sm"
+                        style={{ width: `${(profile.xp % 100)}%` }}
                     />
                 </View>
             </View>
@@ -105,135 +106,4 @@ export default function ProfileHeader({ profile, onProfileUpdate }: ProfileHeade
     );
 }
 
-const styles = StyleSheet.create({
-    container: {
-        paddingHorizontal: 20,
-        paddingVertical: 24,
-        borderBottomLeftRadius: 24,
-        borderBottomRightRadius: 24,
-    },
-    content: {
-        flexDirection: 'row',
-        alignItems: 'center',
-        marginBottom: 20,
-    },
-    avatarContainer: {
-        position: 'relative',
-        marginRight: 16,
-    },
-    avatarWrapper: {
-        position: 'relative',
-    },
-    avatar: {
-        width: 80,
-        height: 80,
-        borderRadius: 40,
-        borderWidth: 3,
-        borderColor: '#FFFFFF',
-    },
-    avatarPlaceholder: {
-        width: 80,
-        height: 80,
-        borderRadius: 40,
-        backgroundColor: 'rgba(255, 255, 255, 0.2)',
-        justifyContent: 'center',
-        alignItems: 'center',
-        borderWidth: 3,
-        borderColor: '#FFFFFF',
-    },
-    avatarText: {
-        fontSize: 32,
-        fontWeight: '700',
-        color: '#FFFFFF',
-    },
-    cameraOverlay: {
-        position: 'absolute',
-        bottom: 0,
-        right: 0,
-        width: 28,
-        height: 28,
-        borderRadius: 14,
-        backgroundColor: '#8B5CF6',
-        justifyContent: 'center',
-        alignItems: 'center',
-        borderWidth: 2,
-        borderColor: '#FFFFFF',
-    },
-    uploadingOverlay: {
-        position: 'absolute',
-        top: 0,
-        left: 0,
-        right: 0,
-        bottom: 0,
-        backgroundColor: 'rgba(0, 0, 0, 0.7)',
-        borderRadius: 40,
-        justifyContent: 'center',
-        alignItems: 'center',
-    },
-    uploadingText: {
-        color: '#FFFFFF',
-        fontSize: 12,
-        fontWeight: '600',
-    },
-    userInfo: {
-        flex: 1,
-    },
-    displayName: {
-        fontSize: 24,
-        fontWeight: '700',
-        color: '#FFFFFF',
-        marginBottom: 4,
-    },
-    username: {
-        fontSize: 16,
-        color: '#E5E7EB',
-        marginBottom: 12,
-    },
-    statsRow: {
-        flexDirection: 'row',
-        gap: 16,
-    },
-    statItem: {
-        flexDirection: 'row',
-        alignItems: 'center',
-        gap: 4,
-    },
-    statText: {
-        fontSize: 14,
-        color: '#FFFFFF',
-        fontWeight: '500',
-    },
-    creditsContainer: {
-        marginLeft: 12,
-    },
-    progressContainer: {
-        marginTop: 8,
-    },
-    progressInfo: {
-        flexDirection: 'row',
-        justifyContent: 'space-between',
-        alignItems: 'center',
-        marginBottom: 8,
-    },
-    progressLabel: {
-        fontSize: 14,
-        color: '#E5E7EB',
-        fontWeight: '500',
-    },
-    progressText: {
-        fontSize: 14,
-        color: '#FFFFFF',
-        fontWeight: '600',
-    },
-    progressBar: {
-        height: 6,
-        backgroundColor: 'rgba(255, 255, 255, 0.2)',
-        borderRadius: 3,
-        overflow: 'hidden',
-    },
-    progressFill: {
-        height: '100%',
-        backgroundColor: '#FCD34D',
-        borderRadius: 3,
-    },
-});
+

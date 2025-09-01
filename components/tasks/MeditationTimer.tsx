@@ -1,5 +1,5 @@
 import React, { useState, useEffect, useRef } from 'react';
-import { View, Text, StyleSheet, TouchableOpacity, Modal, Alert, AppState } from 'react-native';
+import { View, Text, TouchableOpacity, Modal, Alert, AppState } from 'react-native';
 import { LinearGradient } from 'expo-linear-gradient';
 import { Play, Pause, Square, Settings } from 'lucide-react-native';
 import { meditationService } from '@/services/meditationService';
@@ -137,68 +137,67 @@ export default function MeditationTimer({ onComplete }: MeditationTimerProps) {
 
     return (
         <>
-            <View style={styles.container}>
-                <View style={styles.header}>
-                    <Text style={styles.durationText}>
+            <View className="mt-3">
+                <View className="flex-row justify-between items-center mb-5">
+                    <Text className="text-base font-semibold text-gray-900">
                         Meditate for {duration}min
                     </Text>
                     <TouchableOpacity
                         onPress={() => setShowSettings(true)}
-                        style={styles.settingsButton}
+                        className="p-1"
                         disabled={isRunning}
                     >
                         <Settings size={20} color={isRunning ? '#9CA3AF' : '#6B7280'} />
                     </TouchableOpacity>
                 </View>
 
-                <View style={styles.timerContainer}>
-                    <View style={styles.circularProgress}>
+                <View className="items-center mb-6">
+                    <View className="w-[120px] h-[120px] relative items-center justify-center">
                         <LinearGradient
                             colors={['#8B5CF6', '#3B82F6']}
-                            style={[
-                                styles.progressRing,
-                                {
-                                    transform: [{ rotate: `${(getProgressPercentage() * 3.6) - 90}deg` }]
-                                }
-                            ]}
+                            className="absolute w-[120px] h-[120px] rounded-full border-4 border-transparent"
+                            style={{
+                                borderTopColor: '#8B5CF6',
+                                transform: [{ rotate: `${(getProgressPercentage() * 3.6) - 90}deg` }]
+                            }}
                         />
-                        <View style={styles.timerInner}>
-                            <Text style={styles.timeDisplay}>{formatTime(timeLeft)}</Text>
-                            <Text style={styles.statusText}>
+                        <View className="w-[100px] h-[100px] rounded-full bg-gray-50 items-center justify-center border-2 border-gray-200">
+                            <Text className="text-lg font-bold text-gray-900">{formatTime(timeLeft)}</Text>
+                            <Text className="text-xs text-gray-500 mt-0.5">
                                 {isRunning ? 'Meditating...' : timeLeft === duration * 60 ? 'Ready' : 'Paused'}
                             </Text>
                         </View>
                     </View>
                 </View>
 
-                <View style={styles.controls}>
+                <View className="flex-row justify-center gap-3">
                     {!isRunning ? (
                         <TouchableOpacity
                             onPress={handleStart}
-                            style={[styles.controlButton, styles.playButton]}
+                            className="flex-row items-center px-5 py-2.5 rounded-full bg-emerald-500"
                         >
                             <Play size={24} color="#FFFFFF" />
-                            <Text style={styles.playButtonText}>
+                            <Text className="text-white font-semibold ml-2">
                                 {timeLeft === duration * 60 ? 'Start' : 'Resume'}
                             </Text>
                         </TouchableOpacity>
                     ) : (
                         <TouchableOpacity
                             onPress={handlePause}
-                            style={[styles.controlButton, styles.pauseButton]}
+                            className="flex-row items-center px-5 py-2.5 rounded-full bg-amber-500"
                         >
                             <Pause size={24} color="#FFFFFF" />
-                            <Text style={styles.pauseButtonText}>Pause</Text>
+                            <Text className="text-white font-semibold ml-2">Pause</Text>
                         </TouchableOpacity>
                     )}
 
                     {timeLeft !== duration * 60 && (
                         <TouchableOpacity
                             onPress={handleStop}
-                            style={[styles.controlButton, styles.stopButton]}
+                            className="flex-row items-center px-5 py-2.5 rounded-full border border-red-500"
                         >
                             <Square size={20} color="#EF4444" />
-                            <Text style={styles.stopButtonText}>Stop</Text>
+                            <Text className="text-red-500 font-semibold ml-1.5">Stop</Text>
                         </TouchableOpacity>
                     )}
                 </View>
@@ -210,24 +209,24 @@ export default function MeditationTimer({ onComplete }: MeditationTimerProps) {
                 animationType="fade"
                 onRequestClose={() => setShowSettings(false)}
             >
-                <View style={styles.modalOverlay}>
-                    <View style={styles.modalContent}>
-                        <Text style={styles.modalTitle}>Meditation Duration</Text>
+                <View className="flex-1 bg-black/50 justify-center items-center p-5">
+                    <View className="bg-white rounded-2xl p-6 w-full max-w-[400px]">
+                        <Text className="text-xl font-bold text-gray-900 mb-5 text-center">Meditation Duration</Text>
 
-                        <View style={styles.durationGrid}>
+                        <View className="flex-row flex-wrap gap-3 mb-6">
                             {DURATION_OPTIONS.map((option) => (
                                 <TouchableOpacity
                                     key={option}
                                     onPress={() => handleDurationChange(option)}
-                                    style={[
-                                        styles.durationOption,
-                                        duration === option && styles.selectedDuration
-                                    ]}
+                                    className={`flex-1 min-w-[30%] py-3 rounded-lg items-center border-2 ${
+                                        duration === option 
+                                            ? 'bg-violet-500 border-violet-500' 
+                                            : 'bg-gray-100 border-transparent'
+                                    }`}
                                 >
-                                    <Text style={[
-                                        styles.durationOptionText,
-                                        duration === option && styles.selectedDurationText
-                                    ]}>
+                                    <Text className={`text-base font-semibold ${
+                                        duration === option ? 'text-white' : 'text-gray-500'
+                                    }`}>
                                         {option}min
                                     </Text>
                                 </TouchableOpacity>
@@ -236,9 +235,9 @@ export default function MeditationTimer({ onComplete }: MeditationTimerProps) {
 
                         <TouchableOpacity
                             onPress={() => setShowSettings(false)}
-                            style={styles.closeButton}
+                            className="bg-violet-500 py-3 rounded-lg items-center"
                         >
-                            <Text style={styles.closeButtonText}>Close</Text>
+                            <Text className="text-base font-semibold text-white">Close</Text>
                         </TouchableOpacity>
                     </View>
                 </View>
@@ -247,160 +246,4 @@ export default function MeditationTimer({ onComplete }: MeditationTimerProps) {
     );
 }
 
-const styles = StyleSheet.create({
-    container: {
-        marginTop: 12,
-    },
-    header: {
-        flexDirection: 'row',
-        justifyContent: 'space-between',
-        alignItems: 'center',
-        marginBottom: 20,
-    },
-    durationText: {
-        fontSize: 16,
-        fontWeight: '600',
-        color: '#111827',
-    },
-    settingsButton: {
-        padding: 4,
-    },
-    timerContainer: {
-        alignItems: 'center',
-        marginBottom: 24,
-    },
-    circularProgress: {
-        width: 120,
-        height: 120,
-        position: 'relative',
-        alignItems: 'center',
-        justifyContent: 'center',
-    },
-    progressRing: {
-        position: 'absolute',
-        width: 120,
-        height: 120,
-        borderRadius: 60,
-        borderWidth: 4,
-        borderColor: 'transparent',
-        borderTopColor: '#8B5CF6',
-    },
-    timerInner: {
-        width: 100,
-        height: 100,
-        borderRadius: 50,
-        backgroundColor: '#F9FAFB',
-        alignItems: 'center',
-        justifyContent: 'center',
-        borderWidth: 2,
-        borderColor: '#E5E7EB',
-    },
-    timeDisplay: {
-        fontSize: 18,
-        fontWeight: '700',
-        color: '#111827',
-    },
-    statusText: {
-        fontSize: 12,
-        color: '#6B7280',
-        marginTop: 2,
-    },
-    controls: {
-        flexDirection: 'row',
-        justifyContent: 'center',
-        gap: 12,
-    },
-    controlButton: {
-        flexDirection: 'row',
-        alignItems: 'center',
-        paddingHorizontal: 20,
-        paddingVertical: 10,
-        borderRadius: 20,
-    },
-    playButton: {
-        backgroundColor: '#10B981',
-    },
-    pauseButton: {
-        backgroundColor: '#F59E0B',
-    },
-    stopButton: {
-        backgroundColor: 'transparent',
-        borderWidth: 1,
-        borderColor: '#EF4444',
-    },
-    playButtonText: {
-        color: '#FFFFFF',
-        fontWeight: '600',
-        marginLeft: 8,
-    },
-    pauseButtonText: {
-        color: '#FFFFFF',
-        fontWeight: '600',
-        marginLeft: 8,
-    },
-    stopButtonText: {
-        color: '#EF4444',
-        fontWeight: '600',
-        marginLeft: 6,
-    },
-    modalOverlay: {
-        flex: 1,
-        backgroundColor: 'rgba(0, 0, 0, 0.5)',
-        justifyContent: 'center',
-        alignItems: 'center',
-        padding: 20,
-    },
-    modalContent: {
-        backgroundColor: '#FFFFFF',
-        borderRadius: 16,
-        padding: 24,
-        width: '100%',
-        maxWidth: 400,
-    },
-    modalTitle: {
-        fontSize: 20,
-        fontWeight: '700',
-        color: '#111827',
-        marginBottom: 20,
-        textAlign: 'center',
-    },
-    durationGrid: {
-        flexDirection: 'row',
-        flexWrap: 'wrap',
-        gap: 12,
-        marginBottom: 24,
-    },
-    durationOption: {
-        flex: 1,
-        minWidth: '30%',
-        backgroundColor: '#F3F4F6',
-        paddingVertical: 12,
-        borderRadius: 8,
-        alignItems: 'center',
-        borderWidth: 2,
-        borderColor: 'transparent',
-    },
-    selectedDuration: {
-        backgroundColor: '#8B5CF6',
-        borderColor: '#8B5CF6',
-    },
-    durationOptionText: {
-        fontSize: 16,
-        fontWeight: '600',
-        color: '#6B7280',
-    },
-    selectedDurationText: {
-        color: '#FFFFFF',
-    },
-    closeButton: {
-        backgroundColor: '#8B5CF6',
-        paddingVertical: 12,
-        borderRadius: 8,
-        alignItems: 'center',
-    },
-    closeButtonText: {
-        fontSize: 16,
-        fontWeight: '600',
-        color: '#FFFFFF',
-    },
-});
+

@@ -1,5 +1,5 @@
 import React from 'react';
-import { View, Text, StyleSheet } from 'react-native';
+import { View, Text } from 'react-native';
 import { LinearGradient } from 'expo-linear-gradient';
 import { Coins } from 'lucide-react-native';
 
@@ -14,16 +14,16 @@ export default function CreditDisplay({
   size = 'medium', 
   showIcon = true 
 }: CreditDisplayProps) {
-  const getTextSize = () => {
+  const getTextClass = () => {
     switch (size) {
       case 'small':
-        return 14;
+        return 'text-sm';
       case 'medium':
-        return 18;
+        return 'text-lg';
       case 'large':
-        return 24;
+        return 'text-2xl';
       default:
-        return 18;
+        return 'text-lg';
     }
   };
 
@@ -45,17 +45,17 @@ export default function CreditDisplay({
       colors={['#8B5CF6', '#3B82F6']}
       start={{ x: 0, y: 0 }}
       end={{ x: 1, y: 0 }}
-      style={styles.container}
+      className="rounded-[20px] px-3 py-1.5"
     >
-      <View style={styles.content}>
+      <View className="flex-row items-center">
         {showIcon && (
           <Coins 
             size={getIconSize()} 
             color="#FFFFFF" 
-            style={styles.icon}
+            className="mr-1.5"
           />
         )}
-        <Text style={[styles.text, { fontSize: getTextSize() }]}>
+        <Text className={`text-white font-bold ${getTextClass()}`}>
           {credits.toLocaleString()}
         </Text>
       </View>
@@ -63,21 +63,3 @@ export default function CreditDisplay({
   );
 }
 
-const styles = StyleSheet.create({
-  container: {
-    borderRadius: 20,
-    paddingHorizontal: 12,
-    paddingVertical: 6,
-  },
-  content: {
-    flexDirection: 'row',
-    alignItems: 'center',
-  },
-  icon: {
-    marginRight: 6,
-  },
-  text: {
-    color: '#FFFFFF',
-    fontWeight: '700',
-  },
-});

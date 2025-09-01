@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import { View, Text, StyleSheet, TouchableOpacity, Alert, Image } from 'react-native';
+import { View, Text, TouchableOpacity, Alert, Image } from 'react-native';
 import { LinearGradient } from 'expo-linear-gradient';
 import { Clock, Users, Coins, CircleCheck as CheckCircle, Circle as XCircle, Camera, Vote, AlertTriangle } from 'lucide-react-native';
 import { Challenge, Bet } from '@/types';
@@ -222,62 +222,62 @@ export default function ChallengeCard({
 
     return (
         <>
-            <View style={styles.container}>
+            <View className="my-2 rounded-2xl overflow-hidden shadow-sm shadow-black/10">
                 <LinearGradient
                     colors={['#FFFFFF', '#F9FAFB']}
-                    style={styles.gradient}
+                    className="p-4"
                 >
-                    <View style={styles.header}>
-                        <View style={styles.titleSection}>
-                            <Text style={styles.title} numberOfLines={2}>
+                    <View className="flex-row justify-between items-start mb-3">
+                        <View className="flex-1 mr-3">
+                            <Text className="text-lg font-semibold text-gray-900 mb-1" numberOfLines={2}>
                                 {challenge.title}
                             </Text>
-                            <Text style={styles.description} numberOfLines={3}>
+                            <Text className="text-sm text-gray-500 leading-5" numberOfLines={3}>
                                 {challenge.description}
                             </Text>
                         </View>
 
-                        <View style={[styles.statusBadge, { backgroundColor: getPhaseColor() }]}>
-                            <Text style={styles.statusText}>{getPhaseText()}</Text>
+                        <View className="px-2 py-1 rounded-xl" style={{ backgroundColor: getPhaseColor() }}>
+                            <Text className="text-xs font-semibold text-white">{getPhaseText()}</Text>
                         </View>
                     </View>
 
-                    <View style={styles.infoRow}>
-                        <View style={styles.infoItem}>
+                    <View className="flex-row justify-between mb-3">
+                        <View className="flex-row items-center gap-1">
                             <Clock size={16} color="#6B7280" />
-                            <Text style={styles.infoText}>
+                            <Text className="text-xs text-gray-500 font-medium">
                                 {getPhaseTimeDisplay()}
                             </Text>
                         </View>
 
-                        <View style={styles.infoItem}>
+                        <View className="flex-row items-center gap-1">
                             <Coins size={16} color="#F59E0B" />
-                            <Text style={styles.infoText}>
+                            <Text className="text-xs text-gray-500 font-medium">
                                 {challenge.minimumBet} min bet
                             </Text>
                         </View>
 
-                        <View style={styles.infoItem}>
+                        <View className="flex-row items-center gap-1">
                             <Users size={16} color="#8B5CF6" />
-                            <Text style={styles.infoText}>
+                            <Text className="text-xs text-gray-500 font-medium">
                                 {Math.floor(getTotalPool() / challenge.minimumBet)} bets
                             </Text>
                         </View>
                     </View>
 
                     {getTotalPool() > 0 && (
-                        <View style={styles.bettingInfo}>
-                            <Text style={styles.poolTitle}>Betting Pool: {getTotalPool()} credits</Text>
-                            <View style={styles.bettingStats}>
-                                <View style={styles.betStat}>
+                        <View className="bg-gray-50 p-3 rounded-lg mb-3">
+                            <Text className="text-sm font-semibold text-gray-900 mb-2 text-center">Betting Pool: {getTotalPool()} credits</Text>
+                            <View className="flex-row justify-around">
+                                <View className="flex-row items-center gap-1">
                                     <CheckCircle size={16} color="#10B981" />
-                                    <Text style={styles.betStatText}>
+                                    <Text className="text-xs font-medium text-gray-700">
                                         SUCCESS: {challenge.totalYesBets} ({getOdds('yes')})
                                     </Text>
                                 </View>
-                                <View style={styles.betStat}>
+                                <View className="flex-row items-center gap-1">
                                     <XCircle size={16} color="#EF4444" />
-                                    <Text style={styles.betStatText}>
+                                    <Text className="text-xs font-medium text-gray-700">
                                         FAILURE: {challenge.totalNoBets} ({getOdds('no')})
                                     </Text>
                                 </View>
@@ -286,29 +286,29 @@ export default function ChallengeCard({
                     )}
 
                     {userBet && userBet.betType && (
-                        <View style={styles.userBetInfo}>
-                            <Text style={styles.userBetText}>
+                        <View className="bg-violet-50 p-2 rounded-md mb-3">
+                            <Text className="text-xs font-medium text-violet-600 text-center">
                                 Your bet: {userBet.amount} credits on `{userBet.betType.toUpperCase()}`
                             </Text>
                         </View>
                     )}
 
                     {challenge.proofImageUrl && (
-                        <View style={styles.proofSection}>
-                            <Text style={styles.proofTitle}>Submitted Proof:</Text>
-                            <Image source={{ uri: challenge.proofImageUrl }} style={styles.proofImage} />
+                        <View className="mb-3">
+                            <Text className="text-sm font-semibold text-gray-900 mb-2">Submitted Proof:</Text>
+                            <Image source={{ uri: challenge.proofImageUrl }} className="w-full h-[120px] rounded-lg bg-gray-100" />
                         </View>
                     )}
 
-                    <View style={styles.actions}>
+                    <View className="gap-2">
                         {/* Betting Phase */}
                         {canPlaceBet() && (
                             <TouchableOpacity
                                 onPress={handleOpenModal}
-                                style={styles.betButton}
+                                className="flex-row items-center justify-center bg-violet-600 py-2.5 rounded-lg gap-1.5"
                             >
                                 <Coins size={20} color="#FFFFFF" />
-                                <Text style={styles.betButtonText}>Place Bet</Text>
+                                <Text className="text-sm font-semibold text-white">Place Bet</Text>
                             </TouchableOpacity>
                         )}
 
@@ -316,11 +316,10 @@ export default function ChallengeCard({
                         {canSubmitProof() && (
                             <TouchableOpacity
                                 onPress={handleOpenModal}
-                                style={styles.proofButton}
-                                disabled={submittingProof}
+                                className="flex-row items-center justify-center bg-emerald-600 py-2.5 rounded-lg gap-1.5"
                             >
                                 <Camera size={20} color="#FFFFFF" />
-                                <Text style={styles.proofButtonText}>Submit Proof</Text>
+                                <Text className="text-sm font-semibold text-white">Submit Proof</Text>
                             </TouchableOpacity>
                         )}
 
@@ -328,11 +327,11 @@ export default function ChallengeCard({
                         {canVote() && (
                             <TouchableOpacity
                                 onPress={handleOpenModal}
-                                style={[styles.voteButton, votingInProgress && styles.disabledButton]}
+                                className={`flex-row items-center justify-center py-2.5 rounded-lg gap-1.5 ${votingInProgress ? 'bg-gray-400 opacity-70' : 'bg-blue-600'}`}
                                 disabled={votingInProgress}
                             >
                                 <Vote size={20} color="#FFFFFF" />
-                                <Text style={styles.voteButtonText}>
+                                <Text className="text-sm font-semibold text-white">
                                     {votingInProgress ? 'Submitting Vote...' : 'Vote on Proof'}
                                 </Text>
                             </TouchableOpacity>
@@ -340,22 +339,18 @@ export default function ChallengeCard({
 
                         {/* Show voting status if user has already voted */}
                         {hasVoted() && currentPhase === 'verification' && userBet && !isCreator && (
-                            <View style={[
-                                styles.votedStatus,
-                                {
-                                    backgroundColor: getUserVoteChoice() === 'yes' ? 'rgba(16, 185, 129, 0.1)' : 'rgba(239, 68, 68, 0.1)',
-                                    borderColor: getUserVoteChoice() === 'yes' ? 'rgba(16, 185, 129, 0.3)' : 'rgba(239, 68, 68, 0.3)'
-                                }
-                            ]}>
+                            <View className="flex-row items-center justify-center py-3 px-4 rounded-lg gap-2 border" style={{
+                                backgroundColor: getUserVoteChoice() === 'yes' ? 'rgba(16, 185, 129, 0.1)' : 'rgba(239, 68, 68, 0.1)',
+                                borderColor: getUserVoteChoice() === 'yes' ? 'rgba(16, 185, 129, 0.3)' : 'rgba(239, 68, 68, 0.3)'
+                            }}>
                                 {getUserVoteChoice() === 'yes' ? (
                                     <CheckCircle size={16} color="#10B981" />
                                 ) : (
                                     <XCircle size={16} color="#EF4444" />
                                 )}
-                                <Text style={[
-                                    styles.votedStatusText,
-                                    { color: getUserVoteChoice() === 'yes' ? '#10B981' : '#EF4444' }
-                                ]}>
+                                <Text className="text-xs font-semibold text-center flex-1" style={{
+                                    color: getUserVoteChoice() === 'yes' ? '#10B981' : '#EF4444'
+                                }}>
                                     You voted {getUserVoteChoice()?.toUpperCase()} on this proof
                                 </Text>
                             </View>
@@ -364,22 +359,18 @@ export default function ChallengeCard({
                         {/* Show loading state while checking vote status */}
                         {/* Show voting status for completed challenges */}
                         {hasVoted() && currentPhase === 'completed' && userBet && !isCreator && (
-                            <View style={[
-                                styles.votedStatus,
-                                {
-                                    backgroundColor: getUserVoteChoice() === 'yes' ? 'rgba(16, 185, 129, 0.1)' : 'rgba(239, 68, 68, 0.1)',
-                                    borderColor: getUserVoteChoice() === 'yes' ? 'rgba(16, 185, 129, 0.3)' : 'rgba(239, 68, 68, 0.3)'
-                                }
-                            ]}>
+                            <View className="flex-row items-center justify-center py-3 px-4 rounded-lg gap-2 border" style={{
+                                backgroundColor: getUserVoteChoice() === 'yes' ? 'rgba(16, 185, 129, 0.1)' : 'rgba(239, 68, 68, 0.1)',
+                                borderColor: getUserVoteChoice() === 'yes' ? 'rgba(16, 185, 129, 0.3)' : 'rgba(239, 68, 68, 0.3)'
+                            }}>
                                 {getUserVoteChoice() === 'yes' ? (
                                     <CheckCircle size={16} color="#10B981" />
                                 ) : (
                                     <XCircle size={16} color="#EF4444" />
                                 )}
-                                <Text style={[
-                                    styles.votedStatusText,
-                                    { color: getUserVoteChoice() === 'yes' ? '#10B981' : '#EF4444' }
-                                ]}>
+                                <Text className="text-xs font-semibold text-center flex-1" style={{
+                                    color: getUserVoteChoice() === 'yes' ? '#10B981' : '#EF4444'
+                                }}>
                                     You voted {getUserVoteChoice()?.toUpperCase()} on this challenge
                                 </Text>
                             </View>
@@ -387,42 +378,42 @@ export default function ChallengeCard({
 
                         {/* Show voting in progress state */}
                         {votingInProgress && currentPhase === 'verification' && userBet && !isCreator && (
-                            <View style={styles.waitingState}>
+                            <View className="flex-row items-center justify-center bg-amber-50 py-3 px-4 rounded-lg gap-2">
                                 <Vote size={16} color="#3B82F6" />
-                                <Text style={styles.waitingText}>Submitting your vote...</Text>
+                                <Text className="text-xs font-medium text-amber-600 text-center flex-1">Submitting your vote...</Text>
                             </View>
                         )}
 
                         {/* Waiting States */}
                         {currentPhase === 'waiting_for_proof' && (
-                            <View style={styles.waitingState}>
+                            <View className="flex-row items-center justify-center bg-amber-50 py-3 px-4 rounded-lg gap-2">
                                 <AlertTriangle size={16} color="#F59E0B" />
-                                <Text style={styles.waitingText}>
+                                <Text className="text-xs font-medium text-amber-600 text-center flex-1">
                                     {isCreator ? 'You can submit proof after deadline' : 'Waiting for creator to submit proof'}
                                 </Text>
                             </View>
                         )}
 
                         {currentPhase === 'proof_submission' && !isCreator && (
-                            <View style={styles.waitingState}>
+                            <View className="flex-row items-center justify-center bg-amber-50 py-3 px-4 rounded-lg gap-2">
                                 <Clock size={16} color="#F59E0B" />
-                                <Text style={styles.waitingText}>Creator has {CHALLENGE_CONFIG.PROOF_SUBMISSION_HOURS} hours to submit proof</Text>
+                                <Text className="text-xs font-medium text-amber-600 text-center flex-1">Creator has {CHALLENGE_CONFIG.PROOF_SUBMISSION_HOURS} hours to submit proof</Text>
                             </View>
                         )}
 
                         {currentPhase === 'verification' && !canVote() && !hasVoted() && (
-                            <View style={styles.waitingState}>
+                            <View className="flex-row items-center justify-center bg-amber-50 py-3 px-4 rounded-lg gap-2">
                                 <Vote size={16} color="#3B82F6" />
-                                <Text style={styles.waitingText}>
+                                <Text className="text-xs font-medium text-amber-600 text-center flex-1">
                                     {isCreator ? 'Group members are voting on your proof' : 'Verification in progress'}
                                 </Text>
                             </View>
                         )}
 
                         {currentPhase === 'verification' && hasVoted() && !isCreator && (
-                            <View style={styles.waitingState}>
+                            <View className="flex-row items-center justify-center bg-amber-50 py-3 px-4 rounded-lg gap-2">
                                 <Vote size={16} color="#10B981" />
-                                <Text style={styles.waitingText}>
+                                <Text className="text-xs font-medium text-amber-600 text-center flex-1">
                                     Your vote has been submitted. Waiting for other votes...
                                 </Text>
                             </View>
@@ -446,201 +437,4 @@ export default function ChallengeCard({
     );
 }
 
-const styles = StyleSheet.create({
-    container: {
-        marginVertical: 8,
-        borderRadius: 16,
-        overflow: 'hidden',
-        elevation: 2,
-        shadowColor: '#000',
-        shadowOffset: { width: 0, height: 2 },
-        shadowOpacity: 0.1,
-        shadowRadius: 4,
-    },
-    gradient: {
-        padding: 16,
-    },
-    header: {
-        flexDirection: 'row',
-        justifyContent: 'space-between',
-        alignItems: 'flex-start',
-        marginBottom: 12,
-    },
-    titleSection: {
-        flex: 1,
-        marginRight: 12,
-    },
-    title: {
-        fontSize: 18,
-        fontWeight: '600',
-        color: '#111827',
-        marginBottom: 4,
-    },
-    description: {
-        fontSize: 14,
-        color: '#6B7280',
-        lineHeight: 20,
-    },
-    statusBadge: {
-        paddingHorizontal: 8,
-        paddingVertical: 4,
-        borderRadius: 12,
-    },
-    statusText: {
-        fontSize: 12,
-        fontWeight: '600',
-        color: '#FFFFFF',
-    },
-    infoRow: {
-        flexDirection: 'row',
-        justifyContent: 'space-between',
-        marginBottom: 12,
-    },
-    infoItem: {
-        flexDirection: 'row',
-        alignItems: 'center',
-        gap: 4,
-    },
-    infoText: {
-        fontSize: 12,
-        color: '#6B7280',
-        fontWeight: '500',
-    },
-    bettingInfo: {
-        backgroundColor: '#F9FAFB',
-        padding: 12,
-        borderRadius: 8,
-        marginBottom: 12,
-    },
-    poolTitle: {
-        fontSize: 14,
-        fontWeight: '600',
-        color: '#111827',
-        marginBottom: 8,
-        textAlign: 'center',
-    },
-    bettingStats: {
-        flexDirection: 'row',
-        justifyContent: 'space-around',
-    },
-    betStat: {
-        flexDirection: 'row',
-        alignItems: 'center',
-        gap: 4,
-    },
-    betStatText: {
-        fontSize: 12,
-        fontWeight: '500',
-        color: '#374151',
-    },
-    userBetInfo: {
-        backgroundColor: 'rgba(139, 92, 246, 0.1)',
-        padding: 8,
-        borderRadius: 6,
-        marginBottom: 12,
-    },
-    userBetText: {
-        fontSize: 12,
-        fontWeight: '500',
-        color: '#8B5CF6',
-        textAlign: 'center',
-    },
-    proofSection: {
-        marginBottom: 12,
-    },
-    proofTitle: {
-        fontSize: 14,
-        fontWeight: '600',
-        color: '#111827',
-        marginBottom: 8,
-    },
-    proofImage: {
-        width: '100%',
-        height: 120,
-        borderRadius: 8,
-        backgroundColor: '#F3F4F6',
-    },
-    actions: {
-        gap: 8,
-    },
-    betButton: {
-        flexDirection: 'row',
-        alignItems: 'center',
-        justifyContent: 'center',
-        backgroundColor: '#8B5CF6',
-        paddingVertical: 10,
-        borderRadius: 8,
-        gap: 6,
-    },
-    betButtonText: {
-        fontSize: 14,
-        fontWeight: '600',
-        color: '#FFFFFF',
-    },
-    proofButton: {
-        flexDirection: 'row',
-        alignItems: 'center',
-        justifyContent: 'center',
-        backgroundColor: '#10B981',
-        paddingVertical: 10,
-        borderRadius: 8,
-        gap: 6,
-    },
-    proofButtonText: {
-        fontSize: 14,
-        fontWeight: '600',
-        color: '#FFFFFF',
-    },
 
-    voteButton: {
-        flexDirection: 'row',
-        alignItems: 'center',
-        justifyContent: 'center',
-        backgroundColor: '#3B82F6',
-        paddingVertical: 10,
-        borderRadius: 8,
-        gap: 6,
-    },
-    voteButtonText: {
-        fontSize: 14,
-        fontWeight: '600',
-        color: '#FFFFFF',
-    },
-    disabledButton: {
-        backgroundColor: '#9CA3AF',
-        opacity: 0.7,
-    },
-    waitingState: {
-        flexDirection: 'row',
-        alignItems: 'center',
-        justifyContent: 'center',
-        backgroundColor: 'rgba(245, 158, 11, 0.1)',
-        paddingVertical: 12,
-        paddingHorizontal: 16,
-        borderRadius: 8,
-        gap: 8,
-    },
-    waitingText: {
-        fontSize: 12,
-        fontWeight: '500',
-        color: '#F59E0B',
-        textAlign: 'center',
-        flex: 1,
-    },
-    votedStatus: {
-        flexDirection: 'row',
-        alignItems: 'center',
-        justifyContent: 'center',
-        paddingVertical: 12,
-        paddingHorizontal: 16,
-        borderRadius: 8,
-        gap: 8,
-        borderWidth: 1,
-    },
-    votedStatusText: {
-        fontSize: 12,
-        fontWeight: '600',
-        textAlign: 'center',
-        flex: 1,
-    },
-});

@@ -2,7 +2,6 @@ import React, { useState } from 'react';
 import {
     View,
     Text,
-    StyleSheet,
     Modal,
     TextInput,
     TouchableOpacity,
@@ -211,25 +210,25 @@ export default function CreateChallengeModal({
             presentationStyle="pageSheet"
             onRequestClose={handleClose}
         >
-            <View style={styles.container}>
-                <View style={styles.header}>
-                    <TouchableOpacity onPress={handleClose} style={styles.closeButton}>
+            <View className="flex-1 bg-white">
+                <View className="flex-row items-center justify-between px-5 py-4 border-b border-gray-200">
+                    <TouchableOpacity onPress={handleClose} className="p-1">
                         <X size={24} color="#6B7280" />
                     </TouchableOpacity>
-                    <Text style={styles.title}>Create Challenge</Text>
-                    <View style={styles.placeholder} />
+                    <Text className="text-lg font-semibold text-gray-900">Create Challenge</Text>
+                    <View className="w-8" />
                 </View>
 
-                <ScrollView style={styles.content}>
-                    <View style={styles.groupInfo}>
+                <ScrollView className="flex-1 p-5">
+                    <View className="flex-row items-center bg-violet-50 px-4 py-3 rounded-lg mb-6">
                         <Trophy size={20} color="#8B5CF6" />
-                        <Text style={styles.groupName}>For: {group.name}</Text>
+                        <Text className="text-base font-semibold text-violet-600 ml-2">For: {group.name}</Text>
                     </View>
 
-                    <View style={styles.section}>
-                        <Text style={styles.label}>Challenge Title *</Text>
+                    <View className="mb-6">
+                        <Text className="text-base font-semibold text-gray-700 mb-2">Challenge Title *</Text>
                         <TextInput
-                            style={styles.input}
+                            className="border border-gray-300 rounded-lg px-3 py-2.5 text-base text-gray-900"
                             value={formData.title}
                             onChangeText={(value) => setFormData(prev => ({ ...prev, title: value }))}
                             placeholder="e.g., Complete 10,000 steps today"
@@ -237,10 +236,11 @@ export default function CreateChallengeModal({
                         />
                     </View>
 
-                    <View style={styles.section}>
-                        <Text style={styles.label}>Description *</Text>
+                    <View className="mb-6">
+                        <Text className="text-base font-semibold text-gray-700 mb-2">Description *</Text>
                         <TextInput
-                            style={[styles.input, styles.textArea]}
+                            className="border border-gray-300 rounded-lg px-3 py-2.5 text-base text-gray-900 h-20 pl-3"
+                            style={{ textAlignVertical: 'top' }}
                             value={formData.description}
                             onChangeText={(value) => setFormData(prev => ({ ...prev, description: value }))}
                             placeholder="Describe what needs to be accomplished..."
@@ -250,12 +250,12 @@ export default function CreateChallengeModal({
                         />
                     </View>
 
-                    <View style={styles.section}>
-                        <Text style={styles.label}>Minimum Bet (Credits) *</Text>
-                        <View style={styles.inputContainer}>
-                            <Coins size={20} color="#F59E0B" style={styles.inputIcon} />
+                    <View className="mb-6">
+                        <Text className="text-base font-semibold text-gray-700 mb-2">Minimum Bet (Credits) *</Text>
+                        <View className="flex-row items-center relative">
+                            <Coins size={20} color="#F59E0B" style={{ position: 'absolute', left: 12, zIndex: 1 }} />
                             <TextInput
-                                style={styles.input}
+                                className="border border-gray-300 rounded-lg px-3 py-2.5 text-base text-gray-900 pl-11 flex-1"
                                 value={formData.minimumBet}
                                 onChangeText={(value) => setFormData(prev => ({ ...prev, minimumBet: value }))}
                                 placeholder="1"
@@ -263,32 +263,32 @@ export default function CreateChallengeModal({
                                 maxLength={3}
                             />
                         </View>
-                        <Text style={styles.helperText}>
+                        <Text className="text-xs text-gray-500 mt-1">
                             Minimum 1 credit for group challenges
                         </Text>
                     </View>
 
-                    <View style={styles.section}>
-                        <Text style={styles.label}>Deadline *</Text>
+                    <View className="mb-6">
+                        <Text className="text-base font-semibold text-gray-700 mb-2">Deadline *</Text>
 
                         {/* Date and Time Row */}
-                        <View style={styles.dateTimeRow}>
+                        <View className="flex-row gap-3 mb-2">
                             {/* Date Selector */}
                             <TouchableOpacity
-                                style={styles.dateSelector}
+                                className="flex-2 flex-row items-center bg-gray-50 rounded-lg px-3 py-3 border border-gray-300"
                                 onPress={() => setShowDatePicker(!showDatePicker)}
                             >
                                 <Calendar size={20} color="#8B5CF6" />
-                                <Text style={styles.dateText}>{formatDate(formData.dueDate)}</Text>
+                                <Text className="flex-1 text-base font-semibold text-gray-900 ml-2">{formatDate(formData.dueDate)}</Text>
                                 <ChevronRight size={20} color="#6B7280" />
                             </TouchableOpacity>
 
                             {/* Time Dropdown Button */}
                             <TouchableOpacity
-                                style={styles.timeDropdownButton}
+                                className="flex-1 flex-row items-center justify-between bg-blue-600 rounded-lg px-3 py-3"
                                 onPress={() => setShowTimeDropdown(!showTimeDropdown)}
                             >
-                                <Text style={styles.timeDropdownButtonText}>
+                                <Text className="text-sm font-semibold text-white">
                                     {formatTimeString()}
                                 </Text>
                                 <ChevronRight size={20} color="#FFFFFF" />
@@ -297,12 +297,12 @@ export default function CreateChallengeModal({
 
                         {/* Time Dropdown */}
                         {showTimeDropdown && (
-                            <View style={styles.timeDropdownContainer}>
-                                <View style={styles.timeDropdownContent}>
-                                    <Text style={styles.timeDropdownTitle}>Deadline time:</Text>
-                                    <View style={styles.timeInputContainer}>
+                            <View className="bg-white rounded-lg border border-gray-200 mb-3 shadow-sm shadow-black/10">
+                                <View className="p-4">
+                                    <Text className="text-sm font-semibold text-gray-900 mb-2">Deadline time:</Text>
+                                    <View className="relative mb-3">
                                         <TextInput
-                                            style={styles.timeInput}
+                                            className="bg-gray-50 border border-gray-300 rounded-lg px-3 py-2.5 text-base text-gray-900 text-center font-semibold"
                                             value={formatTimeString()}
                                             onChangeText={(text) => {
                                                 const [hours, minutes] = text.split(':');
@@ -321,10 +321,10 @@ export default function CreateChallengeModal({
                                         />
                                     </View>
                                     <TouchableOpacity
-                                        style={styles.saveTimeButton}
+                                        className="self-start"
                                         onPress={() => setShowTimeDropdown(false)}
                                     >
-                                        <Text style={styles.saveTimeButtonText}>Save time</Text>
+                                        <Text className="text-sm text-blue-600 font-medium underline">Save time</Text>
                                     </TouchableOpacity>
                                 </View>
                             </View>
@@ -332,69 +332,63 @@ export default function CreateChallengeModal({
 
                         {/* Calendar */}
                         {showDatePicker && (
-                            <View style={styles.calendarContainer}>
+                            <View className="bg-white rounded-xl border border-gray-200 mb-3 p-4">
                                 {/* Calendar Header */}
-                                <View style={styles.calendarHeader}>
+                                <View className="flex-row items-center justify-between mb-4">
                                     <TouchableOpacity
-                                        style={styles.navButton}
+                                        className="w-8 h-8 rounded-2xl bg-gray-100 items-center justify-center"
                                         onPress={() => navigateMonth('prev')}
                                     >
-                                        <Text style={styles.navButtonText}>‹</Text>
+                                        <Text className="text-lg font-semibold text-gray-500">‹</Text>
                                     </TouchableOpacity>
 
-                                    <View style={styles.monthYearContainer}>
-                                        <Text style={styles.monthYearText}>
+                                    <View className="items-center">
+                                        <Text className="text-lg font-semibold text-gray-900 mb-1">
                                             {getCalendarData().monthName}
                                         </Text>
                                         <TouchableOpacity
-                                            style={styles.yearButton}
+                                            className="px-2 py-1 rounded bg-gray-100"
                                             onPress={() => setShowYearPicker(!showYearPicker)}
                                         >
-                                            <Text style={styles.yearButtonText}>
+                                            <Text className="text-sm font-medium text-gray-500">
                                                 {getCalendarData().year} ▼
                                             </Text>
                                         </TouchableOpacity>
                                     </View>
 
                                     <TouchableOpacity
-                                        style={styles.navButton}
+                                        className="w-8 h-8 rounded-2xl bg-gray-100 items-center justify-center"
                                         onPress={() => navigateMonth('next')}
                                     >
-                                        <Text style={styles.navButtonText}>›</Text>
+                                        <Text className="text-lg font-semibold text-gray-500">›</Text>
                                     </TouchableOpacity>
                                 </View>
 
                                 {/* Year Picker */}
                                 {showYearPicker && (
-                                    <View style={styles.yearPicker}>
-                                        <View style={styles.yearPickerHeader}>
+                                    <View className="bg-gray-50 rounded-lg mb-3 max-h-[200px]">
+                                        <View className="flex-row justify-between px-4 py-2 border-b border-gray-200">
                                             <TouchableOpacity
-                                                style={styles.yearNavButton}
+                                                className="w-6 h-6 rounded-xl bg-gray-200 items-center justify-center"
                                                 onPress={() => navigateYear('prev')}
                                             >
-                                                <Text style={styles.navButtonText}>‹</Text>
+                                                <Text className="text-lg font-semibold text-gray-500">‹</Text>
                                             </TouchableOpacity>
                                             <TouchableOpacity
-                                                style={styles.yearNavButton}
+                                                className="w-6 h-6 rounded-xl bg-gray-200 items-center justify-center"
                                                 onPress={() => navigateYear('next')}
                                             >
-                                                <Text style={styles.navButtonText}>›</Text>
+                                                <Text className="text-lg font-semibold text-gray-500">›</Text>
                                             </TouchableOpacity>
                                         </View>
-                                        <ScrollView style={styles.yearList} showsVerticalScrollIndicator={false}>
+                                        <ScrollView className="max-h-[150px]" showsVerticalScrollIndicator={false}>
                                             {getYearRange().map((year) => (
                                                 <TouchableOpacity
                                                     key={year}
-                                                    style={[
-                                                        styles.yearOption,
-                                                        year === getCalendarData().year && styles.selectedYearOption
-                                                    ]}
+                                                    className={`px-4 py-3 border-b border-gray-100 ${year === getCalendarData().year ? 'bg-violet-600' : ''}`}
                                                     onPress={() => selectYear(year)}
                                                 >
-                                                    <Text style={[
-                                                        styles.yearOptionText,
-                                                        year === getCalendarData().year && styles.selectedYearOptionText
-                                                    ]}>
+                                                    <Text className={`text-base font-medium text-center ${year === getCalendarData().year ? 'text-white' : 'text-gray-900'}`}>
                                                         {year}
                                                     </Text>
                                                 </TouchableOpacity>
@@ -404,16 +398,16 @@ export default function CreateChallengeModal({
                                 )}
 
                                 {/* Day Labels */}
-                                <View style={styles.dayLabelsRow}>
+                                <View className="flex-row mb-2">
                                     {['Sun', 'Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat'].map((day) => (
-                                        <View key={day} style={styles.dayLabel}>
-                                            <Text style={styles.dayLabelText}>{day}</Text>
+                                        <View key={day} className="flex-1 items-center py-2">
+                                            <Text className="text-xs font-semibold text-gray-500">{day}</Text>
                                         </View>
                                     ))}
                                 </View>
 
                                 {/* Calendar Grid */}
-                                <View style={styles.calendarGrid}>
+                                <View className="flex-row flex-wrap">
                                     {getCalendarData().days.map((date, index) => {
                                         const isDisabled = isDateDisabled(date);
                                         const isSelected = isDateSelected(date);
@@ -422,20 +416,11 @@ export default function CreateChallengeModal({
                                         return (
                                             <TouchableOpacity
                                                 key={index}
-                                                style={[
-                                                    styles.calendarDay,
-                                                    isSelected && styles.selectedCalendarDay,
-                                                    isDisabled && styles.disabledCalendarDay,
-                                                ]}
+                                                className={`w-[14.28%] aspect-square items-center justify-center rounded-lg mb-1 ${isSelected ? 'bg-violet-600' : ''} ${isDisabled ? 'opacity-30' : ''}`}
                                                 onPress={() => !isDisabled && handleDateSelect(date)}
                                                 disabled={isDisabled}
                                             >
-                                                <Text style={[
-                                                    styles.calendarDayText,
-                                                    !isCurrentMonth && styles.otherMonthText,
-                                                    isSelected && styles.selectedCalendarDayText,
-                                                    isDisabled && styles.disabledCalendarDayText,
-                                                ]}>
+                                                <Text className={`text-base font-medium ${!isCurrentMonth ? 'text-gray-300' : isSelected ? 'text-white font-semibold' : isDisabled ? 'text-gray-300' : 'text-gray-900'}`}>
                                                     {date.getDate()}
                                                 </Text>
                                             </TouchableOpacity>
@@ -445,16 +430,16 @@ export default function CreateChallengeModal({
                             </View>
                         )}
 
-                        <Text style={styles.helperText}>
+                        <Text className="text-xs text-gray-500 mt-1">
                             Challenge deadline: {formatDate(formData.dueDate)} at {formatTimeString()}
                         </Text>
                     </View>
 
-                    <View style={styles.infoCard}>
+                    <View className="flex-row bg-blue-50 p-4 rounded-xl border border-blue-200 mt-2">
                         <Clock size={20} color="#3B82F6" />
-                        <View style={styles.infoContent}>
-                            <Text style={styles.infoTitle}>How Betting Works</Text>
-                            <Text style={styles.infoText}>
+                        <View className="flex-1 ml-3">
+                            <Text className="text-sm font-semibold text-blue-800 mb-1">How Betting Works</Text>
+                            <Text className="text-xs text-blue-800 leading-4">
                                 • Members bet "Yes" or "No" on challenge completion{'\n'}
                                 • You submit proof before deadline{'\n'}
                                 • 6-hour voting period for verification{'\n'}
@@ -464,17 +449,17 @@ export default function CreateChallengeModal({
                     </View>
                 </ScrollView>
 
-                <View style={styles.footer}>
+                <View className="flex-row gap-3 p-5 border-t border-gray-200">
                     <TouchableOpacity
                         onPress={handleClose}
-                        style={[styles.button, styles.cancelButton]}
+                        className="flex-1 py-3 rounded-lg items-center flex-row justify-center bg-gray-100"
                     >
-                        <Text style={styles.cancelButtonText}>Cancel</Text>
+                        <Text className="text-base font-semibold text-gray-500">Cancel</Text>
                     </TouchableOpacity>
 
                     <TouchableOpacity
                         onPress={handleSubmit}
-                        style={[styles.button, styles.createButton]}
+                        className="flex-1 py-3 rounded-lg items-center flex-row justify-center bg-violet-600"
                         disabled={loading}
                     >
                         {loading ? (
@@ -482,7 +467,7 @@ export default function CreateChallengeModal({
                         ) : (
                             <>
                                 <Trophy size={20} color="#FFFFFF" />
-                                <Text style={styles.createButtonText}>Create Challenge</Text>
+                                <Text className="text-base font-semibold text-white ml-2">Create Challenge</Text>
                             </>
                         )}
                     </TouchableOpacity>
@@ -492,366 +477,4 @@ export default function CreateChallengeModal({
     );
 }
 
-const styles = StyleSheet.create({
-    container: {
-        flex: 1,
-        backgroundColor: '#FFFFFF',
-    },
-    header: {
-        flexDirection: 'row',
-        alignItems: 'center',
-        justifyContent: 'space-between',
-        paddingHorizontal: 20,
-        paddingVertical: 16,
-        borderBottomWidth: 1,
-        borderBottomColor: '#E5E7EB',
-    },
-    closeButton: {
-        padding: 4,
-    },
-    title: {
-        fontSize: 18,
-        fontWeight: '600',
-        color: '#111827',
-    },
-    placeholder: {
-        width: 32,
-    },
-    content: {
-        flex: 1,
-        padding: 20,
-    },
-    groupInfo: {
-        flexDirection: 'row',
-        alignItems: 'center',
-        backgroundColor: 'rgba(139, 92, 246, 0.1)',
-        paddingHorizontal: 16,
-        paddingVertical: 12,
-        borderRadius: 8,
-        marginBottom: 24,
-    },
-    groupName: {
-        fontSize: 16,
-        fontWeight: '600',
-        color: '#8B5CF6',
-        marginLeft: 8,
-    },
-    section: {
-        marginBottom: 24,
-    },
-    label: {
-        fontSize: 16,
-        fontWeight: '600',
-        color: '#374151',
-        marginBottom: 8,
-    },
-    inputContainer: {
-        flexDirection: 'row',
-        alignItems: 'center',
-    },
-    inputIcon: {
-        position: 'absolute',
-        left: 12,
-        zIndex: 1,
-    },
-    input: {
-        borderWidth: 1,
-        borderColor: '#D1D5DB',
-        borderRadius: 8,
-        paddingHorizontal: 12,
-        paddingVertical: 10,
-        fontSize: 16,
-        color: '#111827',
-        paddingLeft: 44,
-    },
-    textArea: {
-        height: 80,
-        textAlignVertical: 'top',
-        paddingLeft: 12,
-    },
-    helperText: {
-        fontSize: 12,
-        color: '#6B7280',
-        marginTop: 4,
-    },
-    dateTimeRow: {
-        flexDirection: 'row',
-        gap: 12,
-        marginBottom: 8,
-    },
-    dateSelector: {
-        flex: 2,
-        flexDirection: 'row',
-        alignItems: 'center',
-        backgroundColor: '#F9FAFB',
-        borderRadius: 8,
-        paddingHorizontal: 12,
-        paddingVertical: 12,
-        borderWidth: 1,
-        borderColor: '#D1D5DB',
-    },
-    dateText: {
-        flex: 1,
-        fontSize: 16,
-        fontWeight: '600',
-        color: '#111827',
-        marginLeft: 8,
-    },
-    timeDropdownButton: {
-        flex: 1,
-        flexDirection: 'row',
-        alignItems: 'center',
-        justifyContent: 'space-between',
-        backgroundColor: '#3B82F6',
-        borderRadius: 8,
-        paddingHorizontal: 12,
-        paddingVertical: 12,
-    },
-    timeDropdownButtonText: {
-        fontSize: 14,
-        fontWeight: '600',
-        color: '#FFFFFF',
-    },
-    timeDropdownContainer: {
-        backgroundColor: '#FFFFFF',
-        borderRadius: 8,
-        borderWidth: 1,
-        borderColor: '#E5E7EB',
-        marginBottom: 12,
-        shadowColor: '#000',
-        shadowOffset: {
-            width: 0,
-            height: 2,
-        },
-        shadowOpacity: 0.1,
-        shadowRadius: 4,
-        elevation: 3,
-    },
-    timeDropdownContent: {
-        padding: 16,
-    },
-    timeDropdownTitle: {
-        fontSize: 14,
-        fontWeight: '600',
-        color: '#111827',
-        marginBottom: 8,
-    },
-    timeInputContainer: {
-        position: 'relative',
-        marginBottom: 12,
-    },
-    timeInput: {
-        backgroundColor: '#F9FAFB',
-        borderWidth: 1,
-        borderColor: '#D1D5DB',
-        borderRadius: 8,
-        paddingHorizontal: 12,
-        paddingVertical: 10,
-        fontSize: 16,
-        color: '#111827',
-        textAlign: 'center',
-        fontWeight: '600',
-    },
-    saveTimeButton: {
-        alignSelf: 'flex-start',
-    },
-    saveTimeButtonText: {
-        fontSize: 14,
-        color: '#3B82F6',
-        fontWeight: '500',
-        textDecorationLine: 'underline',
-    },
-    calendarContainer: {
-        backgroundColor: '#FFFFFF',
-        borderRadius: 12,
-        borderWidth: 1,
-        borderColor: '#E5E7EB',
-        marginBottom: 12,
-        padding: 16,
-    },
-    calendarHeader: {
-        flexDirection: 'row',
-        alignItems: 'center',
-        justifyContent: 'space-between',
-        marginBottom: 16,
-    },
-    navButton: {
-        width: 32,
-        height: 32,
-        borderRadius: 16,
-        backgroundColor: '#F3F4F6',
-        alignItems: 'center',
-        justifyContent: 'center',
-    },
-    navButtonText: {
-        fontSize: 18,
-        fontWeight: '600',
-        color: '#6B7280',
-    },
-    monthYearContainer: {
-        alignItems: 'center',
-    },
-    monthYearText: {
-        fontSize: 18,
-        fontWeight: '600',
-        color: '#111827',
-        marginBottom: 4,
-    },
-    yearButton: {
-        paddingHorizontal: 8,
-        paddingVertical: 4,
-        borderRadius: 4,
-        backgroundColor: '#F3F4F6',
-    },
-    yearButtonText: {
-        fontSize: 14,
-        fontWeight: '500',
-        color: '#6B7280',
-    },
-    yearPicker: {
-        backgroundColor: '#F9FAFB',
-        borderRadius: 8,
-        marginBottom: 12,
-        maxHeight: 200,
-    },
-    yearPickerHeader: {
-        flexDirection: 'row',
-        justifyContent: 'space-between',
-        paddingHorizontal: 16,
-        paddingVertical: 8,
-        borderBottomWidth: 1,
-        borderBottomColor: '#E5E7EB',
-    },
-    yearNavButton: {
-        width: 24,
-        height: 24,
-        borderRadius: 12,
-        backgroundColor: '#E5E7EB',
-        alignItems: 'center',
-        justifyContent: 'center',
-    },
-    yearList: {
-        maxHeight: 150,
-    },
-    yearOption: {
-        paddingHorizontal: 16,
-        paddingVertical: 12,
-        borderBottomWidth: 1,
-        borderBottomColor: '#F3F4F6',
-    },
-    selectedYearOption: {
-        backgroundColor: '#8B5CF6',
-    },
-    yearOptionText: {
-        fontSize: 16,
-        fontWeight: '500',
-        color: '#111827',
-        textAlign: 'center',
-    },
-    selectedYearOptionText: {
-        color: '#FFFFFF',
-    },
-    dayLabelsRow: {
-        flexDirection: 'row',
-        marginBottom: 8,
-    },
-    dayLabel: {
-        flex: 1,
-        alignItems: 'center',
-        paddingVertical: 8,
-    },
-    dayLabelText: {
-        fontSize: 12,
-        fontWeight: '600',
-        color: '#6B7280',
-    },
-    calendarGrid: {
-        flexDirection: 'row',
-        flexWrap: 'wrap',
-    },
-    calendarDay: {
-        width: '14.28%', // 100% / 7 days
-        aspectRatio: 1,
-        alignItems: 'center',
-        justifyContent: 'center',
-        borderRadius: 8,
-        marginBottom: 4,
-    },
-    selectedCalendarDay: {
-        backgroundColor: '#8B5CF6',
-    },
-    disabledCalendarDay: {
-        opacity: 0.3,
-    },
-    calendarDayText: {
-        fontSize: 16,
-        fontWeight: '500',
-        color: '#111827',
-    },
-    selectedCalendarDayText: {
-        color: '#FFFFFF',
-        fontWeight: '600',
-    },
-    disabledCalendarDayText: {
-        color: '#D1D5DB',
-    },
-    otherMonthText: {
-        color: '#D1D5DB',
-    },
-    infoCard: {
-        flexDirection: 'row',
-        backgroundColor: '#F0F9FF',
-        padding: 16,
-        borderRadius: 12,
-        borderWidth: 1,
-        borderColor: '#BAE6FD',
-        marginTop: 8,
-    },
-    infoContent: {
-        flex: 1,
-        marginLeft: 12,
-    },
-    infoTitle: {
-        fontSize: 14,
-        fontWeight: '600',
-        color: '#1E40AF',
-        marginBottom: 4,
-    },
-    infoText: {
-        fontSize: 12,
-        color: '#1E40AF',
-        lineHeight: 16,
-    },
-    footer: {
-        flexDirection: 'row',
-        gap: 12,
-        padding: 20,
-        borderTopWidth: 1,
-        borderTopColor: '#E5E7EB',
-    },
-    button: {
-        flex: 1,
-        paddingVertical: 12,
-        borderRadius: 8,
-        alignItems: 'center',
-        flexDirection: 'row',
-        justifyContent: 'center',
-    },
-    cancelButton: {
-        backgroundColor: '#F3F4F6',
-    },
-    createButton: {
-        backgroundColor: '#8B5CF6',
-    },
-    cancelButtonText: {
-        fontSize: 16,
-        fontWeight: '600',
-        color: '#6B7280',
-    },
-    createButtonText: {
-        fontSize: 16,
-        fontWeight: '600',
-        color: '#FFFFFF',
-        marginLeft: 8,
-    },
-});
+

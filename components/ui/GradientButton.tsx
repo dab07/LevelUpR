@@ -6,10 +6,11 @@ interface GradientButtonProps {
   title: string;
   onPress: () => void;
   disabled?: boolean;
-  variant?: 'primary' | 'secondary' | 'danger';
+  variant?: 'primary' | 'secondary' | 'danger' | 'accent';
   size?: 'small' | 'medium' | 'large';
   style?: ViewStyle;
   textStyle?: TextStyle;
+  className?: string;
 }
 
 export default function GradientButton({
@@ -20,17 +21,20 @@ export default function GradientButton({
   size = 'medium',
   style,
   textStyle,
+  className = '',
 }: GradientButtonProps) {
   const getGradientColors = () => {
     switch (variant) {
       case 'primary':
-        return ['#8B5CF6', '#3B82F6'];
+        return ['#8A83DA', '#463699'];
       case 'secondary':
-        return ['#6B7280', '#4B5563'];
+        return ['#C7C2CE', '#8A83DA'];
       case 'danger':
         return ['#EF4444', '#DC2626'];
+      case 'accent':
+        return ['#FBD5BD', '#8A83DA'];
       default:
-        return ['#8B5CF6', '#3B82F6'];
+        return ['#8A83DA', '#463699'];
     }
   };
 
@@ -64,7 +68,7 @@ export default function GradientButton({
     <TouchableOpacity
       onPress={onPress}
       disabled={disabled}
-      className="rounded-xl overflow-hidden"
+      className={`rounded-xl overflow-hidden ${className}`}
       style={style}
       activeOpacity={0.8}
     >

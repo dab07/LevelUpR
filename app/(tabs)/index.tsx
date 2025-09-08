@@ -1,8 +1,8 @@
 import React, { useState, useEffect, useRef } from 'react';
-import { View, Text, ScrollView, RefreshControl, Alert } from 'react-native';
+import { View, Text, ScrollView, RefreshControl, Alert, TouchableOpacity } from 'react-native';
 import { LinearGradient } from 'expo-linear-gradient';
 import { SafeAreaView } from 'react-native-safe-area-context';
-import { Plus, Calendar, Zap } from 'lucide-react-native';
+import { Plus, Calendar, Zap, Bell, User, TrendingUp, Target, CheckCircle2 } from 'lucide-react-native';
 import { CHALLENGE_CONFIG } from '@/lib/config';
 
 import CreditDisplay from '@/components/ui/CreditDisplay';
@@ -321,127 +321,134 @@ export default function HomeScreen() {
   const totalExtraTasks = tasks.length;
 
   return (
-    <SafeAreaView className="flex-1 bg-gradient-to-tr from-[#1E202C] to-[#60519B]">
-      <LinearGradient
-        colors={['#1E202C', '#60519B']}
-        className="px-5 py-6 rounded-b-3xl"
-      >
-        <View className="flex-row justify-between items-start mb-6">
-          <View>
-            <Text className="text-2xl font-bold text-white mb-1">Good morning! 👋</Text>
-            <Text className="text-base text-gray-200">Ready to level up today?</Text>
-          </View>
-          <CreditDisplay credits={credits} size="large" />
-        </View>
-
-        <View className="flex-row gap-3">
-          <View className="flex-1 bg-white/20 rounded-2xl p-4 items-center">
-            <Calendar size={20} color="#8B5CF6" />
-            <Text className="text-xl font-bold text-white mt-2 mb-1">{streak}</Text>
-            <Text className="text-xs text-gray-200 font-medium">Day Streak</Text>
-          </View>
-
-          <View className="flex-1 bg-white/20 rounded-2xl p-4 items-center">
-            <Zap size={20} color="#8B5CF6" />
-            <Text className="text-xl font-bold text-white mt-2 mb-1">{completedMainTasks}/3</Text>
-            <Text className="text-xs text-gray-200 font-medium">Main Tasks</Text>
-          </View>
-
-          <View className="flex-1 bg-white/20 rounded-2xl p-4 items-center">
-            <Plus size={20} color="#10B981" />
-            <Text className="text-xl font-bold text-white mt-2 mb-1">{completedExtraTasks}/{totalExtraTasks}</Text>
-            <Text className="text-xs text-gray-200 font-medium">Extra Tasks</Text>
-          </View>
-        </View>
-      </LinearGradient>
-
+    <SafeAreaView className="flex-1 bg-[#1A1A1A]">
       <ScrollView
-        className="flex-1 -mt-3"
+        className="flex-1"
         refreshControl={
           <RefreshControl refreshing={refreshing} onRefresh={onRefresh} />
         }
       >
-        <View className="p-5">
-          <Text className="text-xl font-bold text-gray-900">Main Tasks</Text>
-
-          <MainTaskCard
-            title="Daily Login"
-            description="Check in to earn your daily credit"
-            isCompleted={dailyLoginCompleted}
-            onClaim={handleDailyLoginClaim}
-          />
-
-          <MainTaskCard
-            title="Step Counter"
-            description={`Walk ${stepData.goal.toLocaleString()} steps today`}
-            isCompleted={stepService.isGoalReached(stepData)}
-            onClaim={handleStepGoalComplete}
-          >
-            <StepCounter
-              stepData={stepData}
-              onUpdateGoal={handleUpdateStepGoal}
-              pedometerError={pedometerError}
-            />
-          </MainTaskCard>
-
-          <MainTaskCard
-            title="Meditation Timer"
-            description="Take time to meditate and relax"
-            isCompleted={meditationCompleted}
-            onClaim={() => { }} // Handled by timer component
-          >
-            <MeditationTimer onComplete={handleMeditationComplete} />
-          </MainTaskCard>
+        {/* Header with User Info */}
+        <View className="px-5 pt-4 pb-4">
+          <View className="flex-row items-center justify-between mb-4">
+            <View className="flex-row items-center">
+              <View className="w-12 h-12 rounded-full bg-[#8A83DA] items-center justify-center mr-3">
+                <User size={24} color="#FFFFFF" />
+              </View>
+              <View>
+                <Text className="text-white font-bold text-lg">Derek Doyle</Text>
+                <Text className="text-gray-400 text-sm">Product Manager</Text>
+              </View>
+            </View>
+            <TouchableOpacity className="relative">
+              <Bell size={24} color="#8A83DA" />
+              <View className="absolute -top-1 -right-1 w-3 h-3 bg-red-500 rounded-full" />
+            </TouchableOpacity>
+          </View>
         </View>
 
-        <View className="p-5">
-          <View className="flex-row justify-between items-center mb-4">
-            <Text className="text-xl font-bold text-gray-900">Extra Tasks</Text>
-            <GradientButton
-              title="Add Task"
-              onPress={handleCreateTask}
-              size="small"
-              className="px-4"
-              disabled={totalExtraTasks >= CHALLENGE_CONFIG.MAX_EXTRA_TASKS}
-            />
+        {/* Credits Container */}
+        <View className="px-5 mb-4">
+          <View className="bg-[#2A2A2A] rounded-2xl p-4 border border-gray-700">
+            <View className="flex-row items-center justify-between">
+              <Text className="text-white font-semibold text-lg">Your Aura Points</Text>
+              <CreditDisplay credits={credits} size="large" />
+            </View>
           </View>
+        </View>
 
-          <Text className="text-sm text-amber-600 font-semibold mb-4 text-center bg-amber-50 py-2 px-4 rounded-lg border border-amber-200">
-            {totalExtraTasks}/2 tasks created today
-          </Text>
+        {/* Main Tasks Container */}
+        <View className="px-5 mb-4">
+          <LinearGradient
+            colors={['#000000', '#262335']}
+            className="rounded-2xl p-4"
+          >
+            <View className="flex-row items-center justify-between mb-3">
+              <Text className="text-white font-bold text-lg">Today's Tasks</Text>
+            </View>
 
-          {totalExtraTasks === 0 ? (
-            <View className="items-center py-12">
-              <Plus size={48} color="#D1D5DB" />
-              <Text className="text-lg font-semibold text-gray-500 mt-4">No tasks yet</Text>
-              <Text className="text-sm text-gray-400 mt-2 text-center">Create your first extra task!</Text>
+            {/* Daily Login Task */}
+            <MainTaskCard
+              title="Daily Login"
+              description="Check in to earn your daily credit"
+              isCompleted={dailyLoginCompleted}
+              onClaim={handleDailyLoginClaim}
+            />
+
+            {/* Step Counter Task */}
+            <MainTaskCard
+              title="Step Counter"
+              description={`Walk ${stepData.goal.toLocaleString()} steps today`}
+              isCompleted={stepService.isGoalReached(stepData)}
+              onClaim={handleStepGoalComplete}
+            >
+              <StepCounter
+                stepData={stepData}
+                onUpdateGoal={handleUpdateStepGoal}
+                pedometerError={pedometerError}
+              />
+            </MainTaskCard>
+
+            {/* Meditation Task */}
+            <MainTaskCard
+              title="Meditation Timer"
+              description="Take time to meditate and relax"
+              isCompleted={meditationCompleted}
+              onClaim={() => { }} // Handled by timer component
+            >
+              <MeditationTimer onComplete={handleMeditationComplete} />
+            </MainTaskCard>
+          </LinearGradient>
+        </View>
+
+        {/* Extra Tasks Container */}
+        <View className="px-5 mb-6">
+          <View className="bg-[#2A2A2A] rounded-2xl p-4 border border-gray-700">
+            <View className="flex-row items-center justify-between mb-3">
+              <Text className="text-white font-bold text-lg">Extra Tasks</Text>
+              <GradientButton
+                title="Add Task"
+                onPress={handleCreateTask}
+                size="small"
+                disabled={totalExtraTasks >= CHALLENGE_CONFIG.MAX_EXTRA_TASKS}
+              />
             </View>
-          ) : (
-            <View className="gap-2">
-              {tasks.map((task) => (
-                <TaskCard
-                  key={task.id}
-                  task={task}
-                  onComplete={handleCompleteTask}
-                />
-              ))}
-            </View>
-          )}
+
+            {totalExtraTasks === 0 ? (
+              <View className="items-center py-6">
+                <Plus size={32} color="#6B7280" />
+                <Text className="text-gray-400 mt-2 text-center">No extra tasks yet</Text>
+                <Text className="text-gray-500 text-sm mt-1">Create your first task!</Text>
+              </View>
+            ) : (
+              <View className="space-y-2">
+                {tasks.map((task) => (
+                  <TaskCard
+                    key={task.id}
+                    task={task}
+                    onComplete={handleCompleteTask}
+                  />
+                ))}
+              </View>
+            )}
+          </View>
         </View>
 
         {completedMainTasks === 3 && (
-          <View className="mx-5 rounded-2xl overflow-hidden">
+          <View className="mx-5 mb-6 rounded-2xl overflow-hidden">
             <LinearGradient
               colors={['#10B981', '#059669']}
-              className="p-5 items-center"
+              className="p-4 items-center"
             >
-              <Text className="text-xl font-bold text-white mb-2">🎉 Main Tasks Complete!</Text>
-              <Text className="text-sm text-green-100 text-center leading-5">
-                You've completed all your main tasks for today. Great job!
+              <Text className="text-xl font-bold text-white mb-2">🎉 All Tasks Complete!</Text>
+              <Text className="text-sm text-green-100 text-center">
+                Great job! You've completed all your tasks for today.
               </Text>
             </LinearGradient>
           </View>
         )}
+
+        <View className="h-20" />
       </ScrollView>
 
       <CreateTaskModal

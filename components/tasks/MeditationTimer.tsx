@@ -139,7 +139,7 @@ export default function MeditationTimer({ onComplete }: MeditationTimerProps) {
         <>
             <View className="mt-3">
                 <View className="flex-row justify-between items-center mb-5">
-                    <Text className="text-base font-semibold text-gray-900">
+                    <Text className="text-base font-semibold text-white">
                         Meditate for {duration}min
                     </Text>
                     <TouchableOpacity
@@ -154,16 +154,16 @@ export default function MeditationTimer({ onComplete }: MeditationTimerProps) {
                 <View className="items-center mb-6">
                     <View className="w-[120px] h-[120px] relative items-center justify-center">
                         <LinearGradient
-                            colors={['#8B5CF6', '#3B82F6']}
+                            colors={['#8A83DA', '#463699']}
                             className="absolute w-[120px] h-[120px] rounded-full border-4 border-transparent"
                             style={{
-                                borderTopColor: '#8B5CF6',
+                                borderTopColor: '#8A83DA',
                                 transform: [{ rotate: `${(getProgressPercentage() * 3.6) - 90}deg` }]
                             }}
                         />
-                        <View className="w-[100px] h-[100px] rounded-full bg-gray-50 items-center justify-center border-2 border-gray-200">
-                            <Text className="text-lg font-bold text-gray-900">{formatTime(timeLeft)}</Text>
-                            <Text className="text-xs text-gray-500 mt-0.5">
+                        <View className="w-[100px] h-[100px] rounded-full bg-[#333333] items-center justify-center border-2 border-gray-600">
+                            <Text className="text-lg font-bold text-white">{formatTime(timeLeft)}</Text>
+                            <Text className="text-xs text-gray-400 mt-0.5">
                                 {isRunning ? 'Meditating...' : timeLeft === duration * 60 ? 'Ready' : 'Paused'}
                             </Text>
                         </View>
@@ -210,8 +210,8 @@ export default function MeditationTimer({ onComplete }: MeditationTimerProps) {
                 onRequestClose={() => setShowSettings(false)}
             >
                 <View className="flex-1 bg-black/50 justify-center items-center p-5">
-                    <View className="bg-white rounded-2xl p-6 w-full max-w-[400px]">
-                        <Text className="text-xl font-bold text-gray-900 mb-5 text-center">Meditation Duration</Text>
+                    <View className="bg-[#2A2A2A] rounded-2xl p-6 w-full max-w-[400px] border border-gray-700">
+                        <Text className="text-xl font-bold text-white mb-5 text-center">Meditation Duration</Text>
 
                         <View className="flex-row flex-wrap gap-3 mb-6">
                             {DURATION_OPTIONS.map((option) => (
@@ -220,12 +220,12 @@ export default function MeditationTimer({ onComplete }: MeditationTimerProps) {
                                     onPress={() => handleDurationChange(option)}
                                     className={`flex-1 min-w-[30%] py-3 rounded-lg items-center border-2 ${
                                         duration === option 
-                                            ? 'bg-violet-500 border-violet-500' 
-                                            : 'bg-gray-100 border-transparent'
+                                            ? 'bg-[#8A83DA] border-[#8A83DA]' 
+                                            : 'bg-[#333333] border-transparent'
                                     }`}
                                 >
                                     <Text className={`text-base font-semibold ${
-                                        duration === option ? 'text-white' : 'text-gray-500'
+                                        duration === option ? 'text-white' : 'text-gray-400'
                                     }`}>
                                         {option}min
                                     </Text>
@@ -235,7 +235,7 @@ export default function MeditationTimer({ onComplete }: MeditationTimerProps) {
 
                         <TouchableOpacity
                             onPress={() => setShowSettings(false)}
-                            className="bg-violet-500 py-3 rounded-lg items-center"
+                            className="bg-[#8A83DA] py-3 rounded-lg items-center"
                         >
                             <Text className="text-base font-semibold text-white">Close</Text>
                         </TouchableOpacity>

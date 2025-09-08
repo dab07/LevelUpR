@@ -246,159 +246,146 @@ export default function SocialScreen() {
 
   if (loading) {
     return (
-        <SafeAreaView className="flex-1 bg-gray-50">
+        <SafeAreaView className="flex-1 bg-[#1A1A1A]">
           <View className="flex-1 justify-center items-center">
-            <ActivityIndicator size="large" color="#8B5CF6" />
-            <Text className="text-base text-gray-500 mt-3">Loading social features...</Text>
+            <ActivityIndicator size="large" color="#8A83DA" />
+            <Text className="text-base text-gray-400 mt-3">Loading social features...</Text>
           </View>
         </SafeAreaView>
     );
   }
 
   return (
-      <SafeAreaView className="flex-1 bg-gray-50">
-        <LinearGradient
-            colors={['#8B5CF6', '#3B82F6']}
-            className="px-5 py-6 rounded-b-3xl"
-        >
-          <View className="flex-row justify-between items-start mb-6">
-            <View>
-              <Text className="text-2xl font-bold text-white mb-1">Social Hub 👥</Text>
-              <Text className="text-base text-gray-200">Connect, challenge, and compete!</Text>
-            </View>
-            <TouchableOpacity
-                onPress={() => setShowCreateGroup(true)}
-                className="w-11 h-11 rounded-full bg-white/20 justify-center items-center"
-            >
-              <Plus size={20} color="#FFFFFF" />
-            </TouchableOpacity>
-          </View>
-
-          <View className="flex-row gap-3">
-            <View className="flex-1 bg-white/20 rounded-2xl p-4 items-center">
-              <Users size={20} color="#8B5CF6" />
-              <Text className="text-xl font-bold text-white mt-2 mb-1">{userGroups.length}</Text>
-              <Text className="text-xs text-gray-200 font-medium">Groups</Text>
-            </View>
-
-            <View className="flex-1 bg-white/20 rounded-2xl p-4 items-center">
-              <MessageCircle size={20} color="#8B5CF6" />
-              <Text className="text-xl font-bold text-white mt-2 mb-1">{getTotalMembers()}</Text>
-              <Text className="text-xs text-gray-200 font-medium">Members</Text>
-            </View>
-
-            <View className="flex-1 bg-white/20 rounded-2xl p-4 items-center">
-              <Trophy size={20} color="#8B5CF6" />
-              <Text className="text-xl font-bold text-white mt-2 mb-1">{getTotalActiveChallenges()}</Text>
-              <Text className="text-xs text-gray-200 font-medium">Challenges</Text>
-            </View>
-          </View>
-        </LinearGradient>
-
+      <SafeAreaView className="flex-1 bg-[#1A1A1A]">
         <ScrollView
-            className="flex-1 -mt-3"
+            className="flex-1"
             refreshControl={
               <RefreshControl refreshing={refreshing} onRefresh={onRefresh} />
             }
         >
-          {userGroups.length === 0 ? (
-              <View className="items-center py-15 px-5">
-                <Users size={64} color="#D1D5DB" />
-                <Text className="text-2xl font-bold text-gray-900 mt-4 mb-2">No Groups Yet</Text>
-                <Text className="text-base text-gray-500 text-center leading-6 mb-8">
-                  Create your first group to start challenging friends and earning credits together!
+          {/* Header with User Info */}
+          <View className="px-5 pt-4 pb-4">
+            <View className="flex-row items-center justify-between mb-4">
+              <View className="flex-row items-center">
+                <View className="w-12 h-12 rounded-full bg-[#8A83DA] items-center justify-center mr-3">
+                  <Users size={24} color="#FFFFFF" />
+                </View>
+                <View>
+                  <Text className="text-white font-bold text-lg">Social Hub</Text>
+                  <Text className="text-gray-400 text-sm">Connect & Compete</Text>
+                </View>
+              </View>
+              <TouchableOpacity
+                  onPress={() => setShowCreateGroup(true)}
+                  className="w-10 h-10 rounded-full bg-[#8A83DA] items-center justify-center"
+              >
+                <Plus size={20} color="#FFFFFF" />
+              </TouchableOpacity>
+            </View>
+          </View>
+
+          {/* Stats Container */}
+          <View className="px-5 mb-4">
+            <View className="bg-[#2A2A2A] rounded-2xl p-4 border border-gray-700">
+              <Text className="text-white font-semibold text-lg mb-3">Your Stats</Text>
+              <View className="flex-row gap-3">
+                <View className="flex-1 items-center">
+                  <Text className="text-2xl font-bold text-white">{userGroups.length}</Text>
+                  <Text className="text-gray-400 text-xs">Groups</Text>
+                </View>
+                <View className="flex-1 items-center">
+                  <Text className="text-2xl font-bold text-white">{getTotalMembers()}</Text>
+                  <Text className="text-gray-400 text-xs">Members</Text>
+                </View>
+                <View className="flex-1 items-center">
+                  <Text className="text-2xl font-bold text-white">{getTotalActiveChallenges()}</Text>
+                  <Text className="text-gray-400 text-xs">Challenges</Text>
+                </View>
+              </View>
+            </View>
+          </View>
+
+          {/* Groups Container */}
+          <View className="px-5 mb-6">
+            {userGroups.length === 0 ? (
+              <View className="bg-[#2A2A2A] rounded-2xl p-6 border border-gray-700 items-center">
+                <Users size={48} color="#6B7280" />
+                <Text className="text-lg font-bold text-white mt-4 mb-2">No Groups Yet</Text>
+                <Text className="text-gray-400 text-center mb-4">
+                  Create your first group to start challenging friends!
                 </Text>
-
                 <GradientButton
-                    title="Create Your First Group"
+                    title="Create Group"
                     onPress={() => setShowCreateGroup(true)}
-                    size="large"
-                    style={{ marginBottom: 32 }}
+                    size="medium"
                 />
-
-                <View className="items-start w-full">
-                  <Text className="text-lg font-semibold text-gray-900 mb-4">What you can do:</Text>
-                  <View className="flex-row items-center mb-3">
-                    <Target size={16} color="#8B5CF6" />
-                    <Text className="text-base text-gray-500 ml-3">Create betting challenges</Text>
+                
+                <View className="mt-4 w-full">
+                  <Text className="text-white font-semibold mb-3">Features:</Text>
+                  <View className="flex-row items-center mb-2">
+                    <Target size={16} color="#8A83DA" />
+                    <Text className="text-gray-400 ml-3 text-sm">Create betting challenges</Text>
                   </View>
-                  <View className="flex-row items-center mb-3">
-                    <MessageCircle size={16} color="#8B5CF6" />
-                    <Text className="text-base text-gray-500 ml-3">Chat with group members</Text>
+                  <View className="flex-row items-center mb-2">
+                    <MessageCircle size={16} color="#8A83DA" />
+                    <Text className="text-gray-400 ml-3 text-sm">Chat with members</Text>
                   </View>
-                  <View className="flex-row items-center mb-3">
-                    <TrendingUp size={16} color="#8B5CF6" />
-                    <Text className="text-base text-gray-500 ml-3">Earn credits from winning bets</Text>
+                  <View className="flex-row items-center">
+                    <TrendingUp size={16} color="#8A83DA" />
+                    <Text className="text-gray-400 ml-3 text-sm">Earn credits from bets</Text>
                   </View>
                 </View>
               </View>
-          ) : (
-              <View className="p-5">
-                <Text className="text-xl font-bold text-gray-900 mb-4">Your Groups</Text>
+            ) : (
+              <LinearGradient
+                colors={['#8A83DA', '#463699']}
+                className="rounded-2xl p-4"
+              >
+                <View className="flex-row items-center justify-between mb-3">
+                  <Text className="text-white font-bold text-lg">Your Groups</Text>
+                  <Text className="text-white/80 text-sm">See All</Text>
+                </View>
 
                 {userGroups.map((group) => (
-                    <View key={group.id} className="bg-white rounded-2xl p-4 mb-4 shadow-sm">
-                      <View className="mb-4">
+                    <View key={group.id} className="bg-white/10 rounded-xl p-3 mb-3 last:mb-0">
+                      <View className="flex-row items-center justify-between mb-2">
                         <View className="flex-1">
-                          <Text className="text-lg font-semibold text-gray-900 mb-1">{group.name}</Text>
-                          <Text className="text-sm text-violet-500 font-medium mb-2">
+                          <Text className="text-white font-semibold">{group.name}</Text>
+                          <Text className="text-white/70 text-sm">
                             {group.memberCount} member{group.memberCount !== 1 ? 's' : ''}
                           </Text>
-                          {group.description && (
-                              <Text className="text-sm text-gray-500 leading-5" numberOfLines={2}>
-                                {group.description}
-                              </Text>
-                          )}
+                        </View>
+                        <View className="flex-row gap-2">
+                          <TouchableOpacity
+                              onPress={() => handleOpenGroupChat(group)}
+                              className="bg-white/20 px-3 py-1.5 rounded-lg"
+                          >
+                            <Text className="text-white text-xs font-medium">Chat</Text>
+                          </TouchableOpacity>
+                          <TouchableOpacity
+                              onPress={() => handleCreateChallenge(group)}
+                              className="bg-white/20 px-3 py-1.5 rounded-lg"
+                          >
+                            <Text className="text-white text-xs font-medium">Challenge</Text>
+                          </TouchableOpacity>
                         </View>
                       </View>
 
-                      <View className="flex-row gap-3 mb-4">
-                        <TouchableOpacity
-                            onPress={() => handleOpenGroupChat(group)}
-                            className="flex-1 flex-row items-center justify-center bg-violet-50 py-2.5 rounded-lg border border-violet-100"
-                        >
-                          <MessageCircle size={16} color="#8B5CF6" />
-                          <Text className="text-sm font-medium text-violet-500 ml-1.5">Chat</Text>
-                        </TouchableOpacity>
-
-                        <TouchableOpacity
-                            onPress={() => handleCreateChallenge(group)}
-                            className="flex-1 flex-row items-center justify-center bg-violet-50 py-2.5 rounded-lg border border-violet-100"
-                        >
-                          <Trophy size={16} color="#10B981" />
-                          <Text className="text-sm font-medium text-violet-500 ml-1.5">Add Challenge</Text>
-                        </TouchableOpacity>
-                      </View>
-
-                      {/* Display group challenges */}
+                      {/* Active Challenges Preview */}
                       {groupChallenges[group.id] && groupChallenges[group.id].length > 0 && (
-                          <View className="border-t border-gray-200 pt-4">
-                            <Text className="text-base font-semibold text-gray-900 mb-3">Active Challenges</Text>
-                            {groupChallenges[group.id]
-                                .filter(challenge => challenge.status !== 'completed')
-                                .slice(0, 2) // Show only first 2 challenges
-                                .map((challenge) => (
-                                    <ChallengeCard
-                                        key={challenge.id}
-                                        challenge={challenge}
-                                        userBet={userBets[challenge.id]}
-                                        onBetPlaced={() => handleChallengeInteraction(challenge.id)}
-                                        onVoteSubmitted={() => handleChallengeInteraction(challenge.id)}
-                                        isCreator={isUserCreator(challenge)}
-                                    />
-                                ))}
-
-                            {groupChallenges[group.id].filter(c => c.status !== 'completed').length > 2 && (
-                                <Text className="text-sm text-violet-500 font-medium text-center mt-2 italic">
-                                  +{groupChallenges[group.id].filter(c => c.status !== 'completed').length - 2} more challenges
-                                </Text>
-                            )}
+                          <View className="border-t border-white/20 pt-2 mt-2">
+                            <Text className="text-white/80 text-xs mb-2">
+                              {groupChallenges[group.id].filter(c => c.status !== 'completed').length} active challenges
+                            </Text>
                           </View>
                       )}
                     </View>
                 ))}
-              </View>
-          )}
+              </LinearGradient>
+            )}
+          </View>
+
+          <View className="h-20" />
         </ScrollView>
 
         {/* Modals */}

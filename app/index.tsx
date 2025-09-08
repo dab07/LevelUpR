@@ -29,7 +29,7 @@ export default function RootIndex() {
     return (
       <SafeAreaView className='flex-1'>
         <LinearGradient
-          colors={['#8B5CF6', '#3B82F6']}
+          colors={['#FBD5BD', '#8A83DA', '#8A83DA', '#262335']}
           className='flex-1 justify-center items-center'
         >
           <ActivityIndicator size="large" color="#FFFFFF" />

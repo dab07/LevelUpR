@@ -38,8 +38,8 @@ export default function StepCounter({ stepData, onUpdateGoal, pedometerError }: 
 
                 <View className="flex-row justify-between items-center mb-3">
                     <View className="flex-row items-center flex-1">
-                        <Activity size={20} color="#8B5CF6" />
-                        <Text className="text-base font-semibold text-gray-900 ml-2">
+                        <Activity size={20} color="#8A83DA" />
+                        <Text className="text-base font-semibold text-white ml-2">
                             {stepData.steps.toLocaleString()}/{stepData.goal.toLocaleString()} steps
                         </Text>
                     </View>
@@ -52,28 +52,28 @@ export default function StepCounter({ stepData, onUpdateGoal, pedometerError }: 
                 </View>
 
                 <View className="flex-row items-center mb-4">
-                    <View className="flex-1 h-2 bg-gray-200 rounded-sm overflow-hidden mr-3">
+                    <View className="flex-1 h-2 bg-gray-600 rounded-sm overflow-hidden mr-3">
                         <LinearGradient
-                            colors={['#8B5CF6', '#3B82F6']}
+                            colors={['#8A83DA', '#463699']}
                             className="h-full rounded-sm"
                             style={{ width: `${progressPercentage}%` }}
                         />
                     </View>
-                    <Text className="text-sm font-semibold text-gray-500 min-w-[40px] text-right">
+                    <Text className="text-sm font-semibold text-gray-400 min-w-[40px] text-right">
                         {Math.round(progressPercentage)}%
                     </Text>
                 </View>
 
                 <View className="flex-row justify-between mt-2">
                     <View className="items-center">
-                        <Text className="text-xs text-gray-500 mb-0.5">Automatic Tracking</Text>
-                        <Text className="text-xs font-medium text-gray-900">
+                        <Text className="text-xs text-gray-400 mb-0.5">Automatic Tracking</Text>
+                        <Text className="text-xs font-medium text-white">
                             {pedometerError ? 'Unavailable' : 'Active'}
                         </Text>
                     </View>
                     <View className="items-center">
-                        <Text className="text-xs text-gray-500 mb-0.5">Last Updated</Text>
-                        <Text className="text-xs font-medium text-gray-900">
+                        <Text className="text-xs text-gray-400 mb-0.5">Last Updated</Text>
+                        <Text className="text-xs font-medium text-white">
                             {new Date(stepData.lastUpdated).toLocaleTimeString([], {
                                 hour: '2-digit',
                                 minute: '2-digit'
@@ -90,32 +90,33 @@ export default function StepCounter({ stepData, onUpdateGoal, pedometerError }: 
                 onRequestClose={() => setShowSettings(false)}
             >
                 <View className="flex-1 bg-black/50 justify-center items-center p-5">
-                    <View className="bg-white rounded-2xl p-6 w-full max-w-[400px]">
-                        <Text className="text-xl font-bold text-gray-900 mb-5 text-center">Step Goal Settings</Text>
+                    <View className="bg-[#2A2A2A] rounded-2xl p-6 w-full max-w-[400px] border border-gray-700">
+                        <Text className="text-xl font-bold text-white mb-5 text-center">Step Goal Settings</Text>
 
                         <View className="mb-6">
-                            <Text className="text-sm font-semibold text-gray-700 mb-2">Daily Step Goal</Text>
-                            <Text className="text-xs text-gray-500 mb-2">Minimum: 6,000 steps</Text>
+                            <Text className="text-sm font-semibold text-white mb-2">Daily Step Goal</Text>
+                            <Text className="text-xs text-gray-400 mb-2">Minimum: 6,000 steps</Text>
                             <TextInput
-                                className="border border-gray-300 rounded-lg px-3 py-2.5 text-base text-gray-900"
+                                className="border border-gray-600 rounded-lg px-3 py-2.5 text-base text-white bg-[#333333]"
                                 value={tempGoal}
                                 onChangeText={setTempGoal}
                                 keyboardType="numeric"
                                 placeholder="Enter step goal"
+                                placeholderTextColor="#6B7280"
                             />
                         </View>
 
                         <View className="flex-row gap-3">
                             <TouchableOpacity
                                 onPress={() => setShowSettings(false)}
-                                className="flex-1 py-3 rounded-lg items-center bg-gray-100"
+                                className="flex-1 py-3 rounded-lg items-center bg-[#333333]"
                             >
-                                <Text className="text-base font-semibold text-gray-500">Cancel</Text>
+                                <Text className="text-base font-semibold text-gray-400">Cancel</Text>
                             </TouchableOpacity>
 
                             <TouchableOpacity
                                 onPress={handleGoalSave}
-                                className="flex-1 py-3 rounded-lg items-center bg-violet-500"
+                                className="flex-1 py-3 rounded-lg items-center bg-[#8A83DA]"
                             >
                                 <Text className="text-base font-semibold text-white">Save</Text>
                             </TouchableOpacity>

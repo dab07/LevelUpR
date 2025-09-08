@@ -42,7 +42,7 @@ export default function ProfileHeader({ profile, onProfileUpdate }: ProfileHeade
 
     return (
         <LinearGradient
-            colors={['#8B5CF6', '#3B82F6']}
+            colors={['#8A83DA', '#463699']}
             className="px-5 py-6 rounded-b-3xl"
         >
             <View className="flex-row items-center mb-5">
@@ -57,7 +57,7 @@ export default function ProfileHeader({ profile, onProfileUpdate }: ProfileHeade
                                 </Text>
                             </View>
                         )}
-                        <View className="absolute bottom-0 right-0 w-7 h-7 rounded-full bg-violet-500 justify-center items-center border-2 border-white">
+                        <View className="absolute bottom-0 right-0 w-7 h-7 rounded-full bg-primary-300 justify-center items-center border-2 border-white">
                             <Camera size={16} color="#FFFFFF" />
                         </View>
                     </TouchableOpacity>

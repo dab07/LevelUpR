@@ -43,15 +43,15 @@ export default function TaskCard({ task, onComplete, disabled = false }: TaskCar
   };
 
   return (
-    <View className="my-2 rounded-2xl overflow-hidden shadow-sm shadow-black/10">
+    <View className="my-2 rounded-2xl overflow-hidden">
       <LinearGradient
-        colors={task.isCompleted ? ['#10B981', '#059669'] : ['#FFFFFF', '#F9FAFB']}
-        className="p-4"
+        colors={task.isCompleted ? ['#8A83DA', '#463699'] : ['#2A2A2A', '#333333']}
+        className="p-4 border border-gray-700"
       >
         <View className="mb-3">
           <View className="flex-row justify-between items-start mb-2">
             <Text className={`text-base font-semibold flex-1 mr-3 ${
-              task.isCompleted ? 'text-white' : 'text-gray-900'
+              task.isCompleted ? 'text-white' : 'text-white'
             }`}>
               {task.title}
             </Text>
@@ -63,14 +63,14 @@ export default function TaskCard({ task, onComplete, disabled = false }: TaskCar
               {task.isCompleted ? (
                 <CheckCircle size={24} color="#FFFFFF" />
               ) : (
-                <Circle size={24} color="#8B5CF6" />
+                <Circle size={24} color="#8A83DA" />
               )}
             </TouchableOpacity>
           </View>
           
           {task.description && (
             <Text className={`text-sm leading-5 ${
-              task.isCompleted ? 'text-gray-200' : 'text-gray-500'
+              task.isCompleted ? 'text-gray-200' : 'text-gray-400'
             }`}>
               {task.description}
             </Text>
@@ -84,7 +84,7 @@ export default function TaskCard({ task, onComplete, disabled = false }: TaskCar
               style={{ backgroundColor: getCategoryColor(task.category) }}
             />
             <Text className={`text-xs font-medium ${
-              task.isCompleted ? 'text-gray-200' : 'text-gray-500'
+              task.isCompleted ? 'text-gray-200' : 'text-gray-400'
             }`}>
               {task.category.charAt(0).toUpperCase() + task.category.slice(1)}
             </Text>
@@ -94,10 +94,10 @@ export default function TaskCard({ task, onComplete, disabled = false }: TaskCar
             <View className="flex-row items-center gap-1">
               <Clock 
                 size={14} 
-                color={task.isCompleted ? '#E5E7EB' : '#6B7280'} 
+                color={task.isCompleted ? '#E5E7EB' : '#9CA3AF'} 
               />
               <Text className={`text-xs font-medium ${
-                task.isCompleted ? 'text-gray-200' : 'text-gray-500'
+                task.isCompleted ? 'text-gray-200' : 'text-gray-400'
               }`}>
                 {task.isCompleted ? 'Completed' : formatTimeRemaining(task.dueDate)}
               </Text>
@@ -110,7 +110,7 @@ export default function TaskCard({ task, onComplete, disabled = false }: TaskCar
                 fill={task.isCompleted ? "#F59E0B" : "transparent"}
               />
               <Text className={`text-xs font-semibold ${
-                task.isCompleted ? 'text-white' : 'text-amber-500'
+                task.isCompleted ? 'text-white' : 'text-amber-400'
               }`}>
                 {task.creditReward}
               </Text>

@@ -278,36 +278,38 @@ export default function CreateTaskModal({
             presentationStyle="pageSheet"
             onRequestClose={handleClose}
         >
-            <View className="flex-1 bg-white">
-                <View className="flex-row items-center justify-between px-5 py-4 border-b border-gray-200">
+            <View className="flex-1 bg-[#1A1A1A]">
+                <View className="flex-row items-center justify-between px-5 py-4 border-b border-gray-700">
                     <TouchableOpacity onPress={handleClose} className="p-1">
-                        <X size={24} color="#6B7280" />
+                        <X size={24} color="#8A83DA" />
                     </TouchableOpacity>
-                    <Text className="text-lg font-semibold text-gray-900">Create New Task</Text>
+                    <Text className="text-lg font-semibold text-white">Create New Task</Text>
                     <View className="w-8" />
                 </View>
 
                 <ScrollView className="flex-1 p-5" showsVerticalScrollIndicator={false}>
                     <View className="mb-6">
-                        <Text className="text-base font-semibold text-gray-700 mb-2">Task Title *</Text>
+                        <Text className="text-base font-semibold text-white mb-2">Task Title *</Text>
                         <TextInput
-                            className="border border-gray-300 rounded-lg px-3 py-2.5 text-base text-gray-900 bg-gray-50"
+                            className="border border-gray-600 rounded-lg px-3 py-2.5 text-base text-white bg-[#2A2A2A]"
                             value={formData.title}
                             onChangeText={(value) => setFormData(prev => ({ ...prev, title: value }))}
                             placeholder="e.g., Read for 30 minutes"
+                            placeholderTextColor="#6B7280"
                             maxLength={200}
                             autoFocus
                         />
                     </View>
 
                     <View className="mb-6">
-                        <Text className="text-base font-semibold text-gray-700 mb-2">Description (Optional)</Text>
+                        <Text className="text-base font-semibold text-white mb-2">Description (Optional)</Text>
                         <TextInput
-                            className="border border-gray-300 rounded-lg px-3 py-2.5 text-base text-gray-900 bg-gray-50 h-20"
+                            className="border border-gray-600 rounded-lg px-3 py-2.5 text-base text-white bg-[#2A2A2A] h-20"
                             style={{ textAlignVertical: 'top' }}
                             value={formData.description}
                             onChangeText={(value) => setFormData(prev => ({ ...prev, description: value }))}
                             placeholder="Add any additional details..."
+                            placeholderTextColor="#6B7280"
                             multiline
                             numberOfLines={3}
                             maxLength={1000}
@@ -315,7 +317,7 @@ export default function CreateTaskModal({
                     </View>
 
                     <View className="mb-6">
-                        <Text className="text-base font-semibold text-gray-700 mb-2">Category</Text>
+                        <Text className="text-base font-semibold text-white mb-2">Category</Text>
                         <ScrollView horizontal showsHorizontalScrollIndicator={false} className="-mx-1">
                             {CATEGORIES.map((category) => (
                                 <TouchableOpacity
@@ -343,23 +345,23 @@ export default function CreateTaskModal({
                     </View>
 
                     <View className="mb-6">
-                        <Text className="text-base font-semibold text-gray-700 mb-2">Due Date & Time</Text>
+                        <Text className="text-base font-semibold text-white mb-2">Due Date & Time</Text>
 
                         {/* Date and Time Row */}
                         <View className="flex-row gap-3 mb-2">
                             {/* Date Selector */}
                             <TouchableOpacity
-                                className="flex-2 flex-row items-center bg-gray-50 rounded-lg px-3 py-3 border border-gray-300"
+                                className="flex-2 flex-row items-center bg-[#2A2A2A] rounded-lg px-3 py-3 border border-gray-600"
                                 onPress={() => setShowDatePicker(!showDatePicker)}
                             >
-                                <Calendar size={20} color="#8B5CF6" />
-                                <Text className="flex-1 text-base font-semibold text-gray-900 ml-2">{formatDate(formData.dueDate)}</Text>
+                                <Calendar size={20} color="#8A83DA" />
+                                <Text className="flex-1 text-base font-semibold text-white ml-2">{formatDate(formData.dueDate)}</Text>
                                 <ChevronRight size={20} color="#6B7280" />
                             </TouchableOpacity>
 
                             {/* Time Dropdown Button */}
                             <TouchableOpacity
-                                className="flex-1 flex-row items-center justify-between bg-blue-500 rounded-lg px-3 py-3"
+                                className="flex-1 flex-row items-center justify-between bg-[#8A83DA] rounded-lg px-3 py-3"
                                 onPress={() => setShowTimeDropdown(!showTimeDropdown)}
                             >
                                 <Text className="text-sm font-semibold text-white">
@@ -371,12 +373,12 @@ export default function CreateTaskModal({
 
                         {/* Time Dropdown */}
                         {showTimeDropdown && (
-                            <View className="bg-white rounded-lg border border-gray-200 mb-3 shadow-sm" style={{ shadowColor: '#000', shadowOffset: { width: 0, height: 2 }, shadowOpacity: 0.1, shadowRadius: 4, elevation: 3 }}>
+                            <View className="bg-[#2A2A2A] rounded-lg border border-gray-600 mb-3">
                                 <View className="p-4">
-                                    <Text className="text-sm font-semibold text-gray-900 mb-2">End time:</Text>
+                                    <Text className="text-sm font-semibold text-white mb-2">End time:</Text>
                                     <View className="relative mb-3">
                                         <TextInput
-                                            className="bg-gray-50 border border-gray-300 rounded-lg px-3 py-2.5 text-base text-gray-900 text-center font-semibold"
+                                            className="bg-[#333333] border border-gray-600 rounded-lg px-3 py-2.5 text-base text-white text-center font-semibold"
                                             value={formatTimeString()}
                                             onChangeText={(text) => {
                                                 const [hours, minutes] = text.split(':');
@@ -391,6 +393,7 @@ export default function CreateTaskModal({
                                                 }
                                             }}
                                             placeholder="00:00"
+                                            placeholderTextColor="#6B7280"
                                             maxLength={5}
                                         />
                                     </View>
@@ -398,7 +401,7 @@ export default function CreateTaskModal({
                                         className="self-start"
                                         onPress={() => setShowTimeDropdown(false)}
                                     >
-                                        <Text className="text-sm text-blue-500 font-medium underline">Save time</Text>
+                                        <Text className="text-sm text-[#8A83DA] font-medium underline">Save time</Text>
                                     </TouchableOpacity>
                                 </View>
                             </View>
@@ -406,35 +409,35 @@ export default function CreateTaskModal({
 
                         {/* Calendar */}
                         {showDatePicker && (
-                            <View className="bg-white rounded-xl border border-gray-200 mb-3 p-4">
+                            <View className="bg-[#2A2A2A] rounded-xl border border-gray-600 mb-3 p-4">
                                 {/* Calendar Header */}
                                 <View className="flex-row items-center justify-between mb-4">
                                     <TouchableOpacity
-                                        className="w-8 h-8 rounded-2xl bg-gray-100 items-center justify-center"
+                                        className="w-8 h-8 rounded-2xl bg-[#333333] items-center justify-center"
                                         onPress={() => navigateMonth('prev')}
                                     >
-                                        <Text className="text-lg font-semibold text-gray-500">‹</Text>
+                                        <Text className="text-lg font-semibold text-gray-400">‹</Text>
                                     </TouchableOpacity>
 
                                     <View className="items-center">
-                                        <Text className="text-lg font-semibold text-gray-900 mb-1">
+                                        <Text className="text-lg font-semibold text-white mb-1">
                                             {getCalendarData().monthName}
                                         </Text>
                                         <TouchableOpacity
-                                            className="px-2 py-1 rounded bg-gray-100"
+                                            className="px-2 py-1 rounded bg-[#333333]"
                                             onPress={() => setShowYearPicker(!showYearPicker)}
                                         >
-                                            <Text className="text-sm font-medium text-gray-500">
+                                            <Text className="text-sm font-medium text-gray-400">
                                                 {getCalendarData().year} ▼
                                             </Text>
                                         </TouchableOpacity>
                                     </View>
 
                                     <TouchableOpacity
-                                        className="w-8 h-8 rounded-2xl bg-gray-100 items-center justify-center"
+                                        className="w-8 h-8 rounded-2xl bg-[#333333] items-center justify-center"
                                         onPress={() => navigateMonth('next')}
                                     >
-                                        <Text className="text-lg font-semibold text-gray-500">›</Text>
+                                        <Text className="text-lg font-semibold text-gray-400">›</Text>
                                     </TouchableOpacity>
                                 </View>
 
@@ -481,7 +484,7 @@ export default function CreateTaskModal({
                                 <View className="flex-row mb-2">
                                     {['Sun', 'Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat'].map((day) => (
                                         <View key={day} className="flex-1 items-center py-2">
-                                            <Text className="text-xs font-semibold text-gray-500">{day}</Text>
+                                            <Text className="text-xs font-semibold text-gray-400">{day}</Text>
                                         </View>
                                     ))}
                                 </View>
@@ -496,14 +499,14 @@ export default function CreateTaskModal({
                                         return (
                                             <TouchableOpacity
                                                 key={index}
-                                                className={`w-[14.28%] aspect-square items-center justify-center rounded-lg mb-1 ${isSelected ? 'bg-purple-500' : ''} ${isDisabled ? 'opacity-30' : ''}`}
+                                                className={`w-[14.28%] aspect-square items-center justify-center rounded-lg mb-1 ${isSelected ? 'bg-[#8A83DA]' : ''} ${isDisabled ? 'opacity-30' : ''}`}
                                                 onPress={() => !isDisabled && handleDateSelect(date)}
                                                 disabled={isDisabled}
                                             >
                                                 <Text className={`text-base font-medium ${
-                                                    !isCurrentMonth ? 'text-gray-300' : 
+                                                    !isCurrentMonth ? 'text-gray-500' : 
                                                     isSelected ? 'text-white font-semibold' : 
-                                                    isDisabled ? 'text-gray-300' : 'text-gray-900'
+                                                    isDisabled ? 'text-gray-500' : 'text-white'
                                                 }`}>
                                                     {date.getDate()}
                                                 </Text>
@@ -514,41 +517,41 @@ export default function CreateTaskModal({
                             </View>
                         )}
 
-                        <Text className="text-xs text-gray-500 mt-1">
+                        <Text className="text-xs text-gray-400 mt-1">
                             Task will be due on {formatDate(formData.dueDate)} at {formatTimeString()}
                         </Text>
                     </View>
 
 
 
-                    <View className="flex-row bg-amber-50 p-4 rounded-xl border border-amber-200 mb-4">
+                    <View className="flex-row bg-amber-900/20 p-4 rounded-xl border border-amber-800/30 mb-4">
                         <Star size={20} color="#F59E0B" />
                         <View className="flex-1 ml-3">
-                            <Text className="text-sm font-semibold text-amber-800 mb-1">Task Reward</Text>
-                            <Text className="text-xs text-amber-800 leading-4">
+                            <Text className="text-sm font-semibold text-amber-400 mb-1">Task Reward</Text>
+                            <Text className="text-xs text-amber-300 leading-4">
                                 Complete this task to earn 1 credit and 10 XP points!
                             </Text>
                         </View>
                     </View>
 
-                    <View className="bg-purple-50 p-3 rounded-lg border border-purple-200" style={{ backgroundColor: 'rgba(139, 92, 246, 0.1)', borderColor: 'rgba(139, 92, 246, 0.2)' }}>
-                        <Text className="text-sm text-purple-600 font-medium text-center">
+                    <View className="bg-[#8A83DA]/20 p-3 rounded-lg border border-[#8A83DA]/30">
+                        <Text className="text-sm text-[#8A83DA] font-medium text-center">
                             📝 You can create up to 2 extra tasks with custom deadlines
                         </Text>
                     </View>
                 </ScrollView>
 
-                <View className="flex-row gap-3 p-5 border-t border-gray-200">
+                <View className="flex-row gap-3 p-5 border-t border-gray-700">
                     <TouchableOpacity
                         onPress={handleClose}
-                        className="flex-1 py-3 rounded-lg items-center flex-row justify-center bg-gray-100"
+                        className="flex-1 py-3 rounded-lg items-center flex-row justify-center bg-[#333333]"
                     >
-                        <Text className="text-base font-semibold text-gray-500">Cancel</Text>
+                        <Text className="text-base font-semibold text-gray-400">Cancel</Text>
                     </TouchableOpacity>
 
                     <TouchableOpacity
                         onPress={handleSubmit}
-                        className="flex-1 py-3 rounded-lg items-center flex-row justify-center bg-purple-500"
+                        className="flex-1 py-3 rounded-lg items-center flex-row justify-center bg-[#8A83DA]"
                         disabled={loading || !formData.title.trim()}
                     >
                         {loading ? (

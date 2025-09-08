@@ -13,29 +13,27 @@ interface MainTaskCardProps {
 }
 
 export default function MainTaskCard({
-                                         title,
-                                         description,
-                                         isCompleted,
-                                         onClaim,
-                                         disabled = false,
-                                         children,
-                                     }: MainTaskCardProps) {
+    title,
+    description,
+    isCompleted,
+    onClaim,
+    disabled = false,
+    children,
+}: MainTaskCardProps) {
     return (
-        <View className="my-2 rounded-2xl overflow-hidden shadow-sm shadow-black/10">
+        <View className="my-2 rounded-2xl overflow-hidden">
             <LinearGradient
-                colors={isCompleted ? ['#10B981', '#059669'] : ['#FFFFFF', '#F9FAFB']}
+                colors={['#FBF5F0', '#FBD5BD']}
                 className="p-4"
             >
                 <View className="flex-row justify-between items-start">
                     <View className="flex-1 mr-4">
-                        <Text className={`text-lg font-semibold mb-1 ${
-                            isCompleted ? 'text-white' : 'text-gray-900'
-                        }`}>
+                        <Text className={`text-lg font-semibold mb-1 ${isCompleted ? 'text-black' : 'text-black'
+                            }`}>
                             {title}
                         </Text>
-                        <Text className={`text-sm leading-5 ${
-                            isCompleted ? 'text-gray-200' : 'text-gray-500'
-                        }`}>
+                        <Text className={`text-sm leading-5 ${isCompleted ? 'text-gray-700' : 'text-gray-700'
+                            }`}>
                             {description}
                         </Text>
                     </View>
@@ -43,20 +41,18 @@ export default function MainTaskCard({
                     <TouchableOpacity
                         onPress={onClaim}
                         disabled={disabled || isCompleted}
-                        className={`flex-row items-center px-4 py-2 rounded-[20px] border ${
-                            isCompleted 
-                                ? 'bg-white/20 border-white' 
-                                : 'bg-violet-500/10 border-violet-500'
-                        } ${disabled ? 'opacity-50' : ''}`}
+                        className={`flex-row items-center px-4 py-2 rounded-[20px] border ${isCompleted
+                            ? 'bg-[#8A83DA] border-white'
+                            : 'bg-primary-300/20 border-primary-300'
+                            } ${disabled ? 'opacity-50' : ''}`}
                     >
                         {isCompleted ? (
                             <CheckCircle size={20} color="#FFFFFF" />
                         ) : (
-                            <Circle size={20} color="#8B5CF6" />
+                            <Circle size={20} color="#8A83DA" />
                         )}
-                        <Text className={`text-sm font-semibold ml-1.5 ${
-                            isCompleted ? 'text-white' : 'text-violet-500'
-                        }`}>
+                        <Text className={`text-sm font-semibold ml-1.5 ${isCompleted ? 'text-white' : 'text-primary-300'
+                            }`}>
                             {isCompleted ? 'Claimed' : 'Claim'}
                         </Text>
                     </TouchableOpacity>

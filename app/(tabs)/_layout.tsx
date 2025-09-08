@@ -1,16 +1,16 @@
 import { Tabs } from 'expo-router';
-import { Chrome as Home, Trophy, Users, Settings } from 'lucide-react-native';
+import { Home , User, Cannabis} from 'lucide-react-native';
 import '@/global.css'
 export default function TabLayout() {
   return (
     <Tabs
       screenOptions={{
         headerShown: false,
-        tabBarActiveTintColor: '#8B5CF6',
+        tabBarActiveTintColor: '#8A83DA',
         tabBarInactiveTintColor: '#6B7280',
         tabBarStyle: {
-          backgroundColor: '#FFFFFF',
-          borderTopColor: '#E5E7EB',
+          backgroundColor: '#1A1A1A',
+          borderTopColor: '#333333',
           borderTopWidth: 1,
           paddingTop: 8,
           paddingBottom: 8,
@@ -36,7 +36,7 @@ export default function TabLayout() {
         options={{
           title: 'Group',
           tabBarIcon: ({ size, color }) => (
-            <Users size={size} color={color} />
+            <Cannabis size={size} color={color} />
           ),
         }}
       />
@@ -45,7 +45,7 @@ export default function TabLayout() {
         options={{
           title: 'Profile',
           tabBarIcon: ({ size, color }) => (
-            <Settings size={size} color={color} />
+            <User size={size} color={color} />
           ),
         }}
       />

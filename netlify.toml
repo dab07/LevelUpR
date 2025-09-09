@@ -1,0 +1,15 @@
+[build]
+  publish = "dist"
+  command = "pnpm run build:web"
+
+[build.environment]
+  NODE_VERSION = "18"
+
+[[redirects]]
+  from = "/*"
+  to = "/index.html"
+  status = 200
+
+[dev]
+  command = "pnpm start"
+  port = 8081

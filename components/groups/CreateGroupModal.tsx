@@ -9,6 +9,7 @@ import {
     Alert,
     ActivityIndicator,
 } from 'react-native';
+import { LinearGradient } from 'expo-linear-gradient';
 import { X, Search, UserPlus, Users } from 'lucide-react-native';
 import { groupService } from '@/services/groupService';
 
@@ -114,38 +115,46 @@ export default function CreateGroupModal({ visible, onClose, onGroupCreated }: C
             presentationStyle="pageSheet"
             onRequestClose={handleClose}
         >
-            <View className="flex-1 bg-white">
-                <View className="flex-row items-center justify-between px-5 py-4 border-b border-gray-200">
-                    <TouchableOpacity onPress={handleClose} className="p-1">
-                        <X size={24} color="#6B7280" />
-                    </TouchableOpacity>
-                    <Text className="text-lg font-semibold text-gray-900">
-                        {step === 1 ? 'Create Group' : 'Add Members'}
-                    </Text>
-                    <View className="w-8" />
-                </View>
+            <View className="flex-1 bg-[#1A1A1A]">
+                {/* Header */}
+                <LinearGradient
+                    colors={['#8A83DA', '#463699']}
+                    className="px-5 pt-12 pb-4"
+                >
+                    <View className="flex-row items-center justify-between">
+                        <TouchableOpacity onPress={handleClose} className="p-1">
+                            <X size={24} color="#FFFFFF" />
+                        </TouchableOpacity>
+                        <Text className="text-lg font-bold text-white">
+                            {step === 1 ? 'Create Group' : 'Add Members'}
+                        </Text>
+                        <View className="w-8" />
+                    </View>
+                </LinearGradient>
 
                 {step === 1 ? (
                     <ScrollView className="flex-1 p-5">
                         <View className="mb-6">
-                            <Text className="text-base font-semibold text-gray-700 mb-2">Group Name *</Text>
+                            <Text className="text-base font-semibold text-white mb-3">Group Name *</Text>
                             <TextInput
-                                className="border border-gray-300 rounded-lg px-3 py-2.5 text-base text-gray-900"
+                                className="bg-[#2A2A2A] border border-gray-700 rounded-2xl px-4 py-3 text-base text-white"
                                 value={groupName}
                                 onChangeText={setGroupName}
                                 placeholder="Enter group name"
+                                placeholderTextColor="#6B7280"
                                 maxLength={100}
                             />
                         </View>
 
                         <View className="mb-6">
-                            <Text className="text-base font-semibold text-gray-700 mb-2">Description (Optional)</Text>
+                            <Text className="text-base font-semibold text-white mb-3">Description (Optional)</Text>
                             <TextInput
-                                className="border border-gray-300 rounded-lg px-3 py-2.5 text-base text-gray-900 h-20"
+                                className="bg-[#2A2A2A] border border-gray-700 rounded-2xl px-4 py-3 text-base text-white h-24"
                                 style={{ textAlignVertical: 'top' }}
                                 value={groupDescription}
                                 onChangeText={setGroupDescription}
                                 placeholder="What's this group about?"
+                                placeholderTextColor="#6B7280"
                                 multiline
                                 numberOfLines={3}
                                 maxLength={500}
@@ -154,39 +163,45 @@ export default function CreateGroupModal({ visible, onClose, onGroupCreated }: C
 
                         <TouchableOpacity
                             onPress={handleNext}
-                            className="bg-purple-500 py-3 rounded-lg items-center mt-5"
+                            className="mt-5 rounded-2xl"
                         >
-                            <Text className="text-base font-semibold text-white">Next: Add Members</Text>
+                            <LinearGradient
+                                colors={['#8A83DA', '#463699']}
+                                className="py-3 rounded-2xl items-center"
+                            >
+                                <Text className="text-base font-semibold text-white">Next: Add Members</Text>
+                            </LinearGradient>
                         </TouchableOpacity>
                     </ScrollView>
                 ) : (
                     <View className="flex-1 p-5">
                         <View className="mb-6">
-                            <View className="flex-row items-center bg-gray-50 rounded-lg px-3 py-2.5 border border-gray-200">
+                            <View className="flex-row items-center bg-[#2A2A2A] rounded-2xl px-4 py-3 border border-gray-700">
                                 <Search size={20} color="#6B7280" />
                                 <TextInput
-                                    className="flex-1 text-base text-gray-900 ml-2"
+                                    className="flex-1 text-base text-white ml-3"
                                     value={searchQuery}
                                     onChangeText={handleSearch}
                                     placeholder="Search by username..."
+                                    placeholderTextColor="#6B7280"
                                     autoCapitalize="none"
                                 />
-                                {searching && <ActivityIndicator size="small" color="#8B5CF6" />}
+                                {searching && <ActivityIndicator size="small" color="#8A83DA" />}
                             </View>
 
                             {searchResults.length > 0 && (
-                                <ScrollView className="max-h-[200px] mt-2 rounded-lg bg-gray-50">
+                                <ScrollView className="max-h-[200px] mt-3 rounded-2xl bg-[#2A2A2A] border border-gray-700">
                                     {searchResults.map((user) => (
                                         <TouchableOpacity
                                             key={user.id}
                                             onPress={() => handleAddMember(user)}
-                                            className="flex-row items-center justify-between px-4 py-3 border-b border-gray-200"
+                                            className="flex-row items-center justify-between px-4 py-3 border-b border-gray-700 last:border-b-0"
                                         >
                                             <View className="flex-1">
-                                                <Text className="text-base font-semibold text-gray-900">@{user.username}</Text>
-                                                <Text className="text-sm text-gray-500 mt-0.5">{user.displayName}</Text>
+                                                <Text className="text-base font-semibold text-white">@{user.username}</Text>
+                                                <Text className="text-sm text-gray-400 mt-0.5">{user.displayName}</Text>
                                             </View>
-                                            <UserPlus size={20} color="#8B5CF6" />
+                                            <UserPlus size={20} color="#8A83DA" />
                                         </TouchableOpacity>
                                     ))}
                                 </ScrollView>
@@ -195,15 +210,15 @@ export default function CreateGroupModal({ visible, onClose, onGroupCreated }: C
 
                         {selectedMembers.length > 0 && (
                             <View className="flex-1">
-                                <Text className="text-base font-semibold text-gray-700 mb-3">
+                                <Text className="text-base font-semibold text-white mb-3">
                                     Selected Members ({selectedMembers.length})
                                 </Text>
                                 <ScrollView className="flex-1">
                                     {selectedMembers.map((member) => (
-                                        <View key={member.id} className="flex-row items-center justify-between px-4 py-3 bg-gray-100 rounded-lg mb-2">
+                                        <View key={member.id} className="flex-row items-center justify-between px-4 py-3 bg-[#2A2A2A] rounded-2xl mb-3 border border-gray-700">
                                             <View className="flex-1">
-                                                <Text className="text-base font-semibold text-gray-900">@{member.username}</Text>
-                                                <Text className="text-sm text-gray-500 mt-0.5">{member.displayName}</Text>
+                                                <Text className="text-base font-semibold text-white">@{member.username}</Text>
+                                                <Text className="text-sm text-gray-400 mt-0.5">{member.displayName}</Text>
                                             </View>
                                             <TouchableOpacity
                                                 onPress={() => handleRemoveMember(member.id)}
@@ -220,24 +235,29 @@ export default function CreateGroupModal({ visible, onClose, onGroupCreated }: C
                         <View className="flex-row gap-3 pt-5">
                             <TouchableOpacity
                                 onPress={() => setStep(1)}
-                                className="flex-1 bg-gray-100 py-3 rounded-lg items-center"
+                                className="flex-1 bg-[#2A2A2A] py-3 rounded-2xl items-center border border-gray-700"
                             >
-                                <Text className="text-base font-semibold text-gray-500">Back</Text>
+                                <Text className="text-base font-semibold text-gray-400">Back</Text>
                             </TouchableOpacity>
 
                             <TouchableOpacity
                                 onPress={handleCreateGroup}
-                                className="flex-2 bg-purple-500 py-3 rounded-lg items-center flex-row justify-center"
+                                className="flex-2 rounded-2xl items-center flex-row justify-center"
                                 disabled={loading}
                             >
-                                {loading ? (
-                                    <ActivityIndicator size="small" color="#FFFFFF" />
-                                ) : (
-                                    <>
-                                        <Users size={20} color="#FFFFFF" />
-                                        <Text className="text-base font-semibold text-white ml-2">Create Group</Text>
-                                    </>
-                                )}
+                                <LinearGradient
+                                    colors={loading ? ['#374151', '#374151'] : ['#8A83DA', '#463699']}
+                                    className="flex-1 py-3 rounded-2xl items-center flex-row justify-center"
+                                >
+                                    {loading ? (
+                                        <ActivityIndicator size="small" color="#FFFFFF" />
+                                    ) : (
+                                        <>
+                                            <Users size={20} color="#FFFFFF" />
+                                            <Text className="text-base font-semibold text-white ml-2">Create Group</Text>
+                                        </>
+                                    )}
+                                </LinearGradient>
                             </TouchableOpacity>
                         </View>
                     </View>

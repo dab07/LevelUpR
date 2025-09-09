@@ -2,7 +2,6 @@ import React, { useState } from 'react';
 import {
     View,
     Text,
-    StyleSheet,
     Modal,
     TextInput,
     TouchableOpacity,
@@ -10,6 +9,7 @@ import {
     Alert,
     ActivityIndicator,
 } from 'react-native';
+import { LinearGradient } from 'expo-linear-gradient';
 import { X, Eye, EyeOff, Lock, CircleCheck as CheckCircle, CircleAlert as AlertCircle } from 'lucide-react-native';
 import { profileService, PasswordUpdateData } from '@/services/profileService';
 
@@ -112,31 +112,39 @@ export default function PasswordUpdateModal({ visible, onClose }: PasswordUpdate
             presentationStyle="pageSheet"
             onRequestClose={handleClose}
         >
-            <View style={styles.container}>
-                <View style={styles.header}>
-                    <TouchableOpacity onPress={handleClose} style={styles.closeButton}>
-                        <X size={24} color="#6B7280" />
-                    </TouchableOpacity>
-                    <Text style={styles.title}>Update Password</Text>
-                    <View style={styles.placeholder} />
-                </View>
+            <View className="flex-1 bg-[#1A1A1A]">
+                {/* Header */}
+                <LinearGradient
+                    colors={['#8A83DA', '#463699']}
+                    className="px-5 pt-12 pb-4"
+                >
+                    <View className="flex-row items-center justify-between">
+                        <TouchableOpacity onPress={handleClose} className="p-1">
+                            <X size={24} color="#FFFFFF" />
+                        </TouchableOpacity>
+                        <Text className="text-lg font-bold text-white">Update Password</Text>
+                        <View className="w-8" />
+                    </View>
+                </LinearGradient>
 
-                <ScrollView style={styles.content}>
-                    <View style={styles.section}>
-                        <Text style={styles.label}>Current Password</Text>
-                        <View style={styles.inputContainer}>
-                            <Lock size={20} color="#6B7280" style={styles.inputIcon} />
+                <ScrollView className="flex-1 p-5">
+                    {/* Current Password */}
+                    <View className="mb-6">
+                        <Text className="text-base font-semibold text-white mb-3">Current Password</Text>
+                        <View className="bg-[#2A2A2A] rounded-2xl border border-gray-700 flex-row items-center px-4 py-3">
+                            <Lock size={20} color="#6B7280" className="mr-3" />
                             <TextInput
-                                style={styles.input}
+                                className="flex-1 text-white text-base"
                                 value={formData.currentPassword}
                                 onChangeText={(value) => handlePasswordChange('currentPassword', value)}
                                 placeholder="Enter current password"
+                                placeholderTextColor="#6B7280"
                                 secureTextEntry={!showPasswords.current}
                                 autoCapitalize="none"
                             />
                             <TouchableOpacity
                                 onPress={() => togglePasswordVisibility('current')}
-                                style={styles.eyeButton}
+                                className="p-1 ml-2"
                             >
                                 {showPasswords.current ? (
                                     <EyeOff size={20} color="#6B7280" />
@@ -147,21 +155,23 @@ export default function PasswordUpdateModal({ visible, onClose }: PasswordUpdate
                         </View>
                     </View>
 
-                    <View style={styles.section}>
-                        <Text style={styles.label}>New Password</Text>
-                        <View style={styles.inputContainer}>
-                            <Lock size={20} color="#6B7280" style={styles.inputIcon} />
+                    {/* New Password */}
+                    <View className="mb-6">
+                        <Text className="text-base font-semibold text-white mb-3">New Password</Text>
+                        <View className="bg-[#2A2A2A] rounded-2xl border border-gray-700 flex-row items-center px-4 py-3">
+                            <Lock size={20} color="#6B7280" className="mr-3" />
                             <TextInput
-                                style={styles.input}
+                                className="flex-1 text-white text-base"
                                 value={formData.newPassword}
                                 onChangeText={(value) => handlePasswordChange('newPassword', value)}
                                 placeholder="Enter new password"
+                                placeholderTextColor="#6B7280"
                                 secureTextEntry={!showPasswords.new}
                                 autoCapitalize="none"
                             />
                             <TouchableOpacity
                                 onPress={() => togglePasswordVisibility('new')}
-                                style={styles.eyeButton}
+                                className="p-1 ml-2"
                             >
                                 {showPasswords.new ? (
                                     <EyeOff size={20} color="#6B7280" />
@@ -172,18 +182,16 @@ export default function PasswordUpdateModal({ visible, onClose }: PasswordUpdate
                         </View>
 
                         {formData.newPassword && (
-                            <View style={styles.passwordStrength}>
-                                <View style={styles.strengthHeader}>
-                                    <Text style={styles.strengthLabel}>Password Strength</Text>
+                            <View className="bg-[#2A2A2A] rounded-2xl border border-gray-700 p-4 mt-3">
+                                <View className="flex-row items-center justify-between mb-3">
+                                    <Text className="text-sm font-semibold text-white">Password Strength</Text>
                                     <View
-                                        style={[
-                                            styles.strengthIndicator,
-                                            { backgroundColor: getPasswordStrengthColor() }
-                                        ]}
+                                        className="w-3 h-3 rounded-full"
+                                        style={{ backgroundColor: getPasswordStrengthColor() }}
                                     />
                                 </View>
 
-                                <View style={styles.requirementsList}>
+                                <View className="space-y-2">
                                     {[
                                         { text: 'At least 8 characters', check: formData.newPassword.length >= 8 },
                                         { text: 'One lowercase letter', check: /[a-z]/.test(formData.newPassword) },
@@ -191,16 +199,13 @@ export default function PasswordUpdateModal({ visible, onClose }: PasswordUpdate
                                         { text: 'One number', check: /\d/.test(formData.newPassword) },
                                         { text: 'One special character', check: /[!@#$%^&*(),.?":{}|<>]/.test(formData.newPassword) },
                                     ].map((req, index) => (
-                                        <View key={index} style={styles.requirement}>
+                                        <View key={index} className="flex-row items-center">
                                             {req.check ? (
                                                 <CheckCircle size={16} color="#10B981" />
                                             ) : (
                                                 <AlertCircle size={16} color="#EF4444" />
                                             )}
-                                            <Text style={[
-                                                styles.requirementText,
-                                                { color: req.check ? '#10B981' : '#EF4444' }
-                                            ]}>
+                                            <Text className={`text-sm font-medium ml-2 ${req.check ? 'text-green-400' : 'text-red-400'}`}>
                                                 {req.text}
                                             </Text>
                                         </View>
@@ -210,21 +215,23 @@ export default function PasswordUpdateModal({ visible, onClose }: PasswordUpdate
                         )}
                     </View>
 
-                    <View style={styles.section}>
-                        <Text style={styles.label}>Confirm New Password</Text>
-                        <View style={styles.inputContainer}>
-                            <Lock size={20} color="#6B7280" style={styles.inputIcon} />
+                    {/* Confirm Password */}
+                    <View className="mb-6">
+                        <Text className="text-base font-semibold text-white mb-3">Confirm New Password</Text>
+                        <View className="bg-[#2A2A2A] rounded-2xl border border-gray-700 flex-row items-center px-4 py-3">
+                            <Lock size={20} color="#6B7280" className="mr-3" />
                             <TextInput
-                                style={styles.input}
+                                className="flex-1 text-white text-base"
                                 value={formData.confirmPassword}
                                 onChangeText={(value) => handlePasswordChange('confirmPassword', value)}
                                 placeholder="Confirm new password"
+                                placeholderTextColor="#6B7280"
                                 secureTextEntry={!showPasswords.confirm}
                                 autoCapitalize="none"
                             />
                             <TouchableOpacity
                                 onPress={() => togglePasswordVisibility('confirm')}
-                                style={styles.eyeButton}
+                                className="p-1 ml-2"
                             >
                                 {showPasswords.confirm ? (
                                     <EyeOff size={20} color="#6B7280" />
@@ -235,162 +242,42 @@ export default function PasswordUpdateModal({ visible, onClose }: PasswordUpdate
                         </View>
 
                         {formData.confirmPassword && formData.newPassword !== formData.confirmPassword && (
-                            <Text style={styles.errorText}>Passwords do not match</Text>
+                            <Text className="text-red-400 text-sm font-medium mt-2">Passwords do not match</Text>
                         )}
                     </View>
                 </ScrollView>
 
-                <View style={styles.footer}>
-                    <TouchableOpacity
-                        onPress={handleClose}
-                        style={[styles.button, styles.cancelButton]}
-                    >
-                        <Text style={styles.cancelButtonText}>Cancel</Text>
-                    </TouchableOpacity>
+                {/* Footer */}
+                <View className="p-5 border-t border-gray-700">
+                    <View className="flex-row gap-3">
+                        <TouchableOpacity
+                            onPress={handleClose}
+                            className="flex-1 bg-[#2A2A2A] py-3 rounded-2xl items-center border border-gray-700"
+                        >
+                            <Text className="text-base font-semibold text-gray-400">Cancel</Text>
+                        </TouchableOpacity>
 
-                    <TouchableOpacity
-                        onPress={handleSubmit}
-                        style={[styles.button, styles.updateButton]}
-                        disabled={loading || !passwordValidation.isValid}
-                    >
-                        {loading ? (
-                            <ActivityIndicator size="small" color="#FFFFFF" />
-                        ) : (
-                            <Text style={styles.updateButtonText}>Update Password</Text>
-                        )}
-                    </TouchableOpacity>
+                        <TouchableOpacity
+                            onPress={handleSubmit}
+                            disabled={loading || !passwordValidation.isValid}
+                            className="flex-1 rounded-2xl items-center py-3"
+                        >
+                            <LinearGradient
+                                colors={loading || !passwordValidation.isValid ? ['#374151', '#374151'] : ['#8A83DA', '#463699']}
+                                className="w-full py-3 rounded-2xl items-center"
+                            >
+                                {loading ? (
+                                    <ActivityIndicator size="small" color="#FFFFFF" />
+                                ) : (
+                                    <Text className="text-base font-semibold text-white">Update Password</Text>
+                                )}
+                            </LinearGradient>
+                        </TouchableOpacity>
+                    </View>
                 </View>
             </View>
         </Modal>
     );
 }
 
-const styles = StyleSheet.create({
-    container: {
-        flex: 1,
-        backgroundColor: '#FFFFFF',
-    },
-    header: {
-        flexDirection: 'row',
-        alignItems: 'center',
-        justifyContent: 'space-between',
-        paddingHorizontal: 20,
-        paddingVertical: 16,
-        borderBottomWidth: 1,
-        borderBottomColor: '#E5E7EB',
-    },
-    closeButton: {
-        padding: 4,
-    },
-    title: {
-        fontSize: 18,
-        fontWeight: '600',
-        color: '#111827',
-    },
-    placeholder: {
-        width: 32,
-    },
-    content: {
-        flex: 1,
-        padding: 20,
-    },
-    section: {
-        marginBottom: 24,
-    },
-    label: {
-        fontSize: 16,
-        fontWeight: '600',
-        color: '#374151',
-        marginBottom: 8,
-    },
-    inputContainer: {
-        flexDirection: 'row',
-        alignItems: 'center',
-        backgroundColor: '#F9FAFB',
-        borderRadius: 8,
-        paddingHorizontal: 12,
-        paddingVertical: 12,
-        borderWidth: 1,
-        borderColor: '#E5E7EB',
-    },
-    inputIcon: {
-        marginRight: 12,
-    },
-    input: {
-        flex: 1,
-        fontSize: 16,
-        color: '#111827',
-    },
-    eyeButton: {
-        padding: 4,
-    },
-    passwordStrength: {
-        marginTop: 12,
-        padding: 16,
-        backgroundColor: '#F9FAFB',
-        borderRadius: 8,
-    },
-    strengthHeader: {
-        flexDirection: 'row',
-        alignItems: 'center',
-        justifyContent: 'space-between',
-        marginBottom: 12,
-    },
-    strengthLabel: {
-        fontSize: 14,
-        fontWeight: '600',
-        color: '#374151',
-    },
-    strengthIndicator: {
-        width: 12,
-        height: 12,
-        borderRadius: 6,
-    },
-    requirementsList: {
-        gap: 8,
-    },
-    requirement: {
-        flexDirection: 'row',
-        alignItems: 'center',
-        gap: 8,
-    },
-    requirementText: {
-        fontSize: 14,
-        fontWeight: '500',
-    },
-    errorText: {
-        fontSize: 14,
-        color: '#EF4444',
-        marginTop: 8,
-        fontWeight: '500',
-    },
-    footer: {
-        flexDirection: 'row',
-        gap: 12,
-        padding: 20,
-        borderTopWidth: 1,
-        borderTopColor: '#E5E7EB',
-    },
-    button: {
-        flex: 1,
-        paddingVertical: 12,
-        borderRadius: 8,
-        alignItems: 'center',
-    },
-    cancelButton: {
-        backgroundColor: '#F3F4F6',
-    },
-    updateButton: {
-        backgroundColor: '#8B5CF6',
-    },
-    cancelButtonText: {
-        fontSize: 16,
-        fontWeight: '600',
-        color: '#6B7280',
-    },
-    updateButtonText: {
-        fontSize: 16,
-        fontWeight: '600',
-        color: '#FFFFFF',
-    },
-});
+

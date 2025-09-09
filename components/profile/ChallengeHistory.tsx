@@ -106,10 +106,10 @@ export default function ChallengeHistory({ userId }: ChallengeHistoryProps) {
     };
 
     const renderChallengeCard = (challenge: ChallengeHistoryItem) => (
-        <View key={challenge.id} className="bg-white rounded-xl p-4 mb-4 border border-gray-200 shadow-sm">
+        <View key={challenge.id} className="bg-[#2A2A2A] rounded-2xl p-4 mb-4 border border-gray-700">
             <View className="flex-row justify-between items-start mb-2">
                 <View className="flex-1 mr-3">
-                    <Text className="text-base font-semibold text-gray-900 mb-1" numberOfLines={2}>
+                    <Text className="text-base font-semibold text-white mb-1" numberOfLines={2}>
                         {challenge.title}
                     </Text>
                     <View 
@@ -133,21 +133,21 @@ export default function ChallengeHistory({ userId }: ChallengeHistoryProps) {
                 </View>
             </View>
 
-            <Text className="text-sm text-gray-500 leading-5 mb-3" numberOfLines={2}>
+            <Text className="text-sm text-gray-400 leading-5 mb-3" numberOfLines={2}>
                 {challenge.description}
             </Text>
 
             <View className="flex-row justify-between items-center">
                 <View className="flex-row items-center gap-1">
                     <Calendar size={16} color="#6B7280" />
-                    <Text className="text-xs text-gray-500 font-medium">
+                    <Text className="text-xs text-gray-400 font-medium">
                         {formatDate(challenge.completedAt)}
                     </Text>
                 </View>
 
                 <View className="flex-row items-center gap-1">
                     <Users size={16} color="#6B7280" />
-                    <Text className="text-xs text-gray-500 font-medium">
+                    <Text className="text-xs text-gray-400 font-medium">
                         {challenge.totalParticipants} participants
                     </Text>
                 </View>
@@ -156,7 +156,7 @@ export default function ChallengeHistory({ userId }: ChallengeHistoryProps) {
                     <Star size={16} color="#F59E0B" />
                     <Text 
                         className={`text-sm font-bold ${
-                            challenge.creditsEarned > 0 ? 'text-green-500' : 'text-red-500'
+                            challenge.creditsEarned > 0 ? 'text-green-400' : 'text-red-400'
                         }`}
                     >
                         {challenge.creditsEarned > 0 ? '+' : ''}{challenge.creditsEarned}
@@ -168,40 +168,40 @@ export default function ChallengeHistory({ userId }: ChallengeHistoryProps) {
 
     if (loading) {
         return (
-            <View className="flex-1 justify-center items-center p-10">
-                <ActivityIndicator size="large" color="#8B5CF6" />
-                <Text className="text-base text-gray-500 mt-3">Loading challenge history...</Text>
+            <View className="flex-1 justify-center items-center p-10 bg-[#1A1A1A]">
+                <ActivityIndicator size="large" color="#8A83DA" />
+                <Text className="text-base text-gray-400 mt-3">Loading challenge history...</Text>
             </View>
         );
     }
 
     return (
-        <View className="flex-1 bg-white">
-            <View className="flex-row justify-between items-center px-5 py-4 border-b border-gray-200">
-                <Text className="text-xl font-bold text-gray-900">Challenge History</Text>
+        <View className="flex-1 bg-[#1A1A1A]">
+            <View className="flex-row justify-between items-center px-5 py-4 border-b border-gray-700">
+                <Text className="text-xl font-bold text-white">Challenge History</Text>
                 <TouchableOpacity
                     onPress={() => setShowFilters(!showFilters)}
-                    className="p-2 rounded-lg bg-violet-500/10"
+                    className="p-2 rounded-lg bg-[#8A83DA]/20"
                 >
-                    <Filter size={20} color="#8B5CF6" />
+                    <Filter size={20} color="#8A83DA" />
                 </TouchableOpacity>
             </View>
 
-            <View className="flex-row items-center bg-gray-50 rounded-lg px-3 py-2.5 m-5 border border-gray-200">
+            <View className="flex-row items-center bg-[#2A2A2A] rounded-2xl px-4 py-3 m-5 border border-gray-700">
                 <Search size={20} color="#6B7280" />
                 <TextInput
-                    className="flex-1 text-base text-gray-900 ml-2"
+                    className="flex-1 text-base text-white ml-3"
                     value={searchQuery}
                     onChangeText={setSearchQuery}
                     placeholder="Search challenges..."
-                    placeholderTextColor="#9CA3AF"
+                    placeholderTextColor="#6B7280"
                 />
             </View>
 
             {showFilters && (
-                <View className="bg-gray-50 px-5 py-4 border-b border-gray-200">
-                    <View className="mb-3">
-                        <Text className="text-sm font-semibold text-gray-700 mb-2">Sort by:</Text>
+                <View className="bg-[#2A2A2A] px-5 py-4 border-b border-gray-700 mx-5 rounded-2xl mb-4">
+                    <View className="mb-4">
+                        <Text className="text-sm font-semibold text-white mb-3">Sort by:</Text>
                         <View className="flex-row gap-2">
                             {[
                                 { key: 'date', label: 'Date' },
@@ -211,14 +211,14 @@ export default function ChallengeHistory({ userId }: ChallengeHistoryProps) {
                                 <TouchableOpacity
                                     key={option.key}
                                     onPress={() => setSortBy(option.key as SortOption)}
-                                    className={`px-3 py-1.5 rounded-2xl border ${
+                                    className={`px-3 py-1.5 rounded-xl border ${
                                         sortBy === option.key 
-                                            ? 'bg-violet-500 border-violet-500' 
-                                            : 'bg-white border-gray-200'
+                                            ? 'bg-[#8A83DA] border-[#8A83DA]' 
+                                            : 'bg-[#1A1A1A] border-gray-600'
                                     }`}
                                 >
                                     <Text className={`text-sm font-medium ${
-                                        sortBy === option.key ? 'text-white' : 'text-gray-500'
+                                        sortBy === option.key ? 'text-white' : 'text-gray-400'
                                     }`}>
                                         {option.label}
                                     </Text>
@@ -228,7 +228,7 @@ export default function ChallengeHistory({ userId }: ChallengeHistoryProps) {
                     </View>
 
                     <View>
-                        <Text className="text-sm font-semibold text-gray-700 mb-2">Filter:</Text>
+                        <Text className="text-sm font-semibold text-white mb-3">Filter:</Text>
                         <View className="flex-row gap-2">
                             {[
                                 { key: 'all', label: 'All' },
@@ -238,14 +238,14 @@ export default function ChallengeHistory({ userId }: ChallengeHistoryProps) {
                                 <TouchableOpacity
                                     key={option.key}
                                     onPress={() => setFilterBy(option.key as FilterOption)}
-                                    className={`px-3 py-1.5 rounded-2xl border ${
+                                    className={`px-3 py-1.5 rounded-xl border ${
                                         filterBy === option.key 
-                                            ? 'bg-violet-500 border-violet-500' 
-                                            : 'bg-white border-gray-200'
+                                            ? 'bg-[#8A83DA] border-[#8A83DA]' 
+                                            : 'bg-[#1A1A1A] border-gray-600'
                                     }`}
                                 >
                                     <Text className={`text-sm font-medium ${
-                                        filterBy === option.key ? 'text-white' : 'text-gray-500'
+                                        filterBy === option.key ? 'text-white' : 'text-gray-400'
                                     }`}>
                                         {option.label}
                                     </Text>
@@ -258,9 +258,9 @@ export default function ChallengeHistory({ userId }: ChallengeHistoryProps) {
 
             <ScrollView className="flex-1 p-5" showsVerticalScrollIndicator={false}>
                 {filteredChallenges.length === 0 ? (
-                    <View className="items-center py-15">
-                        <Trophy size={48} color="#D1D5DB" />
-                        <Text className="text-lg font-semibold text-gray-500 mt-4 mb-2">No Challenges Found</Text>
+                    <View className="items-center py-20">
+                        <Trophy size={48} color="#6B7280" />
+                        <Text className="text-lg font-semibold text-white mt-4 mb-2">No Challenges Found</Text>
                         <Text className="text-sm text-gray-400 text-center leading-5">
                             {searchQuery.trim()
                                 ? 'Try adjusting your search or filters'

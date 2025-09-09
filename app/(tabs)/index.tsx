@@ -1,8 +1,8 @@
 import React, { useState, useEffect, useRef } from 'react';
-import { View, Text, ScrollView, RefreshControl, Alert, TouchableOpacity, Image } from 'react-native';
+import { View, Text, ScrollView, RefreshControl, Alert, Image } from 'react-native';
 import { LinearGradient } from 'expo-linear-gradient';
 import { SafeAreaView } from 'react-native-safe-area-context';
-import { Plus, Calendar, Zap, Bell, User as UserIcon, TrendingUp, Target, CheckCircle2 } from 'lucide-react-native';
+import { User as UserIcon } from 'lucide-react-native';
 import { CHALLENGE_CONFIG } from '@/lib/config';
 
 import CreditDisplay from '@/components/ui/CreditDisplay';

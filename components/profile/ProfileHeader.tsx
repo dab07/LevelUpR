@@ -1,7 +1,7 @@
 import React, { useState } from 'react';
 import { View, Text, TouchableOpacity, Image, Alert } from 'react-native';
 import { LinearGradient } from 'expo-linear-gradient';
-import { Camera, CreditCard as Edit3, Star, Trophy } from 'lucide-react-native';
+import { Camera, Star, Trophy } from 'lucide-react-native';
 import { profileService } from '@/services/profileService';
 import CreditDisplay from '@/components/ui/CreditDisplay';
 import {User} from '@/types'
@@ -53,11 +53,11 @@ export default function ProfileHeader({ profile, onProfileUpdate }: ProfileHeade
                         ) : (
                             <View className="w-20 h-20 rounded-full bg-white/20 justify-center items-center border-3 border-white">
                                 <Text className="text-[32px] font-bold text-white">
-                                    {profile.displayName}
+                                    {profile.displayName?.charAt(0) || 'U'}
                                 </Text>
                             </View>
                         )}
-                        <View className="absolute bottom-0 right-0 w-7 h-7 rounded-full bg-primary-300 justify-center items-center border-2 border-white">
+                        <View className="absolute bottom-0 right-0 w-7 h-7 rounded-full bg-[#8A83DA] justify-center items-center border-2 border-white">
                             <Camera size={16} color="#FFFFFF" />
                         </View>
                     </TouchableOpacity>

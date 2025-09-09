@@ -9,7 +9,3 @@
   from = "/*"
   to = "/index.html"
   status = 200
-
-[dev]
-  command = "pnpm start"
-  port = 8081

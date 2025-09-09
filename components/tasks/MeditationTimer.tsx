@@ -138,68 +138,45 @@ export default function MeditationTimer({ onComplete }: MeditationTimerProps) {
     return (
         <>
             <View className="mt-3">
-                <View className="flex-row justify-between items-center mb-5">
-                    <Text className="text-base font-semibold text-white">
-                        Meditate for {duration}min
-                    </Text>
-                    <TouchableOpacity
-                        onPress={() => setShowSettings(true)}
-                        className="p-1"
-                        disabled={isRunning}
-                    >
-                        <Settings size={20} color={isRunning ? '#9CA3AF' : '#6B7280'} />
-                    </TouchableOpacity>
-                </View>
-
-                <View className="items-center mb-6">
-                    <View className="w-[120px] h-[120px] relative items-center justify-center">
-                        <LinearGradient
-                            colors={['#8A83DA', '#463699']}
-                            className="absolute w-[120px] h-[120px] rounded-full border-4 border-transparent"
-                            style={{
-                                borderTopColor: '#8A83DA',
-                                transform: [{ rotate: `${(getProgressPercentage() * 3.6) - 90}deg` }]
-                            }}
-                        />
-                        <View className="w-[100px] h-[100px] rounded-full bg-[#333333] items-center justify-center border-2 border-gray-600">
-                            <Text className="text-lg font-bold text-white">{formatTime(timeLeft)}</Text>
-                            <Text className="text-xs text-gray-400 mt-0.5">
-                                {isRunning ? 'Meditating...' : timeLeft === duration * 60 ? 'Ready' : 'Paused'}
+                <View className="flex-row justify-between items-center">
+                    <View className="flex-row items-center flex-1">
+                        <View className="flex-row items-center">
+                            {!isRunning ? (
+                                <Play size={16} color="#8A83DA" />
+                            ) : (
+                                <Pause size={16} color="#F59E0B" />
+                            )}
+                            <Text className="text-sm font-medium text-gray-700 ml-2">
+                                {formatTime(timeLeft)} / {duration}min
                             </Text>
                         </View>
                     </View>
-                </View>
-
-                <View className="flex-row justify-center gap-3">
-                    {!isRunning ? (
+                    <View className="flex-row items-center gap-2">
+                        {!isRunning ? (
+                            <TouchableOpacity
+                                onPress={handleStart}
+                                className="px-3 py-1 rounded-lg bg-emerald-500"
+                            >
+                                <Text className="text-white text-xs font-medium">
+                                    {timeLeft === duration * 60 ? 'Start' : 'Resume'}
+                                </Text>
+                            </TouchableOpacity>
+                        ) : (
+                            <TouchableOpacity
+                                onPress={handlePause}
+                                className="px-3 py-1 rounded-lg bg-amber-500"
+                            >
+                                <Text className="text-white text-xs font-medium">Pause</Text>
+                            </TouchableOpacity>
+                        )}
                         <TouchableOpacity
-                            onPress={handleStart}
-                            className="flex-row items-center px-5 py-2.5 rounded-full bg-emerald-500"
+                            onPress={() => setShowSettings(true)}
+                            className="p-1"
+                            disabled={isRunning}
                         >
-                            <Play size={24} color="#FFFFFF" />
-                            <Text className="text-white font-semibold ml-2">
-                                {timeLeft === duration * 60 ? 'Start' : 'Resume'}
-                            </Text>
+                            <Settings size={16} color={isRunning ? '#9CA3AF' : '#6B7280'} />
                         </TouchableOpacity>
-                    ) : (
-                        <TouchableOpacity
-                            onPress={handlePause}
-                            className="flex-row items-center px-5 py-2.5 rounded-full bg-amber-500"
-                        >
-                            <Pause size={24} color="#FFFFFF" />
-                            <Text className="text-white font-semibold ml-2">Pause</Text>
-                        </TouchableOpacity>
-                    )}
-
-                    {timeLeft !== duration * 60 && (
-                        <TouchableOpacity
-                            onPress={handleStop}
-                            className="flex-row items-center px-5 py-2.5 rounded-full border border-red-500"
-                        >
-                            <Square size={20} color="#EF4444" />
-                            <Text className="text-red-500 font-semibold ml-1.5">Stop</Text>
-                        </TouchableOpacity>
-                    )}
+                    </View>
                 </View>
             </View>
 

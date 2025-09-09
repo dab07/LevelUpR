@@ -1,8 +1,8 @@
 import React, { useState, useEffect, useRef } from 'react';
-import { View, Text, ScrollView, RefreshControl, Alert, TouchableOpacity } from 'react-native';
+import { View, Text, ScrollView, RefreshControl, Alert, TouchableOpacity, Image } from 'react-native';
 import { LinearGradient } from 'expo-linear-gradient';
 import { SafeAreaView } from 'react-native-safe-area-context';
-import { Plus, Calendar, Zap, Bell, User, TrendingUp, Target, CheckCircle2 } from 'lucide-react-native';
+import { Plus, Calendar, Zap, Bell, User as UserIcon, TrendingUp, Target, CheckCircle2 } from 'lucide-react-native';
 import { CHALLENGE_CONFIG } from '@/lib/config';
 
 import CreditDisplay from '@/components/ui/CreditDisplay';
@@ -17,7 +17,8 @@ import { creditService } from '@/services/creditService';
 import { stepService } from '@/services/stepService';
 import { meditationService } from '@/services/meditationService';
 import { supabase } from '@/lib/supabase';
-import { Task, StepData } from '@/types';
+import { profileService } from '@/services/profileService';
+import { Task, StepData, User } from '@/types';
 
 export default function HomeScreen() {
   const [tasks, setTasks] = useState<Task[]>([]);
@@ -27,6 +28,7 @@ export default function HomeScreen() {
   const [loading, setLoading] = useState(true);
   const [refreshing, setRefreshing] = useState(false);
   const [user, setUser] = useState<any>(null);
+  const [userData, setUserData] = useState<User | null>(null);
   const [dailyLoginCompleted, setDailyLoginCompleted] = useState(false);
   const [meditationCompleted, setMeditationCompleted] = useState(false);
   const [showCreateTask, setShowCreateTask] = useState(false);
@@ -92,15 +94,17 @@ export default function HomeScreen() {
 
   const loadUserData = async (userId: string) => {
     try {
-      const [userCredits, userCreatedTasks, userProfile] = await Promise.all([
+      const [userCredits, userCreatedTasks, userProfile, fullUserProfile] = await Promise.all([
         creditService.getUserCredits(userId),
         taskService.getUserCreatedTasks(userId),
-        getUserProfile(userId)
+        getUserProfile(userId),
+        profileService.getUserProfile(userId)
       ]);
 
       setCredits(userCredits);
       setTasks(userCreatedTasks);
       setStreak(userProfile?.daily_login_streak || 0);
+      setUserData(fullUserProfile);
     } catch (error) {
       console.error('Error loading user data:', error);
     }
@@ -332,18 +336,23 @@ export default function HomeScreen() {
         <View className="px-5 pt-4 pb-4">
           <View className="flex-row items-center justify-between mb-4">
             <View className="flex-row items-center">
-              <View className="w-12 h-12 rounded-full bg-[#8A83DA] items-center justify-center mr-3">
-                <User size={24} color="#FFFFFF" />
+              <View className="w-12 h-12 rounded-full bg-[#8A83DA] items-center justify-center mr-3 overflow-hidden">
+                {userData?.avatarUrl ? (
+                  <Image
+                    source={{ uri: userData.avatarUrl }}
+                    className="w-12 h-12 rounded-full"
+                  />
+                ) : (
+                  <UserIcon size={24} color="#FFFFFF" />
+                )}
               </View>
               <View>
-                <Text className="text-white font-bold text-lg">Derek Doyle</Text>
-                <Text className="text-gray-400 text-sm">Product Manager</Text>
+                <Text className="text-white font-bold text-lg">
+                  {userData?.displayName || 'User'}
+                </Text>
+                <Text className="text-gray-400 text-sm">Level {userData?.level || 1}</Text>
               </View>
             </View>
-            <TouchableOpacity className="relative">
-              <Bell size={24} color="#8A83DA" />
-              <View className="absolute -top-1 -right-1 w-3 h-3 bg-red-500 rounded-full" />
-            </TouchableOpacity>
           </View>
         </View>
 
@@ -351,7 +360,7 @@ export default function HomeScreen() {
         <View className="px-5 mb-4">
           <View className="bg-[#2A2A2A] rounded-2xl p-4 border border-gray-700">
             <View className="flex-row items-center justify-between">
-              <Text className="text-white font-semibold text-lg">Your Aura Points</Text>
+              <Text className="text-white font-semibold text-lg">Aura Points</Text>
               <CreditDisplay credits={credits} size="large" />
             </View>
           </View>
@@ -364,7 +373,7 @@ export default function HomeScreen() {
             className="rounded-2xl p-4"
           >
             <View className="flex-row items-center justify-between mb-3">
-              <Text className="text-white font-bold text-lg">Today's Tasks</Text>
+              <Text className="text-white font-bold text-lg">Today's Mission</Text>
             </View>
 
             {/* Daily Login Task */}
@@ -381,6 +390,7 @@ export default function HomeScreen() {
               description={`Walk ${stepData.goal.toLocaleString()} steps today`}
               isCompleted={stepService.isGoalReached(stepData)}
               onClaim={handleStepGoalComplete}
+              errorMessage={pedometerError}
             >
               <StepCounter
                 stepData={stepData}
@@ -405,7 +415,7 @@ export default function HomeScreen() {
         <View className="px-5 mb-6">
           <View className="bg-[#2A2A2A] rounded-2xl p-4 border border-gray-700">
             <View className="flex-row items-center justify-between mb-3">
-              <Text className="text-white font-bold text-lg">Extra Tasks</Text>
+              <Text className="text-white font-bold text-lg">Custom Goals</Text>
               <GradientButton
                 title="Add Task"
                 onPress={handleCreateTask}
@@ -416,9 +426,8 @@ export default function HomeScreen() {
 
             {totalExtraTasks === 0 ? (
               <View className="items-center py-6">
-                <Plus size={32} color="#6B7280" />
-                <Text className="text-gray-400 mt-2 text-center">No extra tasks yet</Text>
-                <Text className="text-gray-500 text-sm mt-1">Create your first task!</Text>
+                <Text className="text-gray-400 mt-2 text-center">No custom goals yet</Text>
+                <Text className="text-gray-500 text-sm mt-1">Create your first goal, LFG!</Text>
               </View>
             ) : (
               <View className="space-y-2">

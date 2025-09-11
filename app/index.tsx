@@ -12,8 +12,17 @@ export default function RootIndex() {
 
   useEffect(() => {
     checkUser();
+    checkMailConfirmation()
   }, []);
 
+  const checkMailConfirmation = async () => {
+    const { data: { user } } = await supabase.auth.getUser();
+    if (user && !user.email_confirmed_at) {
+      await supabase.auth.signOut();
+      setUser(null);
+      setLoading(false);
+    }
+  };
   const checkUser = async () => {
     try {
       const { data: { user } } = await supabase.auth.getUser();

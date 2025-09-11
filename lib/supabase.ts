@@ -15,7 +15,7 @@ export const supabase = createClient(supabaseUrl, supabaseAnonKey, {
     storage: Platform.OS !== 'web' ? AsyncStorage : undefined,
     autoRefreshToken: true,
     persistSession: true,
-    detectSessionInUrl: false,
+    detectSessionInUrl: true, // Enable URL session detection for email confirmations
   },
 });
 

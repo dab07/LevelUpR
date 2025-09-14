@@ -131,7 +131,7 @@ export default function ProfileScreen() {
                             </View>
                             <View className="flex-1 items-center">
                                 <Text className="text-2xl font-bold text-white">{userData?.level || 1}</Text>
-                                <Text className="text-gray-400 text-xs">Experience Pts</Text>
+                                <Text className="text-gray-400 text-xs">Experience Level</Text>
                             </View>
                             <View className="flex-1 items-center">
                                 <Text className="text-2xl font-bold text-white">{userData?.xp || 0}</Text>
@@ -142,7 +142,7 @@ export default function ProfileScreen() {
                         {/* Progress Bar */}
                         <View className="mt-4">
                             <View className="flex-row justify-between items-center mb-2">
-                                <Text className="text-gray-400 text-sm">Progress to Level {(userData?.level || 1) + 1}</Text>
+                                <Text className="text-gray-400 text-sm">Level {(userData?.level || 1) + 1}</Text>
                                 <Text className="text-white text-sm font-medium">{(userData?.xp || 0) % 100}/100 XP</Text>
                             </View>
                             <View className="h-2 bg-gray-700 rounded-full overflow-hidden">

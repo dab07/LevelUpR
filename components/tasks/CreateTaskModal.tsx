@@ -1,4 +1,4 @@
-import React, { useState, useRef } from 'react';
+import React, { useState } from 'react';
 import {
     View,
     Text,
@@ -8,9 +8,8 @@ import {
     ScrollView,
     Alert,
     ActivityIndicator,
-    Dimensions,
 } from 'react-native';
-import { X, Plus, Calendar, Star, Tag, ChevronRight, Rows } from 'lucide-react-native';
+import { X, Plus, Calendar, Star, Tag, ChevronRight } from 'lucide-react-native';
 import { taskService } from '@/services/taskService';
 import { Task } from '@/types';
 
@@ -45,6 +44,7 @@ export default function CreateTaskModal({
     });
     const [showTimeDropdown, setShowTimeDropdown] = useState(false);
     const [showDatePicker, setShowDatePicker] = useState(false);
+    const [showMonthPicker, setShowMonthPicker] = useState(false);
     const [showYearPicker, setShowYearPicker] = useState(false);
     const [loading, setLoading] = useState(false);
 
@@ -117,13 +117,9 @@ export default function CreateTaskModal({
         });
         setShowTimeDropdown(false);
         setShowDatePicker(false);
+        setShowMonthPicker(false);
         setShowYearPicker(false);
         onClose();
-    };
-
-    const getCategoryColor = (category: string) => {
-        const categoryData = CATEGORIES.find(c => c.key === category);
-        return categoryData?.color || '#6B7280';
     };
 
     const formatDate = (date: Date) => {
@@ -144,20 +140,17 @@ export default function CreateTaskModal({
         }
     };
 
+    const formatTimeString = () => {
+        return `${formData.dueHour.toString().padStart(2, '0')}:${formData.dueMinute.toString().padStart(2, '0')}`;
+    };
+
     const getCalendarData = () => {
         const year = formData.dueDate.getFullYear();
         const month = formData.dueDate.getMonth();
-
-        // First day of the month
         const firstDay = new Date(year, month, 1);
-        // Last day of the month
-        const lastDay = new Date(year, month + 1, 0);
-
-        // Start from the first day of the week containing the first day of the month
         const startDate = new Date(firstDay);
         startDate.setDate(startDate.getDate() - firstDay.getDay());
 
-        // Generate 42 days (6 weeks) to fill the calendar grid
         const days = [];
         for (let i = 0; i < 42; i++) {
             const date = new Date(startDate);
@@ -183,75 +176,6 @@ export default function CreateTaskModal({
         setFormData(prev => ({ ...prev, dueDate: newDate }));
     };
 
-    const navigateYear = (direction: 'prev' | 'next') => {
-        const newDate = new Date(formData.dueDate);
-        if (direction === 'prev') {
-            newDate.setFullYear(newDate.getFullYear() - 1);
-        } else {
-            newDate.setFullYear(newDate.getFullYear() + 1);
-        }
-        setFormData(prev => ({ ...prev, dueDate: newDate }));
-    };
-
-    const getYearRange = () => {
-        const currentYear = new Date().getFullYear();
-        const years = [];
-        for (let i = currentYear; i <= currentYear + 10; i++) {
-            years.push(i);
-        }
-        return years;
-    };
-
-    const selectYear = (year: number) => {
-        const newDate = new Date(formData.dueDate);
-        newDate.setFullYear(year);
-        setFormData(prev => ({ ...prev, dueDate: newDate }));
-        setShowYearPicker(false);
-    };
-
-    const getHourOptions = () => {
-        const hours = [];
-        for (let i = 0; i < 24; i++) {
-            hours.push(i);
-        }
-        return hours;
-    };
-
-    const getMinuteOptions = () => {
-        const minutes = [];
-        for (let i = 0; i < 60; i++) {
-            minutes.push(i);
-        }
-        return minutes;
-    };
-
-    const formatTimeString = () => {
-        return `${formData.dueHour.toString().padStart(2, '0')}:${formData.dueMinute.toString().padStart(2, '0')}`;
-    };
-
-    const getTimeOptions = () => {
-        const times = [];
-        for (let hour = 0; hour < 24; hour++) {
-            for (let minute = 0; minute < 60; minute += 15) { // 15-minute intervals
-                times.push({
-                    hour,
-                    minute,
-                    display: `${hour.toString().padStart(2, '0')}:${minute.toString().padStart(2, '0')}`
-                });
-            }
-        }
-        return times;
-    };
-
-    const handleTimeSelect = (hour: number, minute: number) => {
-        setFormData(prev => ({
-            ...prev,
-            dueHour: hour,
-            dueMinute: minute
-        }));
-        setShowTimeDropdown(false);
-    };
-
     const isDateDisabled = (date: Date) => {
         const today = new Date();
         today.setHours(0, 0, 0, 0);
@@ -271,6 +195,15 @@ export default function CreateTaskModal({
         setShowDatePicker(false);
     };
 
+    const getYearRange = () => {
+        const currentYear = new Date().getFullYear();
+        const years = [];
+        for (let i = currentYear; i <= currentYear + 10; i++) {
+            years.push(i);
+        }
+        return years;
+    };
+
     return (
         <Modal
             visible={visible}
@@ -278,63 +211,91 @@ export default function CreateTaskModal({
             presentationStyle="pageSheet"
             onRequestClose={handleClose}
         >
-            <View className="flex-1 bg-[#1A1A1A]">
-                <View className="flex-row items-center justify-between px-5 py-4 border-b border-gray-700">
-                    <TouchableOpacity onPress={handleClose} className="p-1">
-                        <X size={24} color="#8A83DA" />
-                    </TouchableOpacity>
-                    <Text className="text-lg font-semibold text-white">Create New Task</Text>
-                    <View className="w-8" />
+            <View className="flex-1 bg-[#0F0F0F]">
+                {/* Modern Header with Gradient */}
+                <View className="bg-gradient-to-r from-[#8A83DA] to-[#6366F1] px-6 pt-14 pb-6 rounded-b-3xl shadow-2xl">
+                    <View className="flex-row items-center justify-between">
+                        <TouchableOpacity 
+                            onPress={handleClose} 
+                            className="w-10 h-10 bg-white/20 rounded-full items-center justify-center backdrop-blur-sm"
+                        >
+                            <X size={20} color="#FFFFFF" />
+                        </TouchableOpacity>
+                        <View className="items-center">
+                            <Text className="text-xl font-bold text-white">Create Task</Text>
+                            <Text className="text-sm text-white/80 mt-1">Build your daily momentum</Text>
+                        </View>
+                        <View className="w-10" />
+                    </View>
                 </View>
 
-                <ScrollView className="flex-1 p-5" showsVerticalScrollIndicator={false}>
-                    <View className="mb-6">
-                        <Text className="text-base font-semibold text-white mb-2">Task Title *</Text>
-                        <TextInput
-                            className="border border-gray-600 rounded-lg px-3 py-2.5 text-base text-white bg-[#2A2A2A]"
-                            value={formData.title}
-                            onChangeText={(value) => setFormData(prev => ({ ...prev, title: value }))}
-                            placeholder="e.g., Read for 30 minutes"
-                            placeholderTextColor="#6B7280"
-                            maxLength={200}
-                            autoFocus
-                        />
+                <ScrollView className="flex-1 px-6 py-6" showsVerticalScrollIndicator={false}>
+                    {/* Task Title Section */}
+                    <View className="mb-8">
+                        <Text className="text-lg font-bold text-white mb-3 flex-row items-center">
+                            ✨ Task Title
+                        </Text>
+                        <View className="bg-[#1A1A1A] rounded-2xl border border-gray-700/50 shadow-lg">
+                            <TextInput
+                                className="px-5 py-4 text-lg text-white bg-transparent rounded-2xl"
+                                value={formData.title}
+                                onChangeText={(value) => setFormData(prev => ({ ...prev, title: value }))}
+                                placeholder="What do you want to accomplish?"
+                                placeholderTextColor="#6B7280"
+                                maxLength={200}
+                                autoFocus
+                            />
+                        </View>
                     </View>
 
-                    <View className="mb-6">
-                        <Text className="text-base font-semibold text-white mb-2">Description (Optional)</Text>
-                        <TextInput
-                            className="border border-gray-600 rounded-lg px-3 py-2.5 text-base text-white bg-[#2A2A2A] h-20"
-                            style={{ textAlignVertical: 'top' }}
-                            value={formData.description}
-                            onChangeText={(value) => setFormData(prev => ({ ...prev, description: value }))}
-                            placeholder="Add any additional details..."
-                            placeholderTextColor="#6B7280"
-                            multiline
-                            numberOfLines={3}
-                            maxLength={1000}
-                        />
+                    {/* Description Section */}
+                    <View className="mb-8">
+                        <Text className="text-lg font-bold text-white mb-3">
+                            📝 Description <Text className="text-sm font-normal text-gray-400">(Optional)</Text>
+                        </Text>
+                        <View className="bg-[#1A1A1A] rounded-2xl border border-gray-700/50 shadow-lg">
+                            <TextInput
+                                className="px-5 py-4 text-base text-white bg-transparent rounded-2xl min-h-[100px]"
+                                style={{ textAlignVertical: 'top' }}
+                                value={formData.description}
+                                onChangeText={(value) => setFormData(prev => ({ ...prev, description: value }))}
+                                placeholder="Add context, motivation, or specific details..."
+                                placeholderTextColor="#6B7280"
+                                multiline
+                                numberOfLines={4}
+                                maxLength={1000}
+                            />
+                        </View>
                     </View>
 
-                    <View className="mb-6">
-                        <Text className="text-base font-semibold text-white mb-2">Category</Text>
-                        <ScrollView horizontal showsHorizontalScrollIndicator={false} className="-mx-1">
+                    {/* Category Section */}
+                    <View className="mb-8">
+                        <Text className="text-lg font-bold text-white mb-4">
+                            🏷️ Category
+                        </Text>
+                        <ScrollView horizontal showsHorizontalScrollIndicator={false} className="flex-row gap-3">
                             {CATEGORIES.map((category) => (
                                 <TouchableOpacity
                                     key={category.key}
                                     onPress={() => setFormData(prev => ({ ...prev, category: category.key }))}
-                                    className="flex-row items-center px-3 py-2 rounded-full border-2 mx-1"
+                                    className={`flex-row items-center px-5 py-3 rounded-2xl border-2 shadow-lg ${
+                                        formData.category === category.key 
+                                            ? 'bg-gradient-to-r from-opacity-90 to-opacity-80 border-white/30' 
+                                            : 'bg-[#1A1A1A] border-gray-700/50'
+                                    }`}
                                     style={{
-                                        borderColor: category.color,
-                                        backgroundColor: formData.category === category.key ? category.color : 'transparent'
+                                        backgroundColor: formData.category === category.key ? category.color : undefined,
+                                        borderColor: formData.category === category.key ? 'rgba(255,255,255,0.3)' : 'rgba(107,114,128,0.5)'
                                     }}
                                 >
                                     <Tag
-                                        size={16}
+                                        size={18}
                                         color={formData.category === category.key ? '#FFFFFF' : category.color}
                                     />
                                     <Text 
-                                        className="text-sm font-medium ml-1.5"
+                                        className={`text-sm font-semibold ml-2 ${
+                                            formData.category === category.key ? 'text-white' : 'text-gray-300'
+                                        }`}
                                         style={{ color: formData.category === category.key ? '#FFFFFF' : category.color }}
                                     >
                                         {category.label}
@@ -344,169 +305,308 @@ export default function CreateTaskModal({
                         </ScrollView>
                     </View>
 
-                    <View className="mb-6">
-                        <Text className="text-base font-semibold text-white mb-2">Due Date & Time</Text>
+                    {/* Due Date & Time Section */}
+                    <View className="mb-8">
+                        <Text className="text-lg font-bold text-white mb-4">
+                            ⏰ Due Date & Time
+                        </Text>
 
-                        {/* Date and Time Row */}
-                        <View className="flex-row gap-3 mb-2">
-                            {/* Date Selector */}
-                            <TouchableOpacity
-                                className="flex-2 flex-row items-center bg-[#2A2A2A] rounded-lg px-3 py-3 border border-gray-600"
-                                onPress={() => setShowDatePicker(!showDatePicker)}
-                            >
-                                <Calendar size={20} color="#8A83DA" />
-                                <Text className="flex-1 text-base font-semibold text-white ml-2">{formatDate(formData.dueDate)}</Text>
-                                <ChevronRight size={20} color="#6B7280" />
-                            </TouchableOpacity>
-
-                            {/* Time Dropdown Button */}
-                            <TouchableOpacity
-                                className="flex-1 flex-row items-center justify-between bg-[#8A83DA] rounded-lg px-3 py-3"
-                                onPress={() => setShowTimeDropdown(!showTimeDropdown)}
-                            >
-                                <Text className="text-sm font-semibold text-white">
-                                    {formatTimeString()}
-                                </Text>
-                                <ChevronRight size={20} color="#FFFFFF" />
-                            </TouchableOpacity>
+                        {/* Quick Date Presets */}
+                        <View className="mb-4">
+                            <Text className="text-sm font-semibold text-gray-300 mb-3">Quick Select</Text>
+                            <ScrollView horizontal showsHorizontalScrollIndicator={false} className="flex-row gap-3">
+                                {[
+                                    { label: 'Today', hours: 0, emoji: '📅' },
+                                    { label: 'Tomorrow', hours: 24, emoji: '🌅' },
+                                    { label: 'This Weekend', hours: 24 * (6 - new Date().getDay()), emoji: '🎯' },
+                                    { label: 'Next Week', hours: 24 * 7, emoji: '📆' },
+                                ].map((preset) => {
+                                    const presetDate = new Date(Date.now() + preset.hours * 60 * 60 * 1000);
+                                    const isSelected = presetDate.toDateString() === formData.dueDate.toDateString();
+                                    
+                                    return (
+                                        <TouchableOpacity
+                                            key={preset.label}
+                                            onPress={() => {
+                                                const newDate = new Date(Date.now() + preset.hours * 60 * 60 * 1000);
+                                                setFormData(prev => ({ ...prev, dueDate: newDate }));
+                                            }}
+                                            className={`px-4 py-3 rounded-2xl border-2 shadow-lg ${
+                                                isSelected 
+                                                    ? 'bg-gradient-to-r from-[#8A83DA] to-[#6366F1] border-white/30' 
+                                                    : 'bg-[#1A1A1A] border-gray-700/50'
+                                            }`}
+                                        >
+                                            <Text className={`text-sm font-semibold ${isSelected ? 'text-white' : 'text-gray-300'}`}>
+                                                {preset.emoji} {preset.label}
+                                            </Text>
+                                        </TouchableOpacity>
+                                    );
+                                })}
+                            </ScrollView>
                         </View>
 
-                        {/* Time Dropdown */}
-                        {showTimeDropdown && (
-                            <View className="bg-[#2A2A2A] rounded-lg border border-gray-600 mb-3">
-                                <View className="p-4">
-                                    <Text className="text-sm font-semibold text-white mb-2">End time:</Text>
-                                    <View className="relative mb-3">
-                                        <TextInput
-                                            className="bg-[#333333] border border-gray-600 rounded-lg px-3 py-2.5 text-base text-white text-center font-semibold"
-                                            value={formatTimeString()}
-                                            onChangeText={(text) => {
-                                                const [hours, minutes] = text.split(':');
-                                                const hour = parseInt(hours) || 0;
-                                                const minute = parseInt(minutes) || 0;
-                                                if (hour >= 0 && hour <= 23 && minute >= 0 && minute <= 59) {
+                        {/* Current Selection Display */}
+                        <View className="bg-[#1A1A1A] rounded-2xl border border-gray-700/50 shadow-lg p-5 mb-4">
+                            <View className="flex-row items-center justify-between">
+                                <View className="flex-1">
+                                    <Text className="text-sm text-gray-400 mb-1">Selected Date & Time</Text>
+                                    <Text className="text-lg font-bold text-white">
+                                        {formatDate(formData.dueDate)} at {formatTimeString()}
+                                    </Text>
+                                </View>
+                                <TouchableOpacity
+                                    onPress={() => setShowDatePicker(!showDatePicker)}
+                                    className="w-12 h-12 bg-[#8A83DA]/20 rounded-full items-center justify-center"
+                                >
+                                    <Calendar size={20} color="#8A83DA" />
+                                </TouchableOpacity>
+                            </View>
+                        </View>
+
+                        {/* Time Quick Presets */}
+                        <View className="mb-4">
+                            <Text className="text-sm font-semibold text-gray-300 mb-3">Time Presets</Text>
+                            <View className="flex-row flex-wrap gap-2">
+                                {[
+                                    { label: '9 AM', hour: 9, minute: 0 },
+                                    { label: '12 PM', hour: 12, minute: 0 },
+                                    { label: '3 PM', hour: 15, minute: 0 },
+                                    { label: '6 PM', hour: 18, minute: 0 },
+                                    { label: '9 PM', hour: 21, minute: 0 },
+                                    { label: 'Custom', hour: -1, minute: -1 },
+                                ].map((timePreset) => {
+                                    const isSelected = timePreset.hour === formData.dueHour && timePreset.minute === formData.dueMinute;
+                                    const isCustom = timePreset.hour === -1;
+                                    
+                                    return (
+                                        <TouchableOpacity
+                                            key={timePreset.label}
+                                            onPress={() => {
+                                                if (isCustom) {
+                                                    setShowTimeDropdown(true);
+                                                } else {
                                                     setFormData(prev => ({
                                                         ...prev,
-                                                        dueHour: hour,
-                                                        dueMinute: minute
+                                                        dueHour: timePreset.hour,
+                                                        dueMinute: timePreset.minute
                                                     }));
                                                 }
                                             }}
-                                            placeholder="00:00"
-                                            placeholderTextColor="#6B7280"
-                                            maxLength={5}
-                                        />
+                                            className={`px-4 py-2 rounded-xl border ${
+                                                isSelected && !isCustom
+                                                    ? 'bg-[#8A83DA] border-[#8A83DA] shadow-lg' 
+                                                    : 'bg-[#1A1A1A] border-gray-700/50'
+                                            }`}
+                                        >
+                                            <Text className={`text-sm font-medium ${
+                                                isSelected && !isCustom ? 'text-white' : 'text-gray-300'
+                                            }`}>
+                                                {timePreset.label}
+                                            </Text>
+                                        </TouchableOpacity>
+                                    );
+                                })}
+                            </View>
+                        </View>
+
+                        {/* Custom Time Input */}
+                        {showTimeDropdown && (
+                            <View className="bg-[#1A1A1A] rounded-2xl border border-gray-700/50 mb-4 shadow-xl">
+                                <View className="p-5">
+                                    <Text className="text-base font-bold text-white mb-4 text-center">🕐 Set Custom Time</Text>
+                                    <View className="flex-row items-center justify-center gap-4 mb-4">
+                                        {/* Hour Picker */}
+                                        <View className="items-center">
+                                            <Text className="text-sm text-gray-400 mb-2">Hour</Text>
+                                            <View className="bg-[#0F0F0F] rounded-xl border border-gray-600/50 w-16">
+                                                <TextInput
+                                                    className="px-3 py-2 text-xl text-white text-center font-bold bg-transparent rounded-xl"
+                                                    value={formData.dueHour.toString().padStart(2, '0')}
+                                                    onChangeText={(text) => {
+                                                        const hour = parseInt(text) || 0;
+                                                        if (hour >= 0 && hour <= 23) {
+                                                            setFormData(prev => ({ ...prev, dueHour: hour }));
+                                                        }
+                                                    }}
+                                                    keyboardType="numeric"
+                                                    maxLength={2}
+                                                />
+                                            </View>
+                                        </View>
+                                        
+                                        <Text className="text-2xl text-white font-bold mt-6">:</Text>
+                                        
+                                        {/* Minute Picker */}
+                                        <View className="items-center">
+                                            <Text className="text-sm text-gray-400 mb-2">Minute</Text>
+                                            <View className="bg-[#0F0F0F] rounded-xl border border-gray-600/50 w-16">
+                                                <TextInput
+                                                    className="px-3 py-2 text-xl text-white text-center font-bold bg-transparent rounded-xl"
+                                                    value={formData.dueMinute.toString().padStart(2, '0')}
+                                                    onChangeText={(text) => {
+                                                        const minute = parseInt(text) || 0;
+                                                        if (minute >= 0 && minute <= 59) {
+                                                            setFormData(prev => ({ ...prev, dueMinute: minute }));
+                                                        }
+                                                    }}
+                                                    keyboardType="numeric"
+                                                    maxLength={2}
+                                                />
+                                            </View>
+                                        </View>
                                     </View>
+                                    
                                     <TouchableOpacity
-                                        className="self-start"
+                                        className="bg-gradient-to-r from-[#8A83DA] to-[#6366F1] py-3 px-6 rounded-xl self-center"
                                         onPress={() => setShowTimeDropdown(false)}
                                     >
-                                        <Text className="text-sm text-[#8A83DA] font-medium underline">Save time</Text>
+                                        <Text className="text-sm text-white font-bold">✓ Set Time</Text>
                                     </TouchableOpacity>
                                 </View>
                             </View>
                         )}
 
-                        {/* Calendar */}
+                        {/* Enhanced Date Picker */}
                         {showDatePicker && (
-                            <View className="bg-[#2A2A2A] rounded-xl border border-gray-600 mb-3 p-4">
-                                {/* Calendar Header */}
-                                <View className="flex-row items-center justify-between mb-4">
+                            <View className="bg-[#1A1A1A] rounded-2xl border border-gray-700/50 mb-4 shadow-xl p-5">
+                                <Text className="text-base font-bold text-white mb-4 text-center">📅 Pick a Date</Text>
+                                
+                                {/* Month & Year Selection */}
+                                <View className="flex-row items-center justify-between mb-6">
                                     <TouchableOpacity
-                                        className="w-8 h-8 rounded-2xl bg-[#333333] items-center justify-center"
+                                        className="w-10 h-10 bg-[#0F0F0F] rounded-full items-center justify-center"
                                         onPress={() => navigateMonth('prev')}
                                     >
-                                        <Text className="text-lg font-semibold text-gray-400">‹</Text>
+                                        <Text className="text-lg font-bold text-[#8A83DA]">‹</Text>
                                     </TouchableOpacity>
-
-                                    <View className="items-center">
-                                        <Text className="text-lg font-semibold text-white mb-1">
-                                            {getCalendarData().monthName}
-                                        </Text>
+                                    
+                                    <View className="flex-1 mx-4">
+                                        {/* Month Selector */}
                                         <TouchableOpacity
-                                            className="px-2 py-1 rounded bg-[#333333]"
+                                            className="bg-[#0F0F0F] rounded-xl px-4 py-3 mb-2 border border-gray-600/50"
+                                            onPress={() => setShowMonthPicker(!showMonthPicker)}
+                                        >
+                                            <Text className="text-base font-bold text-white text-center">
+                                                {getCalendarData().monthName} ▼
+                                            </Text>
+                                        </TouchableOpacity>
+                                        
+                                        {/* Year Selector */}
+                                        <TouchableOpacity
+                                            className="bg-[#0F0F0F] rounded-xl px-4 py-2 border border-gray-600/50"
                                             onPress={() => setShowYearPicker(!showYearPicker)}
                                         >
-                                            <Text className="text-sm font-medium text-gray-400">
+                                            <Text className="text-sm font-semibold text-gray-300 text-center">
                                                 {getCalendarData().year} ▼
                                             </Text>
                                         </TouchableOpacity>
                                     </View>
-
+                                    
                                     <TouchableOpacity
-                                        className="w-8 h-8 rounded-2xl bg-[#333333] items-center justify-center"
+                                        className="w-10 h-10 bg-[#0F0F0F] rounded-full items-center justify-center"
                                         onPress={() => navigateMonth('next')}
                                     >
-                                        <Text className="text-lg font-semibold text-gray-400">›</Text>
+                                        <Text className="text-lg font-bold text-[#8A83DA]">›</Text>
                                     </TouchableOpacity>
                                 </View>
 
-                                {/* Year Picker */}
-                                {showYearPicker && (
-                                    <View className="bg-gray-50 rounded-lg mb-3 max-h-[200px]">
-                                        <View className="flex-row justify-between px-4 py-2 border-b border-gray-200">
-                                            <TouchableOpacity
-                                                className="w-6 h-6 rounded-xl bg-gray-200 items-center justify-center"
-                                                onPress={() => navigateYear('prev')}
-                                            >
-                                                <Text className="text-lg font-semibold text-gray-500">‹</Text>
-                                            </TouchableOpacity>
-                                            <TouchableOpacity
-                                                className="w-6 h-6 rounded-xl bg-gray-200 items-center justify-center"
-                                                onPress={() => navigateYear('next')}
-                                            >
-                                                <Text className="text-lg font-semibold text-gray-500">›</Text>
-                                            </TouchableOpacity>
-                                        </View>
-                                        <ScrollView
-                                            className="max-h-[150px] flex-1"
-                                            contentContainerStyle={{ flexGrow: 1 }}
-                                            showsVerticalScrollIndicator={false}
-                                            nestedScrollEnabled={true}
-                                            bounces={false}
-                                        >
-                                            {getYearRange().map((year) => (
-                                                <TouchableOpacity
-                                                    key={year}
-                                                    className={`px-4 py-3 border-b border-gray-100 ${year === getCalendarData().year ? 'bg-purple-500' : ''}`}
-                                                    onPress={() => selectYear(year)}
-                                                >
-                                                    <Text className={`text-base font-medium text-center ${year === getCalendarData().year ? 'text-white' : 'text-gray-900'}`}>
-                                                        {year}
-                                                    </Text>
-                                                </TouchableOpacity>
-                                            ))}
+                                {/* Month Picker Dropdown */}
+                                {showMonthPicker && (
+                                    <View className="bg-[#0F0F0F] rounded-xl border border-gray-600/50 mb-4 max-h-[200px]">
+                                        <ScrollView showsVerticalScrollIndicator={false}>
+                                            {[
+                                                'January', 'February', 'March', 'April', 'May', 'June',
+                                                'July', 'August', 'September', 'October', 'November', 'December'
+                                            ].map((month, index) => {
+                                                const isSelected = index === getCalendarData().month;
+                                                return (
+                                                    <TouchableOpacity
+                                                        key={month}
+                                                        className={`px-4 py-3 ${index < 11 ? 'border-b border-gray-700/50' : ''} ${
+                                                            isSelected ? 'bg-[#8A83DA]' : ''
+                                                        }`}
+                                                        onPress={() => {
+                                                            const newDate = new Date(formData.dueDate);
+                                                            newDate.setMonth(index);
+                                                            setFormData(prev => ({ ...prev, dueDate: newDate }));
+                                                            setShowMonthPicker(false);
+                                                        }}
+                                                    >
+                                                        <Text className={`text-base font-medium text-center ${
+                                                            isSelected ? 'text-white font-bold' : 'text-gray-300'
+                                                        }`}>
+                                                            {month}
+                                                        </Text>
+                                                    </TouchableOpacity>
+                                                );
+                                            })}
                                         </ScrollView>
                                     </View>
                                 )}
 
-                                {/* Day Labels */}
+                                {/* Year Picker Dropdown */}
+                                {showYearPicker && (
+                                    <View className="bg-[#0F0F0F] rounded-xl border border-gray-600/50 mb-4 max-h-[200px]">
+                                        <ScrollView showsVerticalScrollIndicator={false}>
+                                            {getYearRange().map((year) => {
+                                                const isSelected = year === getCalendarData().year;
+                                                return (
+                                                    <TouchableOpacity
+                                                        key={year}
+                                                        className={`px-4 py-3 border-b border-gray-700/50 ${
+                                                            isSelected ? 'bg-[#8A83DA]' : ''
+                                                        }`}
+                                                        onPress={() => {
+                                                            const newDate = new Date(formData.dueDate);
+                                                            newDate.setFullYear(year);
+                                                            setFormData(prev => ({ ...prev, dueDate: newDate }));
+                                                            setShowYearPicker(false);
+                                                        }}
+                                                    >
+                                                        <Text className={`text-base font-medium text-center ${
+                                                            isSelected ? 'text-white font-bold' : 'text-gray-300'
+                                                        }`}>
+                                                            {year}
+                                                        </Text>
+                                                    </TouchableOpacity>
+                                                );
+                                            })}
+                                        </ScrollView>
+                                    </View>
+                                )}
+
+                                {/* Calendar Grid */}
                                 <View className="flex-row mb-2">
-                                    {['Sun', 'Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat'].map((day) => (
+                                    {['S', 'M', 'T', 'W', 'T', 'F', 'S'].map((day) => (
                                         <View key={day} className="flex-1 items-center py-2">
-                                            <Text className="text-xs font-semibold text-gray-400">{day}</Text>
+                                            <Text className="text-xs font-bold text-gray-400">{day}</Text>
                                         </View>
                                     ))}
                                 </View>
 
-                                {/* Calendar Grid */}
                                 <View className="flex-row flex-wrap">
                                     {getCalendarData().days.map((date, index) => {
                                         const isDisabled = isDateDisabled(date);
                                         const isSelected = isDateSelected(date);
                                         const isCurrentMonth = isDateInCurrentMonth(date);
+                                        const isToday = date.toDateString() === new Date().toDateString();
 
                                         return (
                                             <TouchableOpacity
                                                 key={index}
-                                                className={`w-[14.28%] aspect-square items-center justify-center rounded-lg mb-1 ${isSelected ? 'bg-[#8A83DA]' : ''} ${isDisabled ? 'opacity-30' : ''}`}
+                                                className={`w-[14.28%] aspect-square items-center justify-center rounded-lg mb-1 ${
+                                                    isSelected ? 'bg-gradient-to-r from-[#8A83DA] to-[#6366F1]' : 
+                                                    isToday ? 'bg-[#8A83DA]/30' : ''
+                                                } ${isDisabled ? 'opacity-30' : ''}`}
                                                 onPress={() => !isDisabled && handleDateSelect(date)}
                                                 disabled={isDisabled}
                                             >
-                                                <Text className={`text-base font-medium ${
-                                                    !isCurrentMonth ? 'text-gray-500' : 
-                                                    isSelected ? 'text-white font-semibold' : 
-                                                    isDisabled ? 'text-gray-500' : 'text-white'
+                                                <Text className={`text-sm font-medium ${
+                                                    !isCurrentMonth ? 'text-gray-600' : 
+                                                    isSelected ? 'text-white font-bold' : 
+                                                    isToday ? 'text-[#8A83DA] font-bold' :
+                                                    isDisabled ? 'text-gray-600' : 'text-white'
                                                 }`}>
                                                     {date.getDate()}
                                                 </Text>
@@ -514,55 +614,67 @@ export default function CreateTaskModal({
                                         );
                                     })}
                                 </View>
+                                
+                                <TouchableOpacity
+                                    className="bg-gradient-to-r from-[#8A83DA] to-[#6366F1] py-3 px-6 rounded-xl self-center mt-4"
+                                    onPress={() => setShowDatePicker(false)}
+                                >
+                                    <Text className="text-sm text-white font-bold">✓ Confirm Date</Text>
+                                </TouchableOpacity>
                             </View>
                         )}
-
-                        <Text className="text-xs text-gray-400 mt-1">
-                            Task will be due on {formatDate(formData.dueDate)} at {formatTimeString()}
-                        </Text>
                     </View>
 
-
-
-                    <View className="flex-row bg-amber-900/20 p-4 rounded-xl border border-amber-800/30 mb-4">
-                        <Star size={20} color="#F59E0B" />
-                        <View className="flex-1 ml-3">
-                            <Text className="text-sm font-semibold text-amber-400 mb-1">Task Reward</Text>
-                            <Text className="text-xs text-amber-300 leading-4">
-                                Complete this task to earn 1 credit and 10 XP points!
-                            </Text>
+                    {/* Reward Section */}
+                    <View className="bg-gradient-to-r from-amber-500/20 to-orange-500/20 p-5 rounded-2xl border border-amber-500/30 mb-6 shadow-lg">
+                        <View className="flex-row items-center">
+                            <Star size={24} color="#F59E0B" />
+                            <View className="flex-1 ml-4">
+                                <Text className="text-lg font-bold text-amber-400 mb-1">🎯 Task Reward</Text>
+                                <Text className="text-sm text-amber-200 leading-5">
+                                    Complete this task to earn <Text className="font-bold">1 credit</Text> and <Text className="font-bold">10 XP points</Text>!
+                                </Text>
+                            </View>
                         </View>
                     </View>
 
-                    <View className="bg-[#8A83DA]/20 p-3 rounded-lg border border-[#8A83DA]/30">
-                        <Text className="text-sm text-[#8A83DA] font-medium text-center">
-                            📝 You can create up to 2 extra tasks with custom deadlines
+                    {/* Info Card */}
+                    <View className="bg-gradient-to-r from-[#8A83DA]/20 to-[#6366F1]/20 p-4 rounded-2xl border border-[#8A83DA]/30 shadow-lg">
+                        <Text className="text-sm text-[#8A83DA] font-semibold text-center">
+                            💡 You can create up to 2 extra tasks with custom deadlines
                         </Text>
                     </View>
                 </ScrollView>
 
-                <View className="flex-row gap-3 p-5 border-t border-gray-700">
-                    <TouchableOpacity
-                        onPress={handleClose}
-                        className="flex-1 py-3 rounded-lg items-center flex-row justify-center bg-[#333333]"
-                    >
-                        <Text className="text-base font-semibold text-gray-400">Cancel</Text>
-                    </TouchableOpacity>
+                {/* Modern Footer */}
+                <View className="px-6 py-6 bg-[#0F0F0F] border-t border-gray-800/50">
+                    <View className="flex-row gap-4">
+                        <TouchableOpacity
+                            onPress={handleClose}
+                            className="flex-1 py-4 rounded-2xl items-center bg-[#1A1A1A] border border-gray-700/50 shadow-lg"
+                        >
+                            <Text className="text-base font-semibold text-gray-300">Cancel</Text>
+                        </TouchableOpacity>
 
-                    <TouchableOpacity
-                        onPress={handleSubmit}
-                        className="flex-1 py-3 rounded-lg items-center flex-row justify-center bg-[#8A83DA]"
-                        disabled={loading || !formData.title.trim()}
-                    >
-                        {loading ? (
-                            <ActivityIndicator size="small" color="#FFFFFF" />
-                        ) : (
-                            <>
-                                <Plus size={20} color="#FFFFFF" />
-                                <Text className="text-base font-semibold text-white ml-2">Create Task</Text>
-                            </>
-                        )}
-                    </TouchableOpacity>
+                        <TouchableOpacity
+                            onPress={handleSubmit}
+                            className={`flex-2 py-4 rounded-2xl items-center flex-row justify-center shadow-xl ${
+                                loading || !formData.title.trim() 
+                                    ? 'bg-gray-600' 
+                                    : 'bg-gradient-to-r from-[#8A83DA] to-[#6366F1]'
+                            }`}
+                            disabled={loading || !formData.title.trim()}
+                        >
+                            {loading ? (
+                                <ActivityIndicator size="small" color="#FFFFFF" />
+                            ) : (
+                                <>
+                                    <Plus size={22} color="#FFFFFF" />
+                                    <Text className="text-lg font-bold text-white ml-2">Create Task</Text>
+                                </>
+                            )}
+                        </TouchableOpacity>
+                    </View>
                 </View>
             </View>
         </Modal>

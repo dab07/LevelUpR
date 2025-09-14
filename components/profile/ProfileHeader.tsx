@@ -71,7 +71,7 @@ export default function ProfileHeader({ profile, onProfileUpdate }: ProfileHeade
 
                 <View className="flex-1">
                     <Text className="text-2xl font-bold text-white mb-1">{profile.displayName}</Text>
-                    <Text className="text-base text-gray-200 mb-3">@{profile.username}</Text>
+                    <Text className="text-base text-gray-200 mb-3">{profile.username}</Text>
 
                     <View className="flex-row gap-4">
                         <View className="flex-row items-center gap-1">
@@ -87,19 +87,6 @@ export default function ProfileHeader({ profile, onProfileUpdate }: ProfileHeade
 
                 <View className="ml-3">
                     <CreditDisplay credits={profile.credits} size="large" />
-                </View>
-            </View>
-
-            <View className="mt-2">
-                <View className="flex-row justify-between items-center mb-2">
-                    <Text className="text-sm text-gray-200 font-medium">Progress to Level {profile.level + 1}</Text>
-                    <Text className="text-sm text-white font-semibold">{profile.xp % 100}/100 XP</Text>
-                </View>
-                <View className="h-1.5 bg-white/20 rounded-sm overflow-hidden">
-                    <View
-                        className="h-full bg-yellow-300 rounded-sm"
-                        style={{ width: `${(profile.xp % 100)}%` }}
-                    />
                 </View>
             </View>
         </LinearGradient>

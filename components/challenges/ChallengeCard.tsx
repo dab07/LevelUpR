@@ -1,6 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import { View, Text, TouchableOpacity, Alert, Image } from 'react-native';
-import { LinearGradient } from 'expo-linear-gradient';
+import { View, Text, TouchableOpacity, Image } from 'react-native';
 import { Clock, Users, Coins, CircleCheck as CheckCircle, Circle as XCircle, Camera, Vote, AlertTriangle } from 'lucide-react-native';
 import { Challenge, Bet } from '@/types';
 import { challengeService } from '@/services/challengeService';
@@ -222,17 +221,14 @@ export default function ChallengeCard({
 
     return (
         <>
-            <View className="my-2 rounded-2xl overflow-hidden shadow-sm shadow-black/10">
-                <LinearGradient
-                    colors={['#FFFFFF', '#F9FAFB']}
-                    className="p-4"
-                >
+            <View className="my-2 rounded-2xl overflow-hidden bg-[#2A2A2A] border border-gray-700">
+                <View className="p-4">
                     <View className="flex-row justify-between items-start mb-3">
                         <View className="flex-1 mr-3">
-                            <Text className="text-lg font-semibold text-gray-900 mb-1" numberOfLines={2}>
+                            <Text className="text-lg font-semibold text-white mb-1" numberOfLines={2}>
                                 {challenge.title}
                             </Text>
-                            <Text className="text-sm text-gray-500 leading-5" numberOfLines={3}>
+                            <Text className="text-sm text-gray-400 leading-5" numberOfLines={3}>
                                 {challenge.description}
                             </Text>
                         </View>
@@ -244,40 +240,40 @@ export default function ChallengeCard({
 
                     <View className="flex-row justify-between mb-3">
                         <View className="flex-row items-center gap-1">
-                            <Clock size={16} color="#6B7280" />
-                            <Text className="text-xs text-gray-500 font-medium">
+                            <Clock size={16} color="#9CA3AF" />
+                            <Text className="text-xs text-gray-400 font-medium">
                                 {getPhaseTimeDisplay()}
                             </Text>
                         </View>
 
                         <View className="flex-row items-center gap-1">
                             <Coins size={16} color="#F59E0B" />
-                            <Text className="text-xs text-gray-500 font-medium">
+                            <Text className="text-xs text-gray-400 font-medium">
                                 {challenge.minimumBet} min bet
                             </Text>
                         </View>
 
                         <View className="flex-row items-center gap-1">
                             <Users size={16} color="#8B5CF6" />
-                            <Text className="text-xs text-gray-500 font-medium">
+                            <Text className="text-xs text-gray-400 font-medium">
                                 {Math.floor(getTotalPool() / challenge.minimumBet)} bets
                             </Text>
                         </View>
                     </View>
 
                     {getTotalPool() > 0 && (
-                        <View className="bg-gray-50 p-3 rounded-lg mb-3">
-                            <Text className="text-sm font-semibold text-gray-900 mb-2 text-center">Betting Pool: {getTotalPool()} credits</Text>
+                        <View className="bg-[#1A1A1A] p-3 rounded-lg mb-3 border border-gray-600">
+                            <Text className="text-sm font-semibold text-white mb-2 text-center">Betting Pool: {getTotalPool()} credits</Text>
                             <View className="flex-row justify-around">
                                 <View className="flex-row items-center gap-1">
                                     <CheckCircle size={16} color="#10B981" />
-                                    <Text className="text-xs font-medium text-gray-700">
+                                    <Text className="text-xs font-medium text-gray-300">
                                         SUCCESS: {challenge.totalYesBets} ({getOdds('yes')})
                                     </Text>
                                 </View>
                                 <View className="flex-row items-center gap-1">
                                     <XCircle size={16} color="#EF4444" />
-                                    <Text className="text-xs font-medium text-gray-700">
+                                    <Text className="text-xs font-medium text-gray-300">
                                         FAILURE: {challenge.totalNoBets} ({getOdds('no')})
                                     </Text>
                                 </View>
@@ -286,17 +282,17 @@ export default function ChallengeCard({
                     )}
 
                     {userBet && userBet.betType && (
-                        <View className="bg-violet-50 p-2 rounded-md mb-3">
-                            <Text className="text-xs font-medium text-violet-600 text-center">
-                                Your bet: {userBet.amount} credits on `{userBet.betType.toUpperCase()}`
+                        <View className="bg-[#8A83DA]/20 p-2 rounded-md mb-3 border border-[#8A83DA]/30">
+                            <Text className="text-xs font-medium text-[#8A83DA] text-center">
+                                Your bet: {userBet.amount} credits on {userBet.betType.toUpperCase()}
                             </Text>
                         </View>
                     )}
 
                     {challenge.proofImageUrl && (
                         <View className="mb-3">
-                            <Text className="text-sm font-semibold text-gray-900 mb-2">Submitted Proof:</Text>
-                            <Image source={{ uri: challenge.proofImageUrl }} className="w-full h-[120px] rounded-lg bg-gray-100" />
+                            <Text className="text-sm font-semibold text-white mb-2">Submitted Proof:</Text>
+                            <Image source={{ uri: challenge.proofImageUrl }} className="w-full h-[120px] rounded-lg bg-[#1A1A1A]" />
                         </View>
                     )}
 
@@ -378,48 +374,48 @@ export default function ChallengeCard({
 
                         {/* Show voting in progress state */}
                         {votingInProgress && currentPhase === 'verification' && userBet && !isCreator && (
-                            <View className="flex-row items-center justify-center bg-amber-50 py-3 px-4 rounded-lg gap-2">
+                            <View className="flex-row items-center justify-center bg-amber-500/20 py-3 px-4 rounded-lg gap-2 border border-amber-500/30">
                                 <Vote size={16} color="#3B82F6" />
-                                <Text className="text-xs font-medium text-amber-600 text-center flex-1">Submitting your vote...</Text>
+                                <Text className="text-xs font-medium text-amber-400 text-center flex-1">Submitting your vote...</Text>
                             </View>
                         )}
 
                         {/* Waiting States */}
                         {currentPhase === 'waiting_for_proof' && (
-                            <View className="flex-row items-center justify-center bg-amber-50 py-3 px-4 rounded-lg gap-2">
+                            <View className="flex-row items-center justify-center bg-amber-500/20 py-3 px-4 rounded-lg gap-2 border border-amber-500/30">
                                 <AlertTriangle size={16} color="#F59E0B" />
-                                <Text className="text-xs font-medium text-amber-600 text-center flex-1">
+                                <Text className="text-xs font-medium text-amber-400 text-center flex-1">
                                     {isCreator ? 'You can submit proof after deadline' : 'Waiting for creator to submit proof'}
                                 </Text>
                             </View>
                         )}
 
                         {currentPhase === 'proof_submission' && !isCreator && (
-                            <View className="flex-row items-center justify-center bg-amber-50 py-3 px-4 rounded-lg gap-2">
+                            <View className="flex-row items-center justify-center bg-amber-500/20 py-3 px-4 rounded-lg gap-2 border border-amber-500/30">
                                 <Clock size={16} color="#F59E0B" />
-                                <Text className="text-xs font-medium text-amber-600 text-center flex-1">Creator has {CHALLENGE_CONFIG.PROOF_SUBMISSION_HOURS} hours to submit proof</Text>
+                                <Text className="text-xs font-medium text-amber-400 text-center flex-1">Creator has {CHALLENGE_CONFIG.PROOF_SUBMISSION_HOURS} hours to submit proof</Text>
                             </View>
                         )}
 
                         {currentPhase === 'verification' && !canVote() && !hasVoted() && (
-                            <View className="flex-row items-center justify-center bg-amber-50 py-3 px-4 rounded-lg gap-2">
+                            <View className="flex-row items-center justify-center bg-blue-500/20 py-3 px-4 rounded-lg gap-2 border border-blue-500/30">
                                 <Vote size={16} color="#3B82F6" />
-                                <Text className="text-xs font-medium text-amber-600 text-center flex-1">
+                                <Text className="text-xs font-medium text-blue-400 text-center flex-1">
                                     {isCreator ? 'Group members are voting on your proof' : 'Verification in progress'}
                                 </Text>
                             </View>
                         )}
 
                         {currentPhase === 'verification' && hasVoted() && !isCreator && (
-                            <View className="flex-row items-center justify-center bg-amber-50 py-3 px-4 rounded-lg gap-2">
+                            <View className="flex-row items-center justify-center bg-emerald-500/20 py-3 px-4 rounded-lg gap-2 border border-emerald-500/30">
                                 <Vote size={16} color="#10B981" />
-                                <Text className="text-xs font-medium text-amber-600 text-center flex-1">
+                                <Text className="text-xs font-medium text-emerald-400 text-center flex-1">
                                     Your vote has been submitted. Waiting for other votes...
                                 </Text>
                             </View>
                         )}
                     </View>
-                </LinearGradient>
+                </View>
             </View>
 
             <BettingModal

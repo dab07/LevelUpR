@@ -188,34 +188,34 @@ export default function BettingModal({
       presentationStyle="pageSheet"
       onRequestClose={onClose}
     >
-      <View className="flex-1 bg-white">
-        <View className="flex-row items-center justify-between px-5 py-4 border-b border-gray-200">
+      <View className="flex-1 bg-[#1A1A1A]">
+        <View className="flex-row items-center justify-between px-5 py-4 border-b border-gray-700">
           <TouchableOpacity onPress={onClose} className="p-1">
-            <X size={24} color="#6B7280" />
+            <X size={24} color="#9CA3AF" />
           </TouchableOpacity>
-          <Text className="text-lg font-semibold text-gray-900">{getPhaseTitle()}</Text>
+          <Text className="text-lg font-semibold text-white">{getPhaseTitle()}</Text>
           <View className="w-8" />
         </View>
 
         <ScrollView className="flex-1 p-5" showsVerticalScrollIndicator={false}>
           {/* Challenge Info */}
-          <View className="bg-gray-50 p-4 rounded-xl mb-6">
-            <Text className="text-lg font-semibold text-gray-900 mb-2" numberOfLines={2}>
+          <View className="bg-[#2A2A2A] p-4 rounded-xl mb-6 border border-gray-700">
+            <Text className="text-lg font-semibold text-white mb-2" numberOfLines={2}>
               {safeChallenge.title}
             </Text>
-            <Text className="text-sm text-gray-600 mb-3" numberOfLines={3}>
+            <Text className="text-sm text-gray-400 mb-3" numberOfLines={3}>
               {safeChallenge.description}
             </Text>
             <View className="flex-row items-center">
               <Clock size={16} color="#8B5CF6" />
-              <Text className="text-sm font-medium text-violet-600 ml-2">{getPhaseDescription()}</Text>
+              <Text className="text-sm font-medium text-[#8A83DA] ml-2">{getPhaseDescription()}</Text>
             </View>
           </View>
 
           {/* Credits Display */}
-          <View className="flex-row items-center bg-amber-50 p-3 rounded-lg mb-6">
+          <View className="flex-row items-center bg-amber-500/20 p-3 rounded-lg mb-6 border border-amber-500/30">
             <Coins size={20} color="#F59E0B" />
-            <Text className="text-base font-semibold text-amber-700 ml-2">
+            <Text className="text-base font-semibold text-amber-400 ml-2">
               Available Credits: {userCredits}
             </Text>
           </View>
@@ -224,11 +224,11 @@ export default function BettingModal({
           {currentPhase === 'betting' && canPlaceBet() && (
             <>
               <View className="mb-6">
-                <Text className="text-lg font-semibold text-gray-900 mb-4">Choose Your Prediction</Text>
+                <Text className="text-lg font-semibold text-white mb-4">Choose Your Prediction</Text>
                 <View className="flex-row gap-3">
                   <TouchableOpacity
                     onPress={() => setBetType('yes')}
-                    className={`flex-1 items-center p-4 rounded-xl ${betType === 'yes' ? 'bg-emerald-600 border-2 border-emerald-700' : 'bg-emerald-500'}`}
+                    className={`flex-1 items-center p-4 rounded-xl ${betType === 'yes' ? 'bg-emerald-600 border-2 border-emerald-500' : 'bg-emerald-500'}`}
                   >
                     <CheckCircle size={20} color="#FFFFFF" />
                     <Text className="text-base font-bold text-white mt-2">SUCCESS</Text>
@@ -237,7 +237,7 @@ export default function BettingModal({
 
                   <TouchableOpacity
                     onPress={() => setBetType('no')}
-                    className={`flex-1 items-center p-4 rounded-xl ${betType === 'no' ? 'bg-red-600 border-2 border-red-700' : 'bg-red-500'}`}
+                    className={`flex-1 items-center p-4 rounded-xl ${betType === 'no' ? 'bg-red-600 border-2 border-red-500' : 'bg-red-500'}`}
                   >
                     <XCircle size={20} color="#FFFFFF" />
                     <Text className="text-base font-bold text-white mt-2">FAILURE</Text>
@@ -247,44 +247,45 @@ export default function BettingModal({
               </View>
 
               <View className="mb-6">
-                <Text className="text-lg font-semibold text-gray-900 mb-4">Bet Amount</Text>
-                <View className="flex-row items-center bg-gray-50 rounded-lg px-4 py-3 border border-gray-200">
+                <Text className="text-lg font-semibold text-white mb-4">Bet Amount</Text>
+                <View className="flex-row items-center bg-[#2A2A2A] rounded-lg px-4 py-3 border border-gray-600">
                   <Coins size={20} color="#F59E0B" style={{ position: 'absolute', left: 12, zIndex: 1 }} />
                   <TextInput
-                    className="flex-1 text-lg font-semibold text-gray-900 pl-8 pr-16"
+                    className="flex-1 text-lg font-semibold text-white pl-8 pr-16"
                     value={betAmount}
                     onChangeText={setBetAmount}
                     keyboardType="numeric"
                     placeholder={safeChallenge.minimumBet.toString()}
+                    placeholderTextColor="#9CA3AF"
                   />
-                  <Text className="text-sm font-medium text-gray-500">credits</Text>
+                  <Text className="text-sm font-medium text-gray-400">credits</Text>
                 </View>
-                <Text className="text-xs text-gray-500 mt-2">
+                <Text className="text-xs text-gray-400 mt-2">
                   Minimum: {safeChallenge.minimumBet} credits
                 </Text>
               </View>
 
-              <View className="bg-violet-50 p-4 rounded-xl border border-violet-200 mb-6">
+              <View className="bg-[#8A83DA]/20 p-4 rounded-xl border border-[#8A83DA]/30 mb-6">
                 <View className="flex-row items-center mb-3">
                   <TrendingUp size={20} color="#8B5CF6" />
-                  <Text className="text-base font-semibold text-violet-800 ml-2">Potential Payout</Text>
+                  <Text className="text-base font-semibold text-[#8A83DA] ml-2">Potential Payout</Text>
                 </View>
 
                 <View className="flex-row justify-between items-center mb-2">
-                  <Text className="text-sm text-violet-700">Your bet:</Text>
-                  <Text className="text-sm font-semibold text-violet-900">{betAmount || 0} credits</Text>
+                  <Text className="text-sm text-gray-300">Your bet:</Text>
+                  <Text className="text-sm font-semibold text-white">{betAmount || 0} credits</Text>
                 </View>
 
                 <View className="flex-row justify-between items-center mb-2">
-                  <Text className="text-sm text-violet-700">Potential win:</Text>
-                  <Text className="text-sm font-bold text-emerald-600">
+                  <Text className="text-sm text-gray-300">Potential win:</Text>
+                  <Text className="text-sm font-bold text-emerald-400">
                     {calculatePotentialPayout()} credits
                   </Text>
                 </View>
 
                 <View className="flex-row justify-between items-center">
-                  <Text className="text-sm text-violet-700">Win chance:</Text>
-                  <Text className="text-sm font-semibold text-violet-900">{getWinChance()}%</Text>
+                  <Text className="text-sm text-gray-300">Win chance:</Text>
+                  <Text className="text-sm font-semibold text-white">{getWinChance()}%</Text>
                 </View>
               </View>
             </>
@@ -292,19 +293,19 @@ export default function BettingModal({
         </ScrollView>
 
         {/* Footer Actions */}
-        <View className="flex-row gap-3 p-5 border-t border-gray-200">
+        <View className="flex-row gap-3 p-5 border-t border-gray-700">
           {currentPhase === 'betting' && canPlaceBet() && (
             <>
               <TouchableOpacity
                 onPress={onClose}
-                className="flex-1 py-3 rounded-lg items-center justify-center bg-gray-100"
+                className="flex-1 py-3 rounded-lg items-center justify-center bg-[#2A2A2A]"
               >
-                <Text className="text-base font-semibold text-gray-500">Cancel</Text>
+                <Text className="text-base font-semibold text-gray-400">Cancel</Text>
               </TouchableOpacity>
 
               <TouchableOpacity
                 onPress={handlePlaceBet}
-                className="flex-1 py-3 rounded-lg items-center justify-center flex-row bg-violet-600"
+                className="flex-1 py-3 rounded-lg items-center justify-center flex-row bg-[#8A83DA]"
                 disabled={loading || parseInt(betAmount || '0') < safeChallenge.minimumBet}
               >
                 {loading ? (
@@ -322,7 +323,7 @@ export default function BettingModal({
           {(currentPhase === 'waiting_for_proof' || currentPhase === 'verification' || currentPhase === 'completed') && (
             <TouchableOpacity
               onPress={onClose}
-              className="flex-1 py-3 rounded-lg items-center justify-center bg-violet-600"
+              className="flex-1 py-3 rounded-lg items-center justify-center bg-[#8A83DA]"
             >
               <Text className="text-base font-semibold text-white">Close</Text>
             </TouchableOpacity>

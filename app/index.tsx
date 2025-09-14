@@ -12,17 +12,17 @@ export default function RootIndex() {
 
   useEffect(() => {
     checkUser();
-    checkMailConfirmation()
+    // checkMailConfirmation()
   }, []);
 
-  const checkMailConfirmation = async () => {
-    const { data: { user } } = await supabase.auth.getUser();
-    if (user && !user.email_confirmed_at) {
-      await supabase.auth.signOut();
-      setUser(null);
-      setLoading(false);
-    }
-  };
+  // const checkMailConfirmation = async () => {
+  //   const { data: { user } } = await supabase.auth.getUser();
+  //   if (user && !user.email_confirmed_at) {
+  //     await supabase.auth.signOut();
+  //     setUser(null);
+  //     setLoading(false);
+  //   }
+  // };
   const checkUser = async () => {
     try {
       const { data: { user } } = await supabase.auth.getUser();
@@ -38,11 +38,11 @@ export default function RootIndex() {
     return (
       <SafeAreaView className='flex-1'>
         <LinearGradient
-          colors={['#FBD5BD', '#8A83DA', '#8A83DA', '#262335']}
+          colors={['#FBD5BD', '#262335']}
           className='flex-1 justify-center items-center'
         >
           <ActivityIndicator size="large" color="#FFFFFF" />
-          <Text className="text-white text-lg font-semibold mt-4">Loading LevelUpR...</Text>
+          <Text className="text-white text-lg font-semibold mt-4">Welcome to Aura Online...</Text>
         </LinearGradient>
       </SafeAreaView>
     );

@@ -32,7 +32,7 @@ export default function TabLayout() {
         }}
       />
       <Tabs.Screen
-        name="social"
+        name="guild"
         options={{
           title: 'Group',
           tabBarIcon: ({ size, color }) => (

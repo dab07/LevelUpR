@@ -46,32 +46,32 @@ export default function ProfileScreen() {
     };
 
     const handleLogout = async () => {
-        const success = await profileService.logout();
-        if (success) {
-            router.replace('/auth');
-        } else {
-            console.log("Unable to LogOut", success);
-            Alert.alert('Error', 'Failed to logout. Please try again.');
-        }
-        // Alert.alert(
-        //     'Logout',
-        //     'Are you sure you want to logout?',
-        //     [
-        //         {text: 'Cancel', style: 'cancel'},
-        //         {
-        //             text: 'Logout',
-        //             style: 'destructive',
-        //             onPress: async () => {
-        //                 const success = await profileService.logout();
-        //                 if (success) {
-        //                     router.replace('/auth');
-        //                 } else {
-        //                     Alert.alert('Error', 'Failed to logout. Please try again.');
-        //                 }
-        //             },
-        //         },
-        //     ]
-        // );
+        // const success = await profileService.logout();
+        // if (success) {
+        //     router.replace('/auth');
+        // } else {
+        //     console.log("Unable to LogOut", success);
+        //     Alert.alert('Error', 'Failed to logout. Please try again.');
+        // }
+        Alert.alert(
+            'Logout',
+            'Are you sure you want to logout?',
+            [
+                {text: 'Cancel', style: 'cancel'},
+                {
+                    text: 'Logout',
+                    style: 'destructive',
+                    onPress: async () => {
+                        const success = await profileService.logout();
+                        if (success) {
+                            router.replace('/auth');
+                        } else {
+                            Alert.alert('Error', 'Failed to logout. Please try again.');
+                        }
+                    },
+                },
+            ]
+        );
     };
     const handleProfileUpdate = (updatedUserProfile: User) => {
         setUserData(updatedUserProfile);
@@ -127,11 +127,11 @@ export default function ProfileScreen() {
                         <View className="flex-row gap-4">
                             <View className="flex-1 items-center">
                                 <Text className="text-2xl font-bold text-white">{userData?.totalTasksCompleted || 0}</Text>
-                                <Text className="text-gray-400 text-xs">Tasks Done</Text>
+                                <Text className="text-gray-400 text-xs">Quest Completed</Text>
                             </View>
                             <View className="flex-1 items-center">
                                 <Text className="text-2xl font-bold text-white">{userData?.level || 1}</Text>
-                                <Text className="text-gray-400 text-xs">Level</Text>
+                                <Text className="text-gray-400 text-xs">Experience Pts</Text>
                             </View>
                             <View className="flex-1 items-center">
                                 <Text className="text-2xl font-bold text-white">{userData?.xp || 0}</Text>

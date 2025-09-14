@@ -360,7 +360,7 @@ export default function HomeScreen() {
         <View className="px-5 mb-4">
           <View className="bg-[#2A2A2A] rounded-2xl p-4 border border-gray-700">
             <View className="flex-row items-center justify-between">
-              <Text className="text-white font-semibold text-lg">Aura Points</Text>
+              <Text className="text-white font-semibold text-lg">Aura Score</Text>
               <CreditDisplay credits={credits} size="large" />
             </View>
           </View>
@@ -373,12 +373,12 @@ export default function HomeScreen() {
             className="rounded-2xl p-4"
           >
             <View className="flex-row items-center justify-between mb-3">
-              <Text className="text-white font-bold text-lg">Today's Mission</Text>
+              <Text className="text-white font-bold text-lg">Daily commisions</Text>
             </View>
 
             {/* Daily Login Task */}
             <MainTaskCard
-              title="Daily Login"
+              title="Welcome Back! Chad"
               description="Check in to earn your daily credit"
               isCompleted={dailyLoginCompleted}
               onClaim={handleDailyLoginClaim}
@@ -386,7 +386,7 @@ export default function HomeScreen() {
 
             {/* Step Counter Task */}
             <MainTaskCard
-              title="Step Counter"
+              title="Touch the Grass"
               description={`Walk ${stepData.goal.toLocaleString()} steps today`}
               isCompleted={stepService.isGoalReached(stepData)}
               onClaim={handleStepGoalComplete}
@@ -401,10 +401,10 @@ export default function HomeScreen() {
 
             {/* Meditation Task */}
             <MainTaskCard
-              title="Meditation Timer"
+              title="Never lose your Sanity"
               description="Take time to meditate and relax"
               isCompleted={meditationCompleted}
-              onClaim={() => { }} // Handled by timer component
+              onClaim={() => { }} 
             >
               <MeditationTimer onComplete={handleMeditationComplete} />
             </MainTaskCard>
@@ -415,7 +415,7 @@ export default function HomeScreen() {
         <View className="px-5 mb-6">
           <View className="bg-[#2A2A2A] rounded-2xl p-4 border border-gray-700">
             <View className="flex-row items-center justify-between mb-3">
-              <Text className="text-white font-bold text-lg">Custom Goals</Text>
+              <Text className="text-white font-bold text-lg">Custom Quest</Text>
               <GradientButton
                 title="Add Task"
                 onPress={handleCreateTask}
@@ -426,8 +426,8 @@ export default function HomeScreen() {
 
             {totalExtraTasks === 0 ? (
               <View className="items-center py-6">
-                <Text className="text-gray-400 mt-2 text-center">No custom goals yet</Text>
-                <Text className="text-gray-500 text-sm mt-1">Create your first goal, LFG!</Text>
+                <Text className="text-gray-400 mt-2 text-center">No Quest! Don't be a Noob</Text>
+                <Text className="text-gray-500 text-sm mt-1">Add your first quest warrior</Text>
               </View>
             ) : (
               <View className="space-y-2">
@@ -449,9 +449,9 @@ export default function HomeScreen() {
               colors={['#10B981', '#059669']}
               className="p-4 items-center"
             >
-              <Text className="text-xl font-bold text-white mb-2">🎉 All Tasks Complete!</Text>
+              <Text className="text-xl font-bold text-white mb-2">🎉 All quest Complete!</Text>
               <Text className="text-sm text-green-100 text-center">
-                Great job! You've completed all your tasks for today.
+                Great job! You've completed all your quest & commisions for today.
               </Text>
             </LinearGradient>
           </View>

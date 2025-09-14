@@ -1,8 +1,8 @@
 import React, { useState, useEffect, useRef } from 'react';
-import { View, Text, ScrollView, RefreshControl, Alert, TouchableOpacity, ActivityIndicator } from 'react-native';
+import { View, Text, ScrollView, RefreshControl, TouchableOpacity, ActivityIndicator } from 'react-native';
 import { LinearGradient } from 'expo-linear-gradient';
 import { SafeAreaView } from 'react-native-safe-area-context';
-import { Plus, Users, MessageCircle, Trophy, Target, TrendingUp } from 'lucide-react-native';
+import { Plus, Users, MessageCircle, Target, TrendingUp } from 'lucide-react-native';
 
 import GradientButton from '@/components/ui/GradientButton';
 import CreateGroupModal from '@/components/groups/CreateGroupModal';
@@ -267,12 +267,9 @@ export default function SocialScreen() {
           <View className="px-5 pt-4 pb-4">
             <View className="flex-row items-center justify-between mb-4">
               <View className="flex-row items-center">
-                <View className="w-12 h-12 rounded-full bg-[#8A83DA] items-center justify-center mr-3">
-                  <Users size={24} color="#FFFFFF" />
-                </View>
                 <View>
-                  <Text className="text-white font-bold text-lg">Social Hub</Text>
-                  <Text className="text-gray-400 text-sm">Connect & Compete</Text>
+                  <Text className="text-white font-bold text-lg">Your Guilds</Text>
+                  <Text className="text-gray-400 text-sm">Join & Compete</Text>
                 </View>
               </View>
               <TouchableOpacity
@@ -291,7 +288,7 @@ export default function SocialScreen() {
               <View className="flex-row gap-3">
                 <View className="flex-1 items-center">
                   <Text className="text-2xl font-bold text-white">{userGroups.length}</Text>
-                  <Text className="text-gray-400 text-xs">Groups</Text>
+                  <Text className="text-gray-400 text-xs">Guilds</Text>
                 </View>
                 <View className="flex-1 items-center">
                   <Text className="text-2xl font-bold text-white">{getTotalMembers()}</Text>
@@ -310,9 +307,9 @@ export default function SocialScreen() {
             {userGroups.length === 0 ? (
               <View className="bg-[#2A2A2A] rounded-2xl p-6 border border-gray-700 items-center">
                 <Users size={48} color="#6B7280" />
-                <Text className="text-lg font-bold text-white mt-4 mb-2">No Groups Yet</Text>
+                <Text className="text-lg font-bold text-white mt-4 mb-2">No Guild Yet</Text>
                 <Text className="text-gray-400 text-center mb-4">
-                  Create your first group to start challenging friends!
+                  Create your first guild to start challenging friends!
                 </Text>
                 <GradientButton
                     title="Create Group"
@@ -324,7 +321,7 @@ export default function SocialScreen() {
                   <Text className="text-white font-semibold mb-3">Features:</Text>
                   <View className="flex-row items-center mb-2">
                     <Target size={16} color="#8A83DA" />
-                    <Text className="text-gray-400 ml-3 text-sm">Create betting challenges</Text>
+                    <Text className="text-gray-400 ml-3 text-sm">Fight with your Aura</Text>
                   </View>
                   <View className="flex-row items-center mb-2">
                     <MessageCircle size={16} color="#8A83DA" />
@@ -332,7 +329,7 @@ export default function SocialScreen() {
                   </View>
                   <View className="flex-row items-center">
                     <TrendingUp size={16} color="#8A83DA" />
-                    <Text className="text-gray-400 ml-3 text-sm">Earn credits from bets</Text>
+                    <Text className="text-gray-400 ml-3 text-sm">Farm Aura from challenges</Text>
                   </View>
                 </View>
               </View>
@@ -342,7 +339,7 @@ export default function SocialScreen() {
                 className="rounded-2xl p-4"
               >
                 <View className="flex-row items-center justify-between mb-3">
-                  <Text className="text-white font-bold text-lg">Your Groups</Text>
+                  <Text className="text-white font-bold text-lg">Your Guilds</Text>
                   <Text className="text-white/80 text-sm">See All</Text>
                 </View>
 
@@ -384,6 +381,33 @@ export default function SocialScreen() {
               </LinearGradient>
             )}
           </View>
+
+          {/* Active Challenges Section */}
+          {userGroups.length > 0 && Object.values(groupChallenges).flat().length > 0 && (
+            <View className="px-5 mb-6">
+              <Text className="text-white font-bold text-lg mb-4">Active Challenges</Text>
+              {Object.entries(groupChallenges).map(([groupId, challenges]) => {
+                const group = userGroups.find(g => g.id === groupId);
+                if (!group || challenges.length === 0) return null;
+                
+                return (
+                  <View key={groupId} className="mb-4">
+                    <Text className="text-gray-400 text-sm mb-2 font-medium">{group.name}</Text>
+                    {challenges.map((challenge) => (
+                      <ChallengeCard
+                        key={challenge.id}
+                        challenge={challenge}
+                        userBet={userBets[challenge.id]}
+                        onBetPlaced={handleBetPlaced}
+                        onVoteSubmitted={handleVoteSubmitted}
+                        isCreator={isUserCreator(challenge)}
+                      />
+                    ))}
+                  </View>
+                );
+              })}
+            </View>
+          )}
 
           <View className="h-20" />
         </ScrollView>

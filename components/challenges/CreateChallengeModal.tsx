@@ -263,7 +263,7 @@ export default function CreateChallengeModal({
                     {/* Description */}
                     <View className="mb-8">
                         <Text className="text-lg font-bold text-white mb-4">
-                            📝 Description
+                            Description
                         </Text>
                         <View className="bg-[#1A1A1A] rounded-2xl border border-gray-700/50 shadow-lg">
                             <TextInput
@@ -283,7 +283,7 @@ export default function CreateChallengeModal({
                     {/* Minimum Bet */}
                     <View className="mb-8">
                         <Text className="text-lg font-bold text-white mb-4">
-                            💰 Minimum Bet
+                            Risk Aura
                         </Text>
                         <View className="bg-[#1A1A1A] rounded-2xl border border-gray-700/50 shadow-lg">
                             <View className="flex-row items-center px-5 py-4">
@@ -297,18 +297,18 @@ export default function CreateChallengeModal({
                                     keyboardType="numeric"
                                     maxLength={3}
                                 />
-                                <Text className="text-base text-gray-400 font-medium">credits</Text>
+                                <Text className="text-base text-gray-400 font-medium">Auras</Text>
                             </View>
                         </View>
                         <Text className="text-sm text-gray-400 mt-2 ml-1">
-                            💡 Minimum 1 credit for group challenges
+                            Minimum 1 aura for guild challenges
                         </Text>
                     </View>
 
                     {/* Challenge Deadline Section */}
                     <View className="mb-8">
                         <Text className="text-lg font-bold text-white mb-4">
-                            ⏰ Challenge Deadline
+                            Challenge Deadline
                         </Text>
 
                         {/* Quick Date Presets */}
@@ -628,12 +628,14 @@ export default function CreateChallengeModal({
                     <View className="flex-row bg-blue-500/20 p-4 rounded-xl border border-blue-500/30 mt-2">
                         <Clock size={20} color="#3B82F6" />
                         <View className="flex-1 ml-3">
-                            <Text className="text-sm font-semibold text-blue-400 mb-1">How Betting Works</Text>
+                            <Text className="text-sm font-semibold text-blue-400 mb-1">
+                                How Aura Challenges Work
+                            </Text>
                             <Text className="text-xs text-blue-300 leading-4">
-                                • Members bet "Yes" or "No" on challenge completion{'\n'}
-                                • You submit proof before deadline{'\n'}
-                                • 6-hour voting period for verification{'\n'}
-                                • Winners split the losing side's credits
+                            • Members stake Aura on "Success" or "Failure"{'\n'}
+                            • Challenger submits proof before the deadline{'\n'}
+                            • 2-hour voting window for stakers to verify proof{'\n'}
+                            • Winners split the losing side’s Aura, creator earns a bonus
                             </Text>
                         </View>
                     </View>

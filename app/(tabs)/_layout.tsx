@@ -34,7 +34,7 @@ export default function TabLayout() {
       <Tabs.Screen
         name="guild"
         options={{
-          title: 'Group',
+          title: 'Guild',
           tabBarIcon: ({ size, color }) => (
             <Cannabis size={size} color={color} />
           ),

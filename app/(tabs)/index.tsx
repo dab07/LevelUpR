@@ -358,12 +358,17 @@ export default function HomeScreen() {
 
         {/* Credits Container */}
         <View className="px-5 mb-4">
-          <View className="bg-[#2A2A2A] rounded-2xl p-4 border border-gray-700">
+          <LinearGradient
+            colors={["#FBD5BD", "#8A83DA", "#463699", "#262335"]}
+            start={{ x: 0, y: 0 }}
+            end={{ x: 1, y: 0 }}
+            className="rounded-2xl p-4 border border-gray-700"
+          >
             <View className="flex-row items-center justify-between">
-              <Text className="text-white font-semibold text-lg">Aura Score</Text>
+              <Text className="text-[#262335] font-semibold text-lg">Aura Score</Text>
               <CreditDisplay credits={credits} size="large" />
             </View>
-          </View>
+          </LinearGradient>
         </View>
 
         {/* Main Tasks Container */}

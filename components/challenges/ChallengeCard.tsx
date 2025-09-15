@@ -249,21 +249,21 @@ export default function ChallengeCard({
                         <View className="flex-row items-center gap-1">
                             <Coins size={16} color="#F59E0B" />
                             <Text className="text-xs text-gray-400 font-medium">
-                                {challenge.minimumBet} min bet
+                                {challenge.minimumBet} min Aura
                             </Text>
                         </View>
 
                         <View className="flex-row items-center gap-1">
                             <Users size={16} color="#8B5CF6" />
                             <Text className="text-xs text-gray-400 font-medium">
-                                {Math.floor(getTotalPool() / challenge.minimumBet)} bets
+                                {Math.floor(getTotalPool() / challenge.minimumBet)} Aura
                             </Text>
                         </View>
                     </View>
 
                     {getTotalPool() > 0 && (
                         <View className="bg-[#1A1A1A] p-3 rounded-lg mb-3 border border-gray-600">
-                            <Text className="text-sm font-semibold text-white mb-2 text-center">Betting Pool: {getTotalPool()} credits</Text>
+                            <Text className="text-sm font-semibold text-white mb-2 text-center">Stack Vote: {getTotalPool()} Aura</Text>
                             <View className="flex-row justify-around">
                                 <View className="flex-row items-center gap-1">
                                     <CheckCircle size={16} color="#10B981" />
@@ -284,7 +284,7 @@ export default function ChallengeCard({
                     {userBet && userBet.betType && (
                         <View className="bg-[#8A83DA]/20 p-2 rounded-md mb-3 border border-[#8A83DA]/30">
                             <Text className="text-xs font-medium text-[#8A83DA] text-center">
-                                Your bet: {userBet.amount} credits on {userBet.betType.toUpperCase()}
+                                Your Aura: {userBet.amount} on {userBet.betType.toUpperCase()}
                             </Text>
                         </View>
                     )}
@@ -304,7 +304,7 @@ export default function ChallengeCard({
                                 className="flex-row items-center justify-center bg-violet-600 py-2.5 rounded-lg gap-1.5"
                             >
                                 <Coins size={20} color="#FFFFFF" />
-                                <Text className="text-sm font-semibold text-white">Place Bet</Text>
+                                <Text className="text-sm font-semibold text-white">Commit Aura</Text>
                             </TouchableOpacity>
                         )}
 

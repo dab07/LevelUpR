@@ -42,7 +42,7 @@ export default function ProfileHeader({ profile, onProfileUpdate }: ProfileHeade
 
     return (
         <LinearGradient
-            colors={['#8A83DA', '#463699']}
+            colors={['#262335', '#463699']}
             className="px-5 py-6 rounded-b-3xl"
         >
             <View className="flex-row items-center mb-5">

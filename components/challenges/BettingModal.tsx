@@ -216,7 +216,7 @@ export default function BettingModal({
           <View className="flex-row items-center bg-amber-500/20 p-3 rounded-lg mb-6 border border-amber-500/30">
             <Coins size={20} color="#F59E0B" />
             <Text className="text-base font-semibold text-amber-400 ml-2">
-              Available Credits: {userCredits}
+              Your current Aura: {userCredits}
             </Text>
           </View>
 
@@ -247,7 +247,7 @@ export default function BettingModal({
               </View>
 
               <View className="mb-6">
-                <Text className="text-lg font-semibold text-white mb-4">Bet Amount</Text>
+                <Text className="text-lg font-semibold text-white mb-4">Channel Aura</Text>
                 <View className="flex-row items-center bg-[#2A2A2A] rounded-lg px-4 py-3 border border-gray-600">
                   <Coins size={20} color="#F59E0B" style={{ position: 'absolute', left: 12, zIndex: 1 }} />
                   <TextInput
@@ -258,10 +258,10 @@ export default function BettingModal({
                     placeholder={safeChallenge.minimumBet.toString()}
                     placeholderTextColor="#9CA3AF"
                   />
-                  <Text className="text-sm font-medium text-gray-400">credits</Text>
+                  <Text className="text-sm font-medium text-gray-400">auras</Text>
                 </View>
                 <Text className="text-xs text-gray-400 mt-2">
-                  Minimum: {safeChallenge.minimumBet} credits
+                  Minimum: {safeChallenge.minimumBet} aura
                 </Text>
               </View>
 
@@ -272,12 +272,12 @@ export default function BettingModal({
                 </View>
 
                 <View className="flex-row justify-between items-center mb-2">
-                  <Text className="text-sm text-gray-300">Your bet:</Text>
+                  <Text className="text-sm text-gray-300">Stack Aura:</Text>
                   <Text className="text-sm font-semibold text-white">{betAmount || 0} credits</Text>
                 </View>
 
                 <View className="flex-row justify-between items-center mb-2">
-                  <Text className="text-sm text-gray-300">Potential win:</Text>
+                  <Text className="text-sm text-gray-300">Potential gain:</Text>
                   <Text className="text-sm font-bold text-emerald-400">
                     {calculatePotentialPayout()} credits
                   </Text>
@@ -313,7 +313,7 @@ export default function BettingModal({
                 ) : (
                   <>
                     <Coins size={20} color="#FFFFFF" />
-                    <Text className="text-base font-semibold text-white ml-2">Place Bet</Text>
+                    <Text className="text-base font-semibold text-white ml-2">Put Aura on the line</Text>
                   </>
                 )}
               </TouchableOpacity>

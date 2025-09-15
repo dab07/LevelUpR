@@ -72,7 +72,7 @@ export default function AuthScreen() {
               >
                 <Zap size={48} color="#FFFFFF" />
               </LinearGradient>
-              <Text className="text-3xl font-bold text-white mb-2">LevelUpR</Text>
+              <Text className="text-3xl font-bold text-white mb-2">Aura Online</Text>
               <Text className="text-base text-gray-400 text-center">
                 Gamify your tasks, challenge your friends
               </Text>

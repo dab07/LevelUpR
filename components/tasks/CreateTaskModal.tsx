@@ -222,7 +222,7 @@ export default function CreateTaskModal({
                             <X size={20} color="#FFFFFF" />
                         </TouchableOpacity>
                         <View className="items-center">
-                            <Text className="text-xl font-bold text-white">Create Task</Text>
+                            <Text className="text-xl font-bold text-white">Create Quest</Text>
                             <Text className="text-sm text-white/80 mt-1">Build your daily momentum</Text>
                         </View>
                         <View className="w-10" />
@@ -233,7 +233,7 @@ export default function CreateTaskModal({
                     {/* Task Title Section */}
                     <View className="mb-8">
                         <Text className="text-lg font-bold text-white mb-3 flex-row items-center">
-                            ✨ Task Title
+                            Quest Title
                         </Text>
                         <View className="bg-[#1A1A1A] rounded-2xl border border-gray-700/50 shadow-lg">
                             <TextInput
@@ -251,7 +251,7 @@ export default function CreateTaskModal({
                     {/* Description Section */}
                     <View className="mb-8">
                         <Text className="text-lg font-bold text-white mb-3">
-                            📝 Description <Text className="text-sm font-normal text-gray-400">(Optional)</Text>
+                            Description <Text className="text-sm font-normal text-gray-400">(Optional)</Text>
                         </Text>
                         <View className="bg-[#1A1A1A] rounded-2xl border border-gray-700/50 shadow-lg">
                             <TextInput
@@ -271,7 +271,7 @@ export default function CreateTaskModal({
                     {/* Category Section */}
                     <View className="mb-8">
                         <Text className="text-lg font-bold text-white mb-4">
-                            🏷️ Category
+                            Category
                         </Text>
                         <ScrollView horizontal showsHorizontalScrollIndicator={false} className="flex-row gap-3">
                             {CATEGORIES.map((category) => (
@@ -308,7 +308,7 @@ export default function CreateTaskModal({
                     {/* Due Date & Time Section */}
                     <View className="mb-8">
                         <Text className="text-lg font-bold text-white mb-4">
-                            ⏰ Due Date & Time
+                            Due Date & Time
                         </Text>
 
                         {/* Quick Date Presets */}
@@ -630,9 +630,9 @@ export default function CreateTaskModal({
                         <View className="flex-row items-center">
                             <Star size={24} color="#F59E0B" />
                             <View className="flex-1 ml-4">
-                                <Text className="text-lg font-bold text-amber-400 mb-1">🎯 Task Reward</Text>
+                                <Text className="text-lg font-bold text-amber-400 mb-1">Quest Reward</Text>
                                 <Text className="text-sm text-amber-200 leading-5">
-                                    Complete this task to earn <Text className="font-bold">1 credit</Text> and <Text className="font-bold">10 XP points</Text>!
+                                    Complete your quest to earn <Text className="font-bold">1 Aura</Text> and <Text className="font-bold">10 XP points</Text>!
                                 </Text>
                             </View>
                         </View>
@@ -641,7 +641,7 @@ export default function CreateTaskModal({
                     {/* Info Card */}
                     <View className="bg-gradient-to-r from-[#8A83DA]/20 to-[#6366F1]/20 p-4 rounded-2xl border border-[#8A83DA]/30 shadow-lg">
                         <Text className="text-sm text-[#8A83DA] font-semibold text-center">
-                            💡 You can create up to 2 extra tasks with custom deadlines
+                            💡 You can create up to 2 quest with custom deadlines
                         </Text>
                     </View>
                 </ScrollView>
@@ -670,7 +670,7 @@ export default function CreateTaskModal({
                             ) : (
                                 <>
                                     <Plus size={22} color="#FFFFFF" />
-                                    <Text className="text-lg font-bold text-white ml-2">Create Task</Text>
+                                    <Text className="text-lg font-bold text-white ml-2">Start your Quest</Text>
                                 </>
                             )}
                         </TouchableOpacity>

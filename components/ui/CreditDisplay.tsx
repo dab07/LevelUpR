@@ -1,3 +1,4 @@
+import { LinearGradient } from 'expo-linear-gradient';
 import React from 'react';
 import { View, Text } from 'react-native';
 
@@ -37,11 +38,16 @@ export default function CreditDisplay({
   };
 
   return (
-    <View className={`bg-[#2A2A2A] rounded-[20px] border border-gray-700 ${getPadding()}`}>
-      <Text className={`text-white font-bold ${getTextClass()} text-center`}>
+    <LinearGradient
+      colors={["#C7C2CE", "#FBD5BD"]}
+      start={{ x: 1, y: 0 }}
+      end={{ x: 0, y: 0 }}
+      className={`rounded-[20px] border border-gray-700 ${getPadding()}`}
+    >
+      <Text className={`text-[#262335] font-bold ${getTextClass()} text-center`}>
         {credits.toLocaleString()}
       </Text>
-    </View>
+    </LinearGradient>
   );
 }
 
